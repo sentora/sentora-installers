@@ -1,4 +1,4 @@
-installers-x
+ZPanel Installers
 ============
 
-A place to store officially supported ZPanel installers and upgrade scripts for specifically for ZPanel version X.
+A place to store officially supported ZPanel installers and upgrade scripts for ZPanel.
