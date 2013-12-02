@@ -72,7 +72,7 @@ done
 
 # Now we'll ask upgrade specific questions...
 echo -e "Please enter the version of which you'd like to upgrade ZPanel to, for example 10-1-1"
-read -e -p "Upgrade to version:" -i "10-1-0" upgradeto
+read -e -p "Upgrade to version:" -i "10-1-1" upgradeto
 echo -e ""
 echo -e "Please provide your current MySQL root password (this can found in /etc/zpanel/panel/cnf/db.php)"
 read -esp "MySQL root password: " -i "" mysqlpassword
