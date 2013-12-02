@@ -146,6 +146,7 @@ echo -e "###################################################################"
 echo -e ""
 
 # We now recommend  that the user restarts their server...
+while true; do
 read -e -p "Restart your server now to complete the upgrade (y/n)? " rsn
 	case $rsn in
 		[Yy]* ) break;;
