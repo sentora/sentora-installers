@@ -38,21 +38,7 @@ passwordgen() {
           tr -dc A-Za-z0-9 < /dev/urandom | head -c ${l} | xargs
 }
 
-# Display the 'welcome' splash/user warning info..
-echo -e "##############################################################"
-echo -e "# Welcome to the Official ZPanelX Installer for CentOS 6.4 #"
-echo -e "# #"
-echo -e "# Please make sure your VPS provider hasn't pre-installed #"
-echo -e "# any packages required by ZPanelX. #"
-echo -e "# #"
-echo -e "# If you are installing on a physical machine where the OS #"
-echo -e "# has been installed by yourself please make sure you only #"
-echo -e "# installed CentOS with no extra packages. #"
-echo -e "# #"
-echo -e "# If you selected additional options during the CentOS #"
-echo -e "# install please consider reinstalling without them. #"
-echo -e "# #"
-echo -e "##############################################################"
+
 
 # Set some installation defaults/auto assignments
 tz="Europe/london"
