@@ -1,0 +1,31 @@
+C'est scripts ont était tester avec virtualbox vmware proxmox et KVM et sont tout a fait fonctionnelle
+
+Vous pouvez les utilisez dans une iso netinstall.
+
+Pour centos editer le fichier isolinux/isolinux.cfg
+
+et modifier ceci
+
+timeout 600
+
+par
+
+timeout 1
+
+Dans toutes les ligne contenant
+
+append initrd=initrd.img ... ETC
+
+ajouter ceci
+
+ks=cdrom:/ks.cfg
+
+Attention par défaut les fichier kickstart sont configurer pour fonctionner en dhcp
+
+Pensez a changer la configuration ont fonction de votre hébergeur 
+
+Pour sa je vous invite a lire les docummentation de kickstart que vous pouvez trouver en cherchent sur google
+
+Par défaut également les fichier kickstart sont configurer en 32 bit
+
+pour installer en 64 bit changer les atribut i386 en x86_64

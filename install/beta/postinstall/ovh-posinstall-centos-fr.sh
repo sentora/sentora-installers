@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-# OS VERSION: CentOS 6.4+ Minimal
+# OS VERSION: CentOS 6.5 + Minimal
 # ARCH: 32bit + 64bit
 
 ZPX_VERSION=10.1.1
@@ -8,52 +8,19 @@ ZPX_VERSION=10.1.1
 # Official ZPanel Automated Installation Script
 # =============================================
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-
-# First we check if the user is 'root' before allowing installation to commence
-if [ $UID -ne 0 ]; then
-    echo "Installed failed! To install you must be logged in as 'root', please try again"
-  exit 1
-fi
-
-# Lets check for some common control panels that we know will affect the installation/operating of ZPanel.
-if [ -e /usr/local/cpanel ] || [ -e /usr/local/directadmin ] || [ -e /usr/local/solusvm/www ] || [ -e /usr/local/home/admispconfig ] || [ -e /usr/local/lxlabs/kloxo ] ; then
-    echo "You appear to have a control panel already installed on your server; This installer"
-    echo "is designed to install and configure ZPanel on a clean OS installation only!"
-    echo ""
-    echo "Please re-install your OS before attempting to install using this script."
-    exit
-fi
-
-# Ensure the installer is launched and can only be launched on CentOs 6.4
-BITS=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
-if [ -f /etc/centos-release ]; then
-  OS="CentOs"
-  VER=$(cat /etc/centos-release | sed 's/^.*release //;s/ (Fin.*$//')
-else
-  OS=$(uname -s)
-  VER=$(uname -r)
-fi
-echo "Detected : $OS  $VER  $BITS"
-#warning the last version of centos and 6.5
-if [ "$OS" = "CentOs" ] && [ "$VER" = "6.4" ] || [ "$VER" = "6.5" ] ; then
-  echo "Ok."
-else
-  echo "Sorry, this installer only supports the installation of ZPanel on CentOS 6.4."
-  exit 1;
-fi
 
 # Set custom logging methods so we create a log file in the current working directory.
 logfile=$$.log
@@ -61,7 +28,7 @@ exec > >(tee $logfile)
 exec 2>&1
 
 # ***************************************
-# * Common installer functions          *
+# * Common installer functions *
 # ***************************************
 
 # Generates random passwords fro the 'zadmin' account as well as Postfix and MySQL root account.
@@ -71,48 +38,13 @@ passwordgen() {
           tr -dc A-Za-z0-9 < /dev/urandom | head -c ${l} | xargs
 }
 
-# Display the 'welcome' splash/user warning info..
-echo -e "##############################################################"
-echo -e "# Welcome to the Official ZPanelX Installer for CentOS 6.4   #"
-echo -e "#                                                            #"
-echo -e "# Please make sure your VPS provider hasn't pre-installed    #"
-echo -e "# any packages required by ZPanelX.                          #"
-echo -e "#                                                            #"
-echo -e "# If you are installing on a physical machine where the OS   #"
-echo -e "# has been installed by yourself please make sure you only   #"
-echo -e "# installed CentOS with no extra packages.                   #"
-echo -e "#                                                            #"
-echo -e "# If you selected additional options during the CentOS       #"
-echo -e "# install please consider reinstalling without them.         #"
-echo -e "#                                                            #"
-echo -e "##############################################################"
+
 
 # Set some installation defaults/auto assignments
-tz=``
+tz="Europe/london"
 fqdn=`/bin/hostname`
 publicip=`wget -qO- http://api.zpanelcp.com/ip.txt`
 
-# Lets check that the user wants to continue first...
-while true; do
-read -e -p "Would you like to continue (y/n)? " yn
-    case $yn in
-    	[Yy]* ) break;;
-		[Nn]* ) exit;
-	esac
-done
-
-# Installer options
-while true; do
-	echo -e "Find your timezone from : http://php.net/manual/en/timezones.php e.g Europe/London"
-	read -e -p "Enter your timezone: " -i "Europe/London" tz
-	read -e -p "Enter the FQDN of the server (example: zpanel.yourdomain.com): " -i $fqdn fqdn
-	read -e -p "Enter the public (external) server IP: " -i $publicip publicip
-	read -e -p "ZPanel is now ready to install, do you wish to continue (y/n)" yn
-	case $yn in
-		[Yy]* ) break;;
-		[Nn]* ) exit;
-	esac
-done
 
     #to remedy some problems of compatibility use of mirror centos.org to all users
     #CentOS-Base.repo
@@ -120,7 +52,7 @@ done
     #released Base
     sed -i 's|mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=os|#mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=os|' "/etc/yum.repos.d/CentOS-Base.repo"
     sed -i 's|#baseurl=http://mirror.centos.org/centos/$releasever/os/$basearch/|baseurl=http://mirror.centos.org/centos/$releasever/os/$basearch/|' "/etc/yum.repos.d/CentOS-Base.repo"
-    #released Updates 
+    #released Updates
     sed -i 's|mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=updates|#mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=updates|' "/etc/yum.repos.d/CentOS-Base.repo"
     sed -i 's|#baseurl=http://mirror.centos.org/centos/$releasever/updates/$basearch/|baseurl=http://mirror.centos.org/centos/$releasever/updates/$basearch/|' "/etc/yum.repos.d/CentOS-Base.repo"
     #additional packages that may be useful Centos Extra
@@ -140,37 +72,6 @@ done
       sed -i 's|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/updates-released-ce6|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/6/$basearch/updates/|' "/etc/yum.repos.d/vz.repo"
     fi
 
-    #disable deposits that could result in installation errors
-    #repo ELRepo
-    if [ -f "/etc/yum.repos.d/elrepo.repo" ]; then
-      sed -i 's/enabled=1/enabled=0/g' "/etc/yum.repos.d/elrepo.repo"
-    fi
-
-    #repo Epel Testing
-    if [ -f "/etc/yum.repos.d/epel-testing.repo" ]; then
-      sed -i 's/enabled=1/enabled=0/g' "/etc/yum.repos.d/epel-testing.repo"
-    fi
-
-    #repo Remi
-    if [ -f "/etc/yum.repos.d/remi.repo" ]; then
-      sed -i 's/enabled=1/enabled=0/g' "/etc/yum.repos.d/remi.repo"
-    fi
-
-    #repo RPMForge
-    if [ -f "/etc/yum.repos.d/rpmforge.repo" ]; then
-      sed -i 's/enabled=1/enabled=0/g' "/etc/yum.repos.d/rpmforge.repo"
-    fi
-
-    #repo RPMFusion Free Updates
-    if [ -f "/etc/yum.repos.d/rpmfusion-free-updates.repo" ]; then
-      sed -i 's/enabled=1/enabled=0/g' "/etc/yum.repos.d/rpmfusion-free-updates.repo"
-    fi
-
-    #repo RPMFusion Free Updates Testing
-    if [ -f "/etc/yum.repos.d/rpmfusion-free-updates-testing.repo" ]; then
-      sed -i 's/enabled=1/enabled=0/g' "/etc/yum.repos.d/rpmfusion-free-updates-testing.repo"
-    fi
-
 # We need to disable SELinux...
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 setenforce 0
@@ -182,10 +83,6 @@ chkconfig sendmail off
 chkconfig iptables off
 
 # Start log creation.
-echo -e ""
-echo -e "# Generating installation log and debug info..."
-uname -a
-echo -e ""
 rpm -qa
 
 # Removal of conflicting packages and services prior to ZPX installation.
@@ -292,7 +189,7 @@ postmap /etc/postfix/transport
 chown -R vacation:vacation /var/spool/vacation
 if ! grep -q "127.0.0.1 autoreply.$fqdn" /etc/hosts; then echo "127.0.0.1 autoreply.$fqdn" >> /etc/hosts; fi
 sed -i "s|myhostname = control.yourdomain.com|myhostname = $fqdn|" /etc/postfix/main.cf
-sed -i "s|mydomain   = control.yourdomain.com|mydomain   = $fqdn|" /etc/postfix/main.cf
+sed -i "s|mydomain = control.yourdomain.com|mydomain = $fqdn|" /etc/postfix/main.cf
 rm -rf /etc/postfix/main.cf /etc/postfix/master.cf
 ln -s /etc/zpanel/configs/postfix/master.cf /etc/postfix/master.cf
 ln -s /etc/zpanel/configs/postfix/main.cf /etc/postfix/main.cf
@@ -400,29 +297,19 @@ php /etc/zpanel/panel/bin/daemon.php
 cd ../
 rm -rf zp_install_cache/ zpanelx/
 
-# Advise the user that ZPanel is now installed and accessible.
-echo -e "##############################################################"
-echo -e "# Congratulations ZpanelX has now been installed on your     #"
-echo -e "# server. Please review the log file left in /root/ for      #"
-echo -e "# any errors encountered during installation.                #"
-echo -e "#                                                            #"
-echo -e "# Save the following information somewhere safe:             #"
-echo -e "# MySQL Root Password    : $password"
-echo -e "# MySQL Postfix Password : $postfixpassword"
-echo -e "# ZPanelX Username       : zadmin                            #"
-echo -e "# ZPanelX Password       : $zadminNewPass"
-echo -e "#                                                            #"
-echo -e "# ZPanelX Web login can be accessed using your server IP     #"
-echo -e "# inside your web browser.                                   #"
-echo -e "#                                                            #"
-echo -e "##############################################################"
-echo -e ""
+#add french translate
+git clone https://github.com/ZPanelFR/zpxfrtrad.git
+rm -f /etc/zpanel/panel/init/init.inc.php
+cp zpxfrtrad/init/init.inc.php /etc/zpanel/panel/init/
+mkdir /etc/zpanel/panel/lang
+cp -R zpxfrtrad/lang/* /etc/zpanel/panel/lang
+rm -f /etc/zpanel/panel/etc/styles/zpanelx/login.ztml
+cp zpxfrtrad/etc/styles/zpanelx/login.ztml /etc/zpanel/panel/etc/styles/zpanelx/
+cp zpxfrtrad/etc/static/errorpages/* /etc/zpanel/panel/etc/static/errorpages
+mkdir /etc/zpanel/panel/etc/static/lang
+cp zpxfrtrad/etc/static/lang/* /etc/zpanel/panel/etc/static/lang
+cp zpxfrtrad/etc/static/pages/* /etc/zpanel/panel/etc/static/pages
+cat zpxfrtrad/install-fr.sql | mysql -u root -p$password
 
-# We now request that the user restarts their server...
-read -e -p "Restart your server now to complete the install (y/n)? " rsn
-	case $rsn in
-		[Yy]* ) break;;
-		[Nn]* ) exit;
-	esac
-done
-shutdown -r now
+echo "OK"
+exit

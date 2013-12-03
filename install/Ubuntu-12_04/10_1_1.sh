@@ -90,9 +90,8 @@ echo -e "##############################################################"
 echo -e ""
 
 # Set some installation defaults/auto assignments
-tz=``
 fqdn=`/bin/hostname`
-publicip=`curl -s http://api.zpanelcp.com/ip.txt`
+publicip=`curl wget -qO- http://api.zpanelcp.com/ip.txt`
 
 # Lets check that the user wants to continue first as obviously otherwise we'll be removing AppArmor for no reason.
 while true; do
@@ -112,14 +111,21 @@ if [ $? = "0" ]; then
 	update-rc.d -f apparmor remove &> /dev/null
 	apt-get -y remove apparmor &> /dev/null
 	mv /etc/init.d/apparmor /etc/init.d/apparmpr.removed &> /dev/null
+	##after removing AppArmor reboot is not obligatory
 	echo -e "Please restart the server and run the installer again. AppArmor has been removed."
-        exit
+        #exit
 fi
+
+#a selection list for the time zone is not better now?
+apt-get -yqq update &>/dev/null
+apt-get -yqq install tzdata &>/dev/null
 
 # Installer options
 while true; do
-	echo -e "Find your timezone from : http://php.net/manual/en/timezones.php e.g Europe/London"
-	read -e -p "Enter your timezone: " -i "Europe/London" tz
+	#echo -e "Find your timezone from : http://php.net/manual/en/timezones.php e.g Europe/London"
+	#read -e -p "Enter your timezone: " -i "Europe/London" tz
+	dpkg-reconfigure tzdata
+	tz=`cat /etc/timezone`
 	read -e -p "Enter the FQDN of the server (example: zpanel.yourdomain.com): " -i $fqdn fqdn
 	read -e -p "Enter the public (external) server IP: " -i $publicip publicip
     read -e -p "ZPanel is now ready to install, do you wish to continue (y/n)" yn
@@ -138,16 +144,41 @@ dpkg --get-selections
 
 # We need to update the enabled Aptitude repositories
 echo -ne "\nUpdating Aptitude Repos: " >/dev/tty
-if grep -Fxq "deb-src" /etc/apt/sources.list
-then
-    echo "sources list up-to-date"
-else
-    echo "deb-src http://archive.ubuntu.com/ubuntu precise main" >> /etc/apt/sources.list
-    echo "deb-src http://archive.ubuntu.com/ubuntu precise-updates main" >> /etc/apt/sources.list
-    echo "deb-src http://security.ubuntu.com/ubuntu precise-security main" >> /etc/apt/sources.list
-    echo "deb-src http://archive.ubuntu.com/ubuntu precise universe" >> /etc/apt/sources.list
-    echo "deb-src http://archive.ubuntu.com/ubuntu precise-updates universe" >> /etc/apt/sources.list
-fi
+#if grep -Fxq "deb-src" /etc/apt/sources.list
+#then
+#    echo "sources list up-to-date"
+#else
+#    echo "deb-src http://archive.ubuntu.com/ubuntu precise main" >> /etc/apt/sources.list
+#    echo "deb-src http://archive.ubuntu.com/ubuntu precise-updates main" >> /etc/apt/sources.list
+#    echo "deb-src http://security.ubuntu.com/ubuntu precise-security main" >> /etc/apt/sources.list
+#    echo "deb-src http://archive.ubuntu.com/ubuntu precise universe" >> /etc/apt/sources.list
+#    echo "deb-src http://archive.ubuntu.com/ubuntu precise-updates universe" >> /etc/apt/sources.list
+#fi
+#to avoid compatibility problems have ppa and removes deposits in the outcry over
+ mkdir -p "/ect/apt/sources.list.d.save"
+        cp -R "/etc/apt/sources.list.d/*" "/ect/apt/sources.list.d.save" &> /dev/null
+        rm -rf "/etc/apt/sources.list/*"
+        cp "/etc/apt/sources.list" "/etc/apt/sources.list.save"
+cat > /etc/apt/sources.list <<EOF
+#Dépots main restricted
+deb http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc) main restricted
+deb http://security.ubuntu.com/ubuntu $(lsb_release -sc)-security main restricted
+deb http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc)-updates main restricted
+ 
+deb-src http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc) main restricted
+deb-src http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc)-updates main restricted
+deb-src http://security.ubuntu.com/ubuntu $(lsb_release -sc)-security main restricted
+#Dépots Universe Multiverse 
+deb http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc) universe multiverse
+deb http://security.ubuntu.com/ubuntu $(lsb_release -sc)-security universe multiverse
+deb http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc)-updates universe multiverse
+
+deb-src http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc) universe multiverse
+deb-src http://security.ubuntu.com/ubuntu $(lsb_release -sc)-security universe multiverse
+deb-src http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc)-updates universe multiverse
+EOF
+
+
 
 # Install some standard utility packages required by the installer and/or ZPX.
 apt-get -y install sudo wget vim make zip unzip git debconf-utils
