@@ -36,7 +36,7 @@ passwordgen() {
 }
 
 # Set some installation defaults/auto assignments
-tz="Europe/Paris"
+tz="Europe/London"
 fqdn=`/bin/hostname`
 publicip=`wget -qO- http://api.zpanelcp.com/ip.txt`
 
