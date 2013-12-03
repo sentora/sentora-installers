@@ -25,3 +25,7 @@ Attention par défaut les fichier kickstart sont configurer pour fonctionner en 
 Pensez a changer la configuration ont fonction de votre hébergeur 
 
 Pour sa je vous invite a lire les docummentation de kickstart que vous pouvez trouver en cherchent sur google
+
+Par défaut également les fichier kickstart sont configurer en 32 bit
+
+pour installer en 64 bit changer les atribut i386 en x86_64
