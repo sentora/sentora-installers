@@ -1,3 +1,4 @@
+#!/bin/bash
 cat > /etc/apt/sources.list <<EOF
 #Dépots main restricted
 deb http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc) main restricted
