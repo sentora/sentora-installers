@@ -47,7 +47,8 @@ else
   VER=$(uname -r)
 fi
 echo "Detected : $OS  $VER  $BITS"
-if [ "$OS" = "CentOs" ] && [ "$VER" = "6.4" ]; then
+#warning the last version of centos and 6.5
+if [ "$OS" = "CentOs" ] && [ "$VER" = "6.4" ] || [ "$VER" = "6.5" ] ; then
   echo "Ok."
 else
   echo "Sorry, this installer only supports the installation of ZPanel on CentOS 6.4."
