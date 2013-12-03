@@ -4,6 +4,7 @@
 # ARCH: x32_64
 
 ZPX_VERSION=10.1.1
+ZPX_VERSION_ACTUAL="setso --show dbversion"
 
 # Official ZPanel Automated Upgrade Script
 # =============================================
@@ -44,6 +45,15 @@ else
   echo "Sorry, this upgrade script only supports ZPanel on CentOS 6.4."
   exit 1;
 fi
+
+
+
+#check zpanel version
+
+if [ "$ZPX_VERSION" = "$ZPX_VERSION_ACTUAL" ] ; then
+echo "your version of ZPanel already updated"
+fi
+
 
 # Set custom logging methods so we create a log file in the current working directory.
 logfile=$$.log
