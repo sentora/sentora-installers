@@ -4,6 +4,7 @@
 # ARCH: x32_64
 
 ZPX_VERSION=10.1.1
+ZPX_VERSION_ACTUAL="setso --show dbversion"
 
 # Official ZPanel Automated Upgrade Script
 # =============================================
@@ -43,6 +44,10 @@ if [ "$OS" = "Ubuntu" ] && [ "$VER" = "12.04" ]; then
 else
   echo "Sorry, this upgrade script only supports the upgrade of ZPanel on Ubuntu 12.04."
   exit 1;
+fi
+
+if [ "$ZPX_VERSION" = "$ZPX_VERSION_ACTUAL" ] ; then
+echo "your version of ZPanel already updated"
 fi
 
 # Set custom logging methods so we create a log file in the current working directory.
