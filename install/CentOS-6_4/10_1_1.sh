@@ -88,7 +88,6 @@ echo -e "#                                                            #"
 echo -e "##############################################################"
 
 # Set some installation defaults/auto assignments
-tz=``
 fqdn=`/bin/hostname`
 publicip=`wget -qO- http://api.zpanelcp.com/ip.txt`
 
@@ -101,10 +100,15 @@ read -e -p "Would you like to continue (y/n)? " yn
 	esac
 done
 
+#a selection list for the time zone is not better now?
+yum -y -q install tzdata &>/dev/null
+echo "echo \$TZ > /etc/timezone" >> /usr/bin/tzselect
+
 # Installer options
 while true; do
 	echo -e "Find your timezone from : http://php.net/manual/en/timezones.php e.g Europe/London"
-	read -e -p "Enter your timezone: " -i "Europe/London" tz
+	tzselect
+	tz=`cat /etc/timezone`
 	read -e -p "Enter the FQDN of the server (example: zpanel.yourdomain.com): " -i $fqdn fqdn
 	read -e -p "Enter the public (external) server IP: " -i $publicip publicip
 	read -e -p "ZPanel is now ready to install, do you wish to continue (y/n)" yn
@@ -401,22 +405,22 @@ cd ../
 rm -rf zp_install_cache/ zpanelx/
 
 # Advise the user that ZPanel is now installed and accessible.
-echo -e "##############################################################"
-echo -e "# Congratulations ZpanelX has now been installed on your     #"
-echo -e "# server. Please review the log file left in /root/ for      #"
-echo -e "# any errors encountered during installation.                #"
-echo -e "#                                                            #"
-echo -e "# Save the following information somewhere safe:             #"
-echo -e "# MySQL Root Password    : $password"
-echo -e "# MySQL Postfix Password : $postfixpassword"
-echo -e "# ZPanelX Username       : zadmin                            #"
-echo -e "# ZPanelX Password       : $zadminNewPass"
-echo -e "#                                                            #"
-echo -e "# ZPanelX Web login can be accessed using your server IP     #"
-echo -e "# inside your web browser.                                   #"
-echo -e "#                                                            #"
-echo -e "##############################################################"
-echo -e ""
+echo -e "##############################################################" &>/dev/tty
+echo -e "# Congratulations ZpanelX has now been installed on your     #" &>/dev/tty
+echo -e "# server. Please review the log file left in /root/ for      #" &>/dev/tty
+echo -e "# any errors encountered during installation.                #" &>/dev/tty
+echo -e "#                                                            #" &>/dev/tty
+echo -e "# Save the following information somewhere safe:             #" &>/dev/tty
+echo -e "# MySQL Root Password    : $password" &>/dev/tty
+echo -e "# MySQL Postfix Password : $postfixpassword" &>/dev/tty
+echo -e "# ZPanelX Username       : zadmin                            #" &>/dev/tty
+echo -e "# ZPanelX Password       : $zadminNewPass" &>/dev/tty
+echo -e "#                                                            #" &>/dev/tty
+echo -e "# ZPanelX Web login can be accessed using your server IP     #" &>/dev/tty
+echo -e "# inside your web browser.                                   #" &>/dev/tty
+echo -e "#                                                            #" &>/dev/tty
+echo -e "##############################################################" &>/dev/tty
+echo -e "" &>/dev/tty
 
 # We now request that the user restarts their server...
 read -e -p "Restart your server now to complete the install (y/n)? " rsn

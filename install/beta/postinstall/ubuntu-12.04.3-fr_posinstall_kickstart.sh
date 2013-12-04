@@ -1,174 +1,13 @@
-#!/usr/bin/env bash
-
-# OS VERSION: Ubuntu Server 12.04.x LTS
-# ARCH: x32_64
-
-ZPX_VERSION=10.1.1
-
-# Official ZPanel Automated Installation Script
-# =============================================
-#
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-
-# First we check if the user is 'root' before allowing installation to commence
-if [ $UID -ne 0 ]; then
-    echo "Install failed! To install you must be logged in as 'root', please try again."
-    exit 1
-fi
-
-# Lets check for some common control panels that we know will affect the installation/operating of ZPanel.
-if [ -e /usr/local/cpanel ] || [ -e /usr/local/directadmin ] || [ -e /usr/local/solusvm/www ] || [ -e /usr/local/home/admispconfig ] || [ -e /usr/local/lxlabs/kloxo ] ; then
-    echo "You appear to have a control panel already installed on your server; This installer"
-    echo "is designed to install and configure ZPanel on a clean OS installation only!"
-    echo ""
-    echo "Please re-install your OS before attempting to install using this script."
-    exit
-fi
-
-# Ensure the installer is launched and can only be launched on Ubuntu 12.04
-BITS=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
-if [ -f /etc/lsb-release ]; then
-  OS=$(cat /etc/lsb-release | grep DISTRIB_ID | sed 's/^.*=//')
-  VER=$(cat /etc/lsb-release | grep DISTRIB_RELEASE | sed 's/^.*=//')
-else
-  OS=$(uname -s)
-  VER=$(uname -r)
-fi
-echo "Detected : $OS  $VER  $BITS"
-if [ "$OS" = "Ubuntu" ] && [ "$VER" = "12.04" ]; then
-  echo "Ok."
-else
-  echo "Sorry, this installer only supports the installation of ZPanel on Ubuntu 12.04."
-  exit 1;
-fi
-
-# Set custom logging methods so we create a log file in the current working directory.
-logfile=$$.log
-exec > >(tee $logfile)
-exec 2>&1
-
-# ***************************************
-# * Common installer functions          *
-# ***************************************
-
-# Generates random passwords fro the 'zadmin' account as well as Postfix and MySQL root account.
-passwordgen() {
-    	 l=$1
-           [ "$l" == "" ] && l=16
-          tr -dc A-Za-z0-9 < /dev/urandom | head -c ${l} | xargs
-}
-
-# Display the 'welcome' splash/user warning info..
-echo -e ""
-echo -e "##############################################################"
-echo -e "# Welcome to the Official ZPanelX Installer for Ubuntu       #"
-echo -e "# Server 12.04.x LTS                                         #"
-echo -e "#                                                            #"
-echo -e "# Please make sure your VPS provider hasn't pre-installed    #"
-echo -e "# any packages required by ZPanelX.                          #"
-echo -e "#                                                            #"
-echo -e "# If you are installing on a physical machine where the OS   #"
-echo -e "# has been installed by yourself please make sure you only   #"
-echo -e "# installed Ubuntu Server with no extra packages.            #"
-echo -e "#                                                            #"
-echo -e "# If you selected additional options during the Ubuntu       #"
-echo -e "# install please consider reinstalling without them.         #"
-echo -e "#                                                            #"
-echo -e "##############################################################"
-echo -e ""
-
-# Set some installation defaults/auto assignments
-fqdn=`/bin/hostname`
-publicip=`wget -qO- http://api.zpanelcp.com/ip.txt`
-
-# Lets check that the user wants to continue first as obviously otherwise we'll be removing AppArmor for no reason.
-while true; do
-read -e -p "Would you like to continue (y/n)? " yn
-    case $yn in
-		[Yy]* ) break;;
-		[Nn]* ) exit;
-	esac
-done
-
-# We need to disable and remove AppArmor...
-[ -f /etc/init.d/apparmor ]
-if [ $? = "0" ]; then
-    echo -e ""
-    echo -e "Disabling and removing AppArmor, please wait..."
-    /etc/init.d/apparmor stop &> /dev/null
-	update-rc.d -f apparmor remove &> /dev/null
-	apt-get -y remove apparmor &> /dev/null
-	mv /etc/init.d/apparmor /etc/init.d/apparmpr.removed &> /dev/null
-	##after removing AppArmor reboot is not obligatory
-	echo -e "Please restart the server and run the installer again. AppArmor has been removed."
-        #exit
-fi
-
-#a selection list for the time zone is not better now?
-apt-get -yqq update &>/dev/null
-apt-get -yqq install tzdata &>/dev/null
-
-# Installer options
-while true; do
-	#echo -e "Find your timezone from : http://php.net/manual/en/timezones.php e.g Europe/London"
-	#read -e -p "Enter your timezone: " -i "Europe/London" tz
-	dpkg-reconfigure tzdata
-	tz=`cat /etc/timezone`
-	read -e -p "Enter the FQDN of the server (example: zpanel.yourdomain.com): " -i $fqdn fqdn
-	read -e -p "Enter the public (external) server IP: " -i $publicip publicip
-    read -e -p "ZPanel is now ready to install, do you wish to continue (y/n)" yn
-    case $yn in
-        [Yy]* ) break;;
-        [Nn]* ) exit;
-    esac
-done
-
-# Start log creation.
-echo -e ""
-echo -e "# Generating installation log and debug info..."
-uname -a
-echo -e ""
-dpkg --get-selections
-
-# We need to update the enabled Aptitude repositories
-echo -ne "\nUpdating Aptitude Repos: " >/dev/tty
-#if grep -Fxq "deb-src" /etc/apt/sources.list
-#then
-#    echo "sources list up-to-date"
-#else
-#    echo "deb-src http://archive.ubuntu.com/ubuntu precise main" >> /etc/apt/sources.list
-#    echo "deb-src http://archive.ubuntu.com/ubuntu precise-updates main" >> /etc/apt/sources.list
-#    echo "deb-src http://security.ubuntu.com/ubuntu precise-security main" >> /etc/apt/sources.list
-#    echo "deb-src http://archive.ubuntu.com/ubuntu precise universe" >> /etc/apt/sources.list
-#    echo "deb-src http://archive.ubuntu.com/ubuntu precise-updates universe" >> /etc/apt/sources.list
-#fi
-#to avoid compatibility problems have ppa and removes deposits in the outcry over
- mkdir -p "/ect/apt/sources.list.d.save"
-        cp -R "/etc/apt/sources.list.d/*" "/ect/apt/sources.list.d.save" &> /dev/null
-        rm -rf "/etc/apt/sources.list/*"
-        cp "/etc/apt/sources.list" "/etc/apt/sources.list.save"
+#!/bin/bash
 cat > /etc/apt/sources.list <<EOF
 #Dépots main restricted
 deb http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc) main restricted
 deb http://security.ubuntu.com/ubuntu $(lsb_release -sc)-security main restricted
 deb http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc)-updates main restricted
- 
 deb-src http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc) main restricted
 deb-src http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc)-updates main restricted
 deb-src http://security.ubuntu.com/ubuntu $(lsb_release -sc)-security main restricted
-#Dépots Universe Multiverse 
+#Dépots Universe Multiverse
 deb http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc) universe multiverse
 deb http://security.ubuntu.com/ubuntu $(lsb_release -sc)-security universe multiverse
 deb http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc)-updates universe multiverse
@@ -177,12 +16,46 @@ deb-src http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc) universe multiverse
 deb-src http://security.ubuntu.com/ubuntu $(lsb_release -sc)-security universe multiverse
 deb-src http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc)-updates universe multiverse
 EOF
+apt-get update
+apt-get -y dist-upgrade
+cd /root
+# Set custom logging methods so we create a log file in the current working directory.
+logfile=$$.log
+exec > >(tee $logfile)
+exec 2>&1
 
+# ***************************************
+# * Common installer functions *
+# ***************************************
 
-
-# Install some standard utility packages required by the installer and/or ZPX.
-apt-get -y install sudo wget vim make zip unzip git debconf-utils
-
+# Generates random passwords fro the 'zadmin' account as well as Postfix and MySQL root account.
+passwordgen() {
+             l=$1
+           [ "$l" == "" ] && l=16
+          tr -dc A-Za-z0-9 < /dev/urandom | head -c ${l} | xargs
+}
+# Set some installation defaults/auto assignments
+fqdn=`/bin/hostname`
+publicip=`curl wget -qO- http://api.zpanelcp.com/ip.txt`
+# We need to disable and remove AppArmor...
+[ -f /etc/init.d/apparmor ]
+if [ $? = "0" ]; then
+echo -e ""
+    echo -e "Disabling and removing AppArmor, please wait..."
+    /etc/init.d/apparmor stop &> /dev/null
+        update-rc.d -f apparmor remove &> /dev/null
+        apt-get -y remove apparmor &> /dev/null
+        mv /etc/init.d/apparmor /etc/init.d/apparmpr.removed &> /dev/null
+        ##after removing AppArmor reboot is not obligatory
+        echo -e "Please restart the server and run the installer again. AppArmor has been removed."
+        #exit
+fi
+# Start log creation.
+echo -e ""
+echo -e "# Generating installation log and debug info..."
+uname -a
+echo -e ""
+dpkg --get-selections
 # We now clone the ZPX software from GitHub
 echo "Downloading ZPanel, Please wait, this may take several minutes, the installer will continue after this is complete!"
 git clone https://github.com/bobsta63/zpanelx.git
@@ -191,16 +64,6 @@ git checkout $ZPX_VERSION
 mkdir ../zp_install_cache/
 git checkout-index -a -f --prefix=../zp_install_cache/
 cd ../zp_install_cache/
-
-# We now update the server software packages.
-apt-get update -yqq
-apt-get upgrade -yqq
-
-# Install required software and dependencies required by ZPanel.
-# We disable the DPKG prompts before we run the software install to enable fully automated install.
-export DEBIAN_FRONTEND=noninteractive
-apt-get install -qqy mysql-server mysql-server apache2 libapache2-mod-php5 libapache2-mod-bw php5-common php5-suhosin php5-cli php5-mysql php5-gd php5-mcrypt php5-curl php-pear php5-imap php5-xmlrpc php5-xsl db4.7-util zip webalizer build-essential bash-completion dovecot-mysql dovecot-imapd dovecot-pop3d dovecot-common dovecot-managesieved dovecot-lmtpd postfix postfix-mysql libsasl2-modules-sql libsasl2-modules proftpd-mod-mysql bind9 bind9utils
-
 # Generation of random passwords
 password=`passwordgen`;
 postfixpassword=`passwordgen`;
@@ -276,7 +139,7 @@ postmap /etc/postfix/transport
 chown -R vacation:vacation /var/spool/vacation
 if ! grep -q "127.0.0.1 autoreply.$fqdn" /etc/hosts; then echo "127.0.0.1 autoreply.$fqdn" >> /etc/hosts; fi
 sed -i "s|myhostname = control.yourdomain.com|myhostname = $fqdn|" /etc/postfix/main.cf
-sed -i "s|mydomain   = control.yourdomain.com|mydomain   = $fqdn|" /etc/postfix/main.cf
+sed -i "s|mydomain = control.yourdomain.com|mydomain = $fqdn|" /etc/postfix/main.cf
 rm -rf /etc/postfix/main.cf /etc/postfix/master.cf
 ln -s /etc/zpanel/configs/postfix/master.cf /etc/postfix/master.cf
 ln -s /etc/zpanel/configs/postfix/main.cf /etc/postfix/main.cf
@@ -307,7 +170,7 @@ chmod 660 /var/log/dovecot*
 # ProFTPD specific installation tasks
 groupadd -g 2001 ftpgroup
 useradd -u 2001 -s /bin/false -d /bin/null -c "proftpd user" -g ftpgroup ftpuser
-sed -i "s|#SQLConnectInfo  zpanel_proftpd@localhost root password_here|SQLConnectInfo   zpanel_proftpd@localhost root $password|" /etc/zpanel/configs/proftpd/proftpd-mysql.conf
+sed -i "s|#SQLConnectInfo zpanel_proftpd@localhost root password_here|SQLConnectInfo zpanel_proftpd@localhost root $password|" /etc/zpanel/configs/proftpd/proftpd-mysql.conf
 rm -rf /etc/proftpd/proftpd.conf
 touch /etc/proftpd/proftpd.conf
 if ! grep -q "include /etc/zpanel/configs/proftpd/proftpd-mysql.conf" /etc/proftpd/proftpd.conf; then echo "include /etc/zpanel/configs/proftpd/proftpd-mysql.conf" >> /etc/proftpd/proftpd.conf; fi
@@ -396,30 +259,29 @@ php /etc/zpanel/panel/bin/daemon.php
 cd ../
 rm -rf zp_install_cache/ zpanelx/
 
-# Advise the user that ZPanel is now installed and accessible.
-echo -e "##############################################################" &>/dev/tty
-echo -e "# Congratulations ZpanelX has now been installed on your     #" &>/dev/tty
-echo -e "# server. Please review the log file left in /root/ for      #" &>/dev/tty
-echo -e "# any errors encountered during installation.                #" &>/dev/tty
-echo -e "#                                                            #" &>/dev/tty
-echo -e "# Save the following information somewhere safe:             #" &>/dev/tty
-echo -e "# MySQL Root Password    : $password" &>/dev/tty
-echo -e "# MySQL Postfix Password : $postfixpassword" &>/dev/tty
-echo -e "# ZPanelX Username       : zadmin                            #" &>/dev/tty
-echo -e "# ZPanelX Password       : $zadminNewPass" &>/dev/tty
-echo -e "#                                                            #" &>/dev/tty
-echo -e "# ZPanelX Web login can be accessed using your server IP     #" &>/dev/tty
-echo -e "# inside your web browser.                                   #" &>/dev/tty
-echo -e "#                                                            #" &>/dev/tty
-echo -e "##############################################################" &>/dev/tty
-echo -e "" &>/dev/tty
+#add french translate
+git clone https://github.com/ZPanelFR/zpxfrtrad.git
+rm -f /etc/zpanel/panel/init/init.inc.php
+cp zpxfrtrad/init/init.inc.php /etc/zpanel/panel/init/
+mkdir /etc/zpanel/panel/lang
+cp -R zpxfrtrad/lang/* /etc/zpanel/panel/lang
+rm -f /etc/zpanel/panel/etc/styles/zpanelx/login.ztml
+cp zpxfrtrad/etc/styles/zpanelx/login.ztml /etc/zpanel/panel/etc/styles/zpanelx/
+cp zpxfrtrad/etc/static/errorpages/* /etc/zpanel/panel/etc/static/errorpages
+mkdir /etc/zpanel/panel/etc/static/lang
+cp zpxfrtrad/etc/static/lang/* /etc/zpanel/panel/etc/static/lang
+cp zpxfrtrad/etc/static/pages/* /etc/zpanel/panel/etc/static/pages
+cat zpxfrtrad/install-fr.sql | mysql -u root -p$password
 
-# We now request that the user restarts their server...
-read -e -p "Restart your server now to complete the install (y/n)? " rsn
-while true; do
-	case $rsn in
-		[Yy]* ) break;;
-		[Nn]* ) exit;
-	esac
-done
-shutdown -r now
+
+
+
+
+service apache2 restart
+service postfix restart
+service dovecot restart
+service cron restart
+service mysql restart
+service bind9 restart
+service proftpd restart
+service atd restart
