@@ -36,6 +36,21 @@ The officially supported operating system installer and upgrade scripts are main
 
 We do encourage third-party installation scripts of which we will happily host on this repository and promote the use of in the event that we get interest by community members. If you are interested in maintaining an installation and upgrade script for another OS/distribution please see the *Want to contribute* section below for more information.
 
+## Development using Vagrant ##
+Get info on vagrant here : [Vagrant website]:(http://www.vagrantup.com)
+Vagrant offers a way to rapidly create & destroy deploy new OS's in a virtual machine.
+Spawn os environments , 
+#### ubuntu 
+    12.04 
+	32bit -> $ vagrant up zpanel_12.04ubuntu32
+	64bit -> $ vagrant up zpanel_12.04ubuntu64
+    12.10
+	32bit -> $ vagrant up ubuntu12_10-32
+#### centos
+    6.4
+	32bit -> $ vagrant up zpanel_6.4centos32
+	64bit -> $ vagrant up zpanel_6.4centos64
+
 ## Want to contribute ##
 
 There are a couple of ways in which you can contribute, firstly you can make improvements or fix 'bugs' in the existing 'officially maintained' installers of which we feel will usually be minimal as we keep on top of these installer/upgrade scripts and frequently review them.
