@@ -213,6 +213,8 @@ cd ../zp_install_cache/
 rpm --import https://fedoraproject.org/static/0608B895.txt
 cp etc/build/config_packs/centos_6_3/yum.repos.d/epel.repo /etc/yum.repos.d/epel.repo
 
+# problem upgrade centos 6.2 with 6.5 pacquet deteted as repo qpid-cpp-client
+yum -y remove qpid-cpp-client
 # We now update the server software packages.
 yum -y update
 yum -y upgrade
