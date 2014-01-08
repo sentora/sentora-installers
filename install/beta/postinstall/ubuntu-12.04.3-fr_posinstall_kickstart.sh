@@ -58,7 +58,7 @@ echo -e ""
 dpkg --get-selections
 # We now clone the ZPX software from GitHub
 echo "Downloading ZPanel, Please wait, this may take several minutes, the installer will continue after this is complete!"
-git clone https://github.com/bobsta63/zpanelx.git
+git clone https://github.com/zpanel/zpanelx.git
 cd zpanelx/
 git checkout $ZPX_VERSION
 mkdir ../zp_install_cache/

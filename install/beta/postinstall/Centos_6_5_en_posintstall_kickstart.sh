@@ -68,7 +68,7 @@ publicip=`wget -qO- http://api.zpanelcp.com/ip.txt`
 
 #download zpanel
 cd /root
-git clone https://github.com/bobsta63/zpanelx.git
+git clone https://github.com/zpanel/zpanelx.git
 cd zpanelx/
 git checkout $ZPX_VERSION
 mkdir ../zp_install_cache/
