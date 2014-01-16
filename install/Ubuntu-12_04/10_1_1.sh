@@ -178,6 +178,7 @@ deb-src http://security.ubuntu.com/ubuntu $(lsb_release -sc)-security universe m
 deb-src http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc)-updates universe multiverse
 EOF
 
+apt-get update
 
 
 # Install some standard utility packages required by the installer and/or ZPX.
