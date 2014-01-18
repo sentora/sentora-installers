@@ -8,3 +8,5 @@ compillation directory
 httpd : /etc/zpanel/bin/httpd
 
 php : /etc/zpanel/bin/php
+
+not finish please dot not use
