@@ -48,10 +48,10 @@ else
 fi
 echo "Detected : $OS  $VER  $BITS"
 #warning the last version of centos and 6.5
-if [ "$OS" = "CentOs" ] && [ "$VER" = "6.4" ] || [ "$VER" = "6.5" ] ; then
+if [ "$OS" = "CentOs" ] && [ "$VER" = "6" ] || [ "$VER" = "6.1" ] || [ "$VER" = "6.2" ] || [ "$VER" = "6.3" ] || [ "$VER" = "6.4" ] || [ "$VER" = "6.5" ] ||[ "$VER" = "6.6" ]  ; then
   echo "Ok."
 else
-  echo "Sorry, this installer only supports the installation of ZPanel on CentOS 6.4."
+  echo "Sorry, this installer only supports the installation of ZPanel on CentOS 6.x."
   exit 1;
 fi
 
@@ -395,12 +395,21 @@ chkconfig proftpd on
 service httpd start
 service postfix restart
 service dovecot start
-service crond reload
-service mysqld start
+service crond start
+service mysqld restart
 service named start
 service proftpd start
 service atd start
 php /etc/zpanel/panel/bin/daemon.php
+# restart all service
+service httpd restart
+service postfix restart
+service dovecot restart
+service crond restart
+service mysqld restart
+service named restart
+service proftpd restart
+service atd restart
 
 # We'll now remove the temporary install cache.
 cd ../
