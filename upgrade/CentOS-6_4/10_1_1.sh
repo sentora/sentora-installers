@@ -4,7 +4,7 @@
 # ARCH: x32_64
 
 ZPX_VERSION=10.1.1
-ZPX_VERSION_ACTUAL="setso --show dbversion"
+ZPX_VERSION_ACTUAL=$(setso --show dbversion)
 
 # Official ZPanel Automated Upgrade Script
 # =============================================
@@ -82,8 +82,6 @@ done
 
 # Now we'll ask upgrade specific questions...
 echo -e "Please enter the version of which you'd like to upgrade ZPanel to, for example 10-1-1"
-read -e -p "Upgrade to version:" -i "10-1-1" upgradeto
-echo -e ""
 echo -e "Please provide your current MySQL root password (this can found in /etc/zpanel/panel/cnf/db.php)"
 read -esp "MySQL root password: " -i "" mysqlpassword
 echo -e ""
@@ -95,11 +93,32 @@ while true; do
 	esac
 done
 
+# Now we'll ask upgrade specific automatic detection...
+if [ "$ZPX_VERSION_ACTUAL" = "10.0.0" ] ; then
+upgradeto=10-0-1
+ZPX_VERSIONGIT=10.0.1
+fi
+
+if [ "$ZPX_VERSION_ACTUAL" = "10.0.1" ] ; then
+upgradeto=10-0-2
+ZPX_VERSIONGIT=10.0.2
+fi
+
+if [ "$ZPX_VERSION_ACTUAL" = "10.0.2" ] ; then
+upgradeto=10-1-0
+ZPX_VERSIONGIT=10.1.0
+fi
+
+if [ "$ZPX_VERSION_ACTUAL" = "10.1.0" ] ; then
+upgradeto=10-1-1
+ZPX_VERSIONGIT=10.1.1
+fi
+
 # We now clone the latest ZPX software from GitHub
 echo "Downloading ZPanel, Please wait, this may take several minutes, the installer will continue after this is complete!"
-git clone https://github.com/zpanel/zpanelx.git
+git clone -b $ZPX_VERSIONGIT https://github.com/zpanel/zpanelx.git
 cd zpanelx/
-git checkout $ZPX_VERSION
+# git checkout $ZPX_VERSIONGIT
 mkdir ../zp_install_cache/
 git checkout-index -a -f --prefix=../zp_install_cache/
 cd ../zp_install_cache/
