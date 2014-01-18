@@ -81,6 +81,7 @@ case "$1" in
 	;;
   configtest)
         $apachectl -E $config
+        ;;
   graceful)
         echo "Gracefully restarting httpd 2.4.7"
         $apachectl -k graceful
