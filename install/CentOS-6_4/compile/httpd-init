@@ -87,7 +87,7 @@ case "$1" in
         $apachectl -k graceful
         ;;
   *)
-	echo $"Usage: $prog {start|stop|restart|condrestart|reload|status|graceful|help|configtest}"
+	echo $"Usage: service httpd {start|stop|restart|condrestart|reload|status|graceful|help|configtest}"
 	exit 1
 esac
 
