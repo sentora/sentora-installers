@@ -116,9 +116,9 @@ fi
 
 # We now clone the latest ZPX software from GitHub
 echo "Downloading ZPanel, Please wait, this may take several minutes, the installer will continue after this is complete!"
-git clone -b $ZPX_VERSIONGIT https://github.com/zpanel/zpanelx.git
+git clone https://github.com/zpanel/zpanelx.git
 cd zpanelx/
-# git checkout $ZPX_VERSIONGIT
+git checkout $ZPX_VERSIONGIT
 mkdir ../zp_install_cache/
 git checkout-index -a -f --prefix=../zp_install_cache/
 cd ../zp_install_cache/
