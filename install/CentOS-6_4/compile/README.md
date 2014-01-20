@@ -17,6 +17,8 @@ libuuid 1.0.2
 
 gmp 5.1.3
 
+zlib 1.2.8
+
 db 4.8.30
 
 postgresql 9.3.2
