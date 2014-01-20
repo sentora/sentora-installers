@@ -39,6 +39,14 @@ make
 make install
 cd ..
 rm -rf libuuid*
+wget https://gmplib.org/download/gmp/gmp-5.1.3.tar.bz2
+tar -xf gmp-5.1.3.tar.bz2
+cd gmp-5.1.3
+./configure --prefix=/etc/zpanel/bin/gmp/
+make
+make install
+cd ..
+rm -rf gmp*
 wget http://pkgs.fedoraproject.org/repo/pkgs/db4/db-4.8.30.tar.gz/f80022099c5742cd179343556179aa8c/db-4.8.30.tar.gz
 tar -xf db-4.8.30.tar.gz
 cd db-4.8.30
