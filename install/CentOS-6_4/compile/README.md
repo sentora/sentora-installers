@@ -1,4 +1,4 @@
-ZPanel Installers Compile httpd 2.4.7 and php
+ZPanel Installers Compile all Dependencie and Config init file
 =================
 
 command for compile all dependencie and config init file
