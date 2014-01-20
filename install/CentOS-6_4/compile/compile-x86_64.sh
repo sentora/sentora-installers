@@ -1,5 +1,5 @@
 #/bin/bash
-cd $HOME
+cd /root
 mkdir src
 cd src
 yum -y install make automake autoconf gcc gcc++ wget
@@ -10,14 +10,14 @@ yum -y install dpkg-devel
 yum -y install ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/andnagy/RedHat_RHEL-6/$(uname -m)/checkinstall-1.6.2-20.2.$(uname -m).rpm
 yum -y remove wget
 wget http://ftp.gnu.org/gnu/wget/wget-1.15.tar.gz
-yum -y remove wget
 yum -y install gnutls-devel
 tar -xf wget-1.15.tar.gz
 cd wget-1.15
 ./configure --prefix=/etc/zpanel/bin/wget/ --with-ssl=gnutls
 make
+wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/pathwgetcompile -qO- | patch -p0
+yum -y remove wget
 make install
-ln -s /etc/zpanel/bin/wget/bin/wget /usr/bin/wget
 cd ..
 yum -y erase gnutls
 wget http://sourceforge.net/projects/expat/files/expat/2.1.0/expat-2.1.0.tar.gz
