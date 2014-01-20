@@ -1,7 +1,7 @@
 #/bin/bash
 mkdir /root/src/
 cd /root/src/
-yum -y install make automake autoconf gcc gcc++ wget
+yum -y install make automake autoconf gcc gcc++ gcc-c++ wget
 yum -y install rpm-build rpm-devel
 mkdir -p ~/rpmbuild/{SOURCES,SPECS,BUILD,RPMS,SRPMS}
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
@@ -55,6 +55,30 @@ make
 make install
 cd ..
 rm -rf zlib*
+wget http://www.openssl.org/source/openssl-1.0.0l.tar.gz
+tar -xf openssl-1.0.0l.tar.gz
+cd openssl-1.0.0l
+./config --prefix=/etc/zpanel/bin/openssl/
+make
+make install
+cd ..
+rm -rf openssl*
+rm -f /usr/bin/openssl
+ln -s /etc/zpanel/bin/openssl/bin/openssl /usr/bin/openssl
+wget http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.gz
+tar -xf boost_1_55_0.tar.gz
+cd boost_1_55_0
+./bootstrap.sh --prefix=/etc/zpanel/bin/boost/
+./b2 install --with=all
+cd ..
+rm -rf boost*
+
+
+
+
+
+
+
 wget http://pkgs.fedoraproject.org/repo/pkgs/db4/db-4.8.30.tar.gz/f80022099c5742cd179343556179aa8c/db-4.8.30.tar.gz
 tar -xf db-4.8.30.tar.gz
 cd db-4.8.30
