@@ -1,5 +1,6 @@
 #/bin/bash
-cd /root/src/apache
+mkdir /root/src/
+cd /root/src/
 yum -y install make automake autoconf gcc gcc++ wget
 yum -y install rpm-build rpm-devel
 mkdir -p ~/rpmbuild/{SOURCES,SPECS,BUILD,RPMS,SRPMS}
@@ -37,6 +38,7 @@ cd libuuid-1.0.2
 make
 make install
 cd ..
+rm -rf libuuid*
 wget http://pkgs.fedoraproject.org/repo/pkgs/db4/db-4.8.30.tar.gz/f80022099c5742cd179343556179aa8c/db-4.8.30.tar.gz
 tar -xf db-4.8.30.tar.gz
 cd db-4.8.30
@@ -44,6 +46,7 @@ cd db-4.8.30
 make
 make install
 cd ..
+rm -rf db*
 wget http://ftp.postgresql.org/pub/source/v9.3.2/postgresql-9.3.2.tar.gz
 tar -xf postgresql-9.3.2.tar.gz
 cd postgresql
@@ -51,6 +54,7 @@ cd postgresql
 make
 make install
 cd ..
+rm -rf postgresql*
 wget http://dev.mysql.com/get/Downloads/MySQL-5.6/mysql-5.6.15-linux-glibc2.5-x86_64.tar.gz
 tar -xf mysql-5.6.15-linux-glibc2.5-x86_64.tar.gz
 
