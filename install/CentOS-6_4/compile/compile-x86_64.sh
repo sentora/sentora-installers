@@ -47,6 +47,14 @@ make
 make install
 cd ..
 rm -rf gmp*
+wget http://sourceforge.net/projects/libpng/files/zlib/1.2.8/zlib-1.2.8.tar.gz
+tar -xf zlib-1.2.8.tar.gz
+cd zlib-1.2.8
+./configure --prefix=/etc/zpanel/bin/zlib/
+make
+make install
+cd ..
+rm -rf zlib*
 wget http://pkgs.fedoraproject.org/repo/pkgs/db4/db-4.8.30.tar.gz/f80022099c5742cd179343556179aa8c/db-4.8.30.tar.gz
 tar -xf db-4.8.30.tar.gz
 cd db-4.8.30
@@ -95,7 +103,6 @@ make install
 cd ../..
 rm -f configure
 ./buildconf
-#./configure --prefix=/etc/zpanel/bin/httpd --exec-prefix=/etc/zpanel/bin/httpd --enable-mods-shared="all" --enable-rewrite --enable-so --with-apr=/etc/zpanel/bin/apr/ --with-apr-util=/etc/zpanel/bin/apr-util/
 ./configure --prefix=/etc/zpanel/bin/httpd --exec-prefix=/etc/zpanel/bin/httpd --enable-mods-shared="all" --enable-rewrite --enable-so --with-apr=/etc/zpanel/bin/apr/ --with-apr-util=/etc/zpanel/bin/apr-util/
 make
 make install
