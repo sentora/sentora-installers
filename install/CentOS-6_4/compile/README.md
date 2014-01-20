@@ -21,6 +21,8 @@ zlib 1.2.8
 
 openssl 1.0.0l
 
+boost 1.55.0
+
 db 4.8.30
 
 postgresql 9.3.2
