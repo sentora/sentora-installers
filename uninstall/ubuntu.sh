@@ -3,3 +3,4 @@ apt-get -y purge mysql-server mysql-server apache2 libapache2-mod-php5 libapache
 apt-get -y autoremove
 rm -rf /etc/zpanel
 rm -rf /var/zpanel
+rm -f /root/password.txt
