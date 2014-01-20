@@ -1,5 +1,5 @@
---- /root/src/apache/origin/Makefile	2014-01-20 01:38:00.000000000 +0100
-+++ /root/src/apache/path/Makefile	2014-01-20 01:41:06.000000000 +0100
+--- /root/src/wget-1.15/Makefile.origin	2014-01-20 01:38:00.000000000 +0100
++++ /root/src/wget-1.15//Makefile	2014-01-20 01:41:06.000000000 +0100
 @@ -1622,10 +1622,11 @@
  installdirs-am:
  install: $(BUILT_SOURCES)
