@@ -27,7 +27,9 @@ cd expat-2.1.0
 ./configure --prefix=/etc/zpanel/bin/expat/
 make
 make install
+ln -s /etc/zpanel/bin/expat/bin/xmlwf /bin/xmlwf
 cd ..
+rm -rf expat*
 wget http://sourceforge.net/projects/libuuid/files/libuuid-1.0.2.tar.gz
 tar -xf libuuid-1.0.2.tar.gz
 cd libuuid-1.0.2
