@@ -1,24 +1,25 @@
 #/bin/bash
-cd /root
-mkdir src
-cd src
+cd /root/src/apache
 yum -y install make automake autoconf gcc gcc++ wget
 yum -y install rpm-build rpm-devel
+mkdir -p ~/rpmbuild/{SOURCES,SPECS,BUILD,RPMS,SRPMS}
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+setenforce 0
 yum -y install http://dl.fedoraproject.org/pub/epel/6/$(uname -m)/epel-release-6-8.noarch.rpm
 yum -y update
 yum -y install dpkg-devel
 yum -y install ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/andnagy/RedHat_RHEL-6/$(uname -m)/checkinstall-1.6.2-20.2.$(uname -m).rpm
-yum -y remove wget
 wget http://ftp.gnu.org/gnu/wget/wget-1.15.tar.gz
 yum -y install gnutls-devel
 tar -xf wget-1.15.tar.gz
 cd wget-1.15
 ./configure --prefix=/etc/zpanel/bin/wget/ --with-ssl=gnutls
 make
-wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/pathwgetcompile -qO- | patch -p0
 yum -y remove wget
 make install
+ln -s /etc/zpanel/bin/wget/bin/wget /usr/bin/wget
 cd ..
+rm -rf wget*
 yum -y erase gnutls
 wget http://sourceforge.net/projects/expat/files/expat/2.1.0/expat-2.1.0.tar.gz
 tar -xf expat-2.1.0.tar.gz
@@ -93,8 +94,6 @@ chmod +x /etc/init.d/httpd
 chkconfig --add httpd
 chkconfig httpd on
 service httpd start
-sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
-setenforce 0
 service iptables save
 service iptables stop
 service sendmail stop
