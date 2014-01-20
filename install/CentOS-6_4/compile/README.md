@@ -1,12 +1,24 @@
 ZPanel Installers Compile httpd 2.4.7 and php
 =================
 
-command for compile httpd 2.4.7 php and config init file
+command for compile all dependencie and config init file
 
 compillation directory
 
-httpd : /etc/zpanel/bin/httpd
+/etc/zpanel/bin/
 
-php : /etc/zpanel/bin/php
+include
+
+wget 1.15
+expat 2.1.0
+libuuid 1.0.2
+db 4.8.30
+postgresql 9.3.2
+mysql 5.6.15
+apr 1.5.0
+apr-util 1.5.3
+apache 2.4.7
+
+the list is not yet completed
 
 not finish please dot not use
