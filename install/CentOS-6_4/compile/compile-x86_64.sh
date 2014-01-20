@@ -72,17 +72,10 @@ cd boost_1_55_0
 ./b2 install --with=all
 cd ..
 rm -rf boost*
-
-
-
-
-
-
-
 wget http://pkgs.fedoraproject.org/repo/pkgs/db4/db-4.8.30.tar.gz/f80022099c5742cd179343556179aa8c/db-4.8.30.tar.gz
 tar -xf db-4.8.30.tar.gz
-cd db-4.8.30
-./configure --prefix=/etc/zpanel/bin/db/
+cd db-4.8.30/build_unix
+../dist/configure --prefix=/etc/zpanel/bin/db/ --enable-cxx
 make
 make install
 cd ..
