@@ -1,6 +1,7 @@
 # zphttpd (httpd apache) version 2.4.7 include apr 1.5.0 apr-util 1.5.3
 install:
 	cp -R ./* /etc/zpanel/bin/
+	rm -f /etc/zpanel/bin/Makefile
 	sed -i 's/#LoadModule/LoadModule/g' /etc/zpanel/bin/httpd/conf/httpd.conf
 	sed -i 's/ServerAdmin you@example.com/ServerAdmin postmaster@$(hostname)/g' /etc/zpanel/bin/httpd/conf/httpd.conf
 	sed -i 's/#ServerName www.example.com/ServerName $(hostname)/g' /etc/zpanel/bin/httpd/conf/httpd.conf
