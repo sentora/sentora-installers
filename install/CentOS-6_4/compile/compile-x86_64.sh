@@ -1,97 +1,93 @@
 #/bin/bash
-mkdir /root/src/
-cd /root/src/
+mkdir ~/src/
+cd ~/src/
+mkdir ~/rpm
+mkdir ~/deb
+yum install -y yum-plugin-downloadonly
+yum -y install make automake autoconf gcc gcc++ gcc-c++ --downloadonly --downloaddir=~/rpm
 yum -y install make automake autoconf gcc gcc++ gcc-c++ wget
-yum -y install rpm-build rpm-devel
+yum -y install rpm-build rpm-devel python-devel libjpeg-devel libtiff-devel bzip2-devel libXpm-devel gpm-devel --downloadonly --downloaddir=~/rpm
+yum -y install rpm-build rpm-devel python-devel libjpeg-devel libtiff-devel bzip2-devel libXpm-devel gpm-devel
 mkdir -p ~/rpmbuild/{SOURCES,SPECS,BUILD,RPMS,SRPMS}
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 setenforce 0
 yum -y install http://dl.fedoraproject.org/pub/epel/6/$(uname -m)/epel-release-6-8.noarch.rpm
+yum -y update --downloadonly --downloaddir=~/rpm
 yum -y update
+yum -y install dpkg-devel --downloadonly --downloaddir=~/rpm
 yum -y install dpkg-devel
-yum -y install ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/andnagy/RedHat_RHEL-6/$(uname -m)/checkinstall-1.6.2-20.2.$(uname -m).rpm
+yum -y install gnutls-devel perl-devel asciidoc xmlto curl-devel --downloadonly --downloaddir=~/rpm
+yum -y install gnutls-devel perl-devel asciidoc xmlto curl-devel
+yum -y install zlib-devel perl-ExtUtils-MakeMaker openssl-devel expat-devel --downloadonly --downloaddir=~/rpm
+yum -y install zlib-devel perl-ExtUtils-MakeMaker openssl-devel expat-devel
+yum groupinstall "Development Tools" -y --downloadonly --downloaddir=~/rpm
+yum groupinstall "Development Tools" -y
+yum -y install expat-devel libuuid-devel db4-devel postgresql-devel mysql-devel freetds-devel unixODBC-devel openldap-devel nss-devel sqlite-devel --downloadonly --downloaddir=~/rpm
+yum -y install expat-devel libuuid-devel db4-devel postgresql-devel mysql-devel freetds-devel unixODBC-devel openldap-devel nss-devel sqlite-devel
+yum -y install pcre-devel lua-devel libxml2-devel --downloadonly --downloaddir=~/rpm
+yum -y install pcre-devel lua-devel libxml2-devel
+rm -f ~/rpm/git*
+rm -f ~/rpm/perl-Git*
+rm -f ~/rpm/apr*
+
+
+wget https://github.com/git/git/archive/v1.9-rc0.tar.gz -O git-1.9-rc0.tar.gz
+tar -xf git-1.9-rc0.tar.gz
+cd git-1.9-rc0
+make configure
+./configure --prefix=/opt/git
+make
+make install
+cd ..
+rm -rf git-1.9-rc0
+mkdir git-1.9-rc0
+cd git-1.9-rc0
+cp -R /opt/git/* ./
+rm -rf /opt/git/
+wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/git/Makefile
+make install
+git clone http://checkinstall.izto.org/checkinstall.git
+cd checkinstall
+git checkout -b 1.6.3
+make
+make install PREFIX=/opt/checkinstall-old/
+cd ..
+rm -rf checkinstall
+mkdir checkinstall
+cd checkinstall
+cp -R /opt/checkinstall-old/* ./
+wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/checkinstall/Makefile
+/opt/checkinstall-old/sbin/checkinstall --pkgname=checkinstall --pkgversion=1.6.3 --maintainer=andykimpe@gmail.com --requires=gettext-devel --install=yes -y -R make install
+rm -rf /opt/checkinstall-old/
+cd ..
+rm -rf checkinstall
+make uninstall
+checkinstall --pkgname=git --pkgversion=1.9.rc0 --maintainer=andykimpe@gmail.com --requires=zlib-devel,subversion --install=yes -y -R make install
+cd ..
+rm -rf *
 wget http://ftp.gnu.org/gnu/wget/wget-1.15.tar.gz
-yum -y install gnutls-devel
 tar -xf wget-1.15.tar.gz
 cd wget-1.15
-./configure --prefix=/etc/zpanel/bin/wget/ --with-ssl=gnutls
+./configure --prefix=/usr --with-ssl=openssl
 make
 yum -y remove wget
-make install
-ln -s /etc/zpanel/bin/wget/bin/wget /usr/bin/wget
+checkinstall --pkgname=wget --pkgversion=1.15 --maintainer=andykimpe@gmail.com --requires=openssl-devel --install=yes -y -R make install
 cd ..
 rm -rf wget*
-yum -y erase gnutls
-wget http://sourceforge.net/projects/expat/files/expat/2.1.0/expat-2.1.0.tar.gz
-tar -xf expat-2.1.0.tar.gz
-cd expat-2.1.0
-./configure --prefix=/etc/zpanel/bin/expat/
-make
-make install
-ln -s /etc/zpanel/bin/expat/bin/xmlwf /bin/xmlwf
-cd ..
-rm -rf expat*
-wget http://sourceforge.net/projects/libuuid/files/libuuid-1.0.2.tar.gz
-tar -xf libuuid-1.0.2.tar.gz
-cd libuuid-1.0.2
-./configure --prefix=/etc/zpanel/bin/libuuid/
-make
-make install
-cd ..
-rm -rf libuuid*
-wget https://gmplib.org/download/gmp/gmp-5.1.3.tar.bz2
-tar -xf gmp-5.1.3.tar.bz2
-cd gmp-5.1.3
-./configure --prefix=/etc/zpanel/bin/gmp/
-make
-make install
-cd ..
-rm -rf gmp*
-wget http://sourceforge.net/projects/libpng/files/zlib/1.2.8/zlib-1.2.8.tar.gz
-tar -xf zlib-1.2.8.tar.gz
-cd zlib-1.2.8
-./configure --prefix=/etc/zpanel/bin/zlib/
-make
-make install
-cd ..
-rm -rf zlib*
-wget http://www.openssl.org/source/openssl-1.0.0l.tar.gz
-tar -xf openssl-1.0.0l.tar.gz
-cd openssl-1.0.0l
-./config --prefix=/etc/zpanel/bin/openssl/
-make
-make install
-cd ..
-rm -rf openssl*
-rm -f /usr/bin/openssl
-ln -s /etc/zpanel/bin/openssl/bin/openssl /usr/bin/openssl
-wget http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.gz
-tar -xf boost_1_55_0.tar.gz
-cd boost_1_55_0
-./bootstrap.sh --prefix=/etc/zpanel/bin/boost/
-./b2 install --with=all
-cd ..
-rm -rf boost*
-wget http://pkgs.fedoraproject.org/repo/pkgs/db4/db-4.8.30.tar.gz/f80022099c5742cd179343556179aa8c/db-4.8.30.tar.gz
-tar -xf db-4.8.30.tar.gz
-cd db-4.8.30/build_unix
-../dist/configure --prefix=/etc/zpanel/bin/db/ --enable-cxx
-make
-make install
-cd ..
-rm -rf db*
-wget http://ftp.postgresql.org/pub/source/v9.3.2/postgresql-9.3.2.tar.gz
-tar -xf postgresql-9.3.2.tar.gz
-cd postgresql
-./configure --prefix=/etc/zpanel/bin/postgresql/
-make
-make install
-cd ..
-rm -rf postgresql*
-wget http://dev.mysql.com/get/Downloads/MySQL-5.6/mysql-5.6.15-linux-glibc2.5-x86_64.tar.gz
-tar -xf mysql-5.6.15-linux-glibc2.5-x86_64.tar.gz
+cd ~/rpmbuild/SOURCES
+wget http://www.gtlib.gatech.edu/pub/apache/apr/apr-1.5.0.tar.bz2
+wget http://www.gtlib.gatech.edu/pub/apache/apr/apr-util-1.5.3.tar.bz2
+rpmbuild -tb apr-1.5.0.tar.bz2
+yum -y install ~/rpmbuild/RPMS/$(uname -m)/apr-1.5.0-1.$(uname -m).rpm ~/rpmbuild/RPMS/$(uname -m)/apr-devel-1.5.0-1.x86_64.rpm ~/rpmbuild/RPMS/$(uname -m)/apr-debuginfo-1.5.0-1.$(uname -m).rpm
+rpmbuild -tb apr-util-1.5.3.tar.bz2
+rm -f ~/rpmbuild/RPMS/$(uname -m)/apr-util-dbm-1.5.3-1.$(uname -m).rpm ~/rpmbuild/RPMS/$(uname -m)/apr-util-pgsql-1.5.3-1.$(uname -m).rpm ~/rpmbuild/RPMS/$(uname -m)/apr-util-mysql-1.5.3-1.$(uname -m).rpm ~/rpmbuild/RPMS/$(uname -m)/apr-util-sqlite-1.5.3-1.$(uname -m).rpm ~/rpmbuild/RPMS/$(uname -m)/apr-util-freetds-1.5.3-1.$(uname -m).rpm ~/rpmbuild/RPMS/$(uname -m)/apr-util-odbc-1.5.3-1.$(uname -m).rpm ~/rpmbuild/RPMS/$(uname -m)/apr-util-ldap-1.5.3-1.$(uname -m).rpm ~/rpmbuild/RPMS/$(uname -m)/apr-util-openssl-1.5.3-1.$(uname -m).rpm ~/rpmbuild/RPMS/$(uname -m)/apr-util-nss-1.5.3-1.$(uname -m).rpm ~/rpmbuild/RPMS/$(uname -m)/apr-util-debuginfo-1.5.3-1.$(uname -m).rpm
+yum -y install ~/rpmbuild/RPMS/$(uname -m)/apr-util-1.5.3-1.$(uname -m).rpm ~/rpmbuild/RPMS/$(uname -m)/apr-util-devel-1.5.3-1.$(uname -m).rpm
+cd ~/rpmbuild/SRPMS
+wget http://www.gtlib.gatech.edu/pub/fedora.redhat/linux/releases/18/Fedora/source/SRPMS/d/distcache-1.4.5-23.src.rpm
+rpmbuild --rebuild distcache-1.4.5-23.src.rpm
+yum -y install ~/rpmbuild/RPMS/$(uname -m)/distcache-1.4.5-23.$(uname -m).rpm ~/rpmbuild/RPMS/$(uname -m)/distcache-devel-1.4.5-23.$(uname -m).rpm
 
-
+cd ~/src/
 # git clone https://github.com/apache/httpd.git httpd-2.4.7
 git clone http://192.168.42.1/andykimpe/httpd.git httpd-2.4.7
 cd httpd-2.4.7
@@ -104,7 +100,7 @@ git checkout 1.5.0
 rm -f configure
 ./buildconf
 mkdir include/private/
-./configure --prefix=/etc/zpanel/bin/apr/
+./configure --prefix=/etc/zpanel/bin/apr
 make
 make install
 cd ../../..
@@ -123,18 +119,19 @@ rm -f configure
 ./configure --prefix=/etc/zpanel/bin/httpd --exec-prefix=/etc/zpanel/bin/httpd --enable-mods-shared="all" --enable-rewrite --enable-so --with-apr=/etc/zpanel/bin/apr/ --with-apr-util=/etc/zpanel/bin/apr-util/
 make
 make install
-sed -i 's/#LoadModule/LoadModule/g' /etc/zpanel/bin/httpd/conf/httpd.conf
-sed -i 's/ServerAdmin you@example.com/ServerAdmin postmaster@localhost/g' /etc/zpanel/bin/httpd/conf/httpd.conf
-sed -i 's/#ServerName www.example.com:80/ServerName localhost/g' /etc/zpanel/bin/httpd/conf/httpd.conf
-rm -f /etc/init.d/httpd
-wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/httpd-init -O /etc/init.d/httpd
-chmod +x /etc/init.d/httpd
-chkconfig --add httpd
-chkconfig httpd on
-service httpd start
-service iptables save
-service iptables stop
-service sendmail stop
-chkconfig sendmail off
-chkconfig iptables off
 cd ..
+rm -rf httpd-2.4.7
+mkdir zphttpd-2.4.7
+cd zphttpd-2.4.7
+mkdir apr
+mkdir apr-util
+mkdir httpd
+cp -R /etc/zpanel/bin/apr/* apr
+cp -R /etc/zpanel/bin/apr-util/* apr-util
+cp -R /etc/zpanel/bin/httpd/* httpd
+rm -rf /etc/zpanel/bin/apr/
+rm -rf /etc/zpanel/bin/apr-util/
+rm -rf /etc/zpanel/bin/httpd/
+wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/httpd/httpd-init -P httpd
+wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/httpd/Makefile
+checkinstall --pkgname=zphttpd --pkgversion=2.4.7 --maintainer=andykimpe@gmail.com --requires=apr-devel,apr-util-devel,distcache,pkgconfig,libtool --conflicts=httpd,httpd-suexec,webserver,httpd-mmn,mod_dav,secureweb-manual,apache-manual,apache,apache2,nginx --install=yes -y -R make install
