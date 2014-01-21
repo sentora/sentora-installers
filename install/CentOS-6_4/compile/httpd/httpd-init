@@ -51,6 +51,7 @@ start() {
 stop() {
         echo "Stopping httpd 2.4.7"
         $apachectl -k stop
+        sleep 15
 }
 reload() {
         echo -n "Reloading httpd 2.4.7"
