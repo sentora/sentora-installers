@@ -33,6 +33,7 @@ make
 rm -rf $RPM_BUILD_ROOT/%{installdir}
 mkdir -p $RPM_BUILD_ROOT/%{installdir}
 make install DESTDIR=$RPM_BUILD_ROOT
+make install
 cd ../..
 git clone http://192.168.42.1/andykimpe/apr-util.git srclib/apr-util
 cd srclib/apr-util
@@ -42,6 +43,7 @@ rm -f configure
 ./configure --prefix=%{installdir}/apr-util/  --with-apr=%{installdir}/apr/
 make
 make install DESTDIR=$RPM_BUILD_ROOT
+make install
 cd ..
 rm -f configure
 ./buildconf
@@ -49,7 +51,8 @@ rm -f configure
 make
 %install
 make install DESTDIR=$RPM_BUILD_ROOT
-
+rm -rf /etc/zpanel/bin/apr
+rm -rf /etc/zpanel/bin/apr-util
 
 %post
 
