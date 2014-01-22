@@ -14,7 +14,7 @@
 
 <code>createrepo --update ./</code>
 
-#Install 
+#Install (just update lol)
 
 <code>yum -y update</code>
 
