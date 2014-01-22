@@ -6,7 +6,7 @@
 
 <code>-P ~/rpmbuild/SPECS/</code>
 
-<code>rpmbuild -ba wget.spec</code>
+<code>rpmbuild -ba ~/rpmbuild/SPECS/wget.spec</code>
 
 #Regenerate repo
 
