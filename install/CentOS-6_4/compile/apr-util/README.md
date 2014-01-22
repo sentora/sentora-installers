@@ -24,9 +24,7 @@
 
 #Regenerate repo
 
-<code>cd $HOME/rpmbuild/RPMS/$(uname -m)</code>
-
-<code>createrepo --update ./</code>
+<code>createrepo --update $HOME/rpmbuild/RPMS/$(uname -m)</code>
 
 #Install
 
