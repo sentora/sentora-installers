@@ -1,6 +1,6 @@
 #Create rpm for git enter command
 
-<code>mkdir -p ~/rpmbuild/{SOURCES,SPECS,BUILD,RPMS,SRPMS}</code>
+<code>mkdir -p ~/rpmbuild/{SOURCES,SPECS,BUILD,RPMS/$(uname -m),SRPMS}</code>
 
 <code>yum install -y yum-plugin-downloadonly</code>
 
