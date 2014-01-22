@@ -7,7 +7,7 @@ compillation directory
 
 /etc/zpanel/bin/
 
-part 1 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/zpgit" target="_black">zpgit</a> git 1.9-rc0 for zpanel
+part 1 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/git" target="_black">git</a> git 1.9-rc0 for zpanel
 
 part 2 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/wget" target="_black">wget</a> wget 1.15
 
