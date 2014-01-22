@@ -1,4 +1,4 @@
-create rpm for git enter command
+#create rpm for git enter command
 
 <code>yum -y install rpm-build rpm-devel wget openssl-devel zlib-devel perl-devel</code>
 
@@ -11,3 +11,7 @@ create rpm for git enter command
 <code>wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/git/git.spec -O ~/rpmbuild/SPECS/git.spec</code>
 
 <code>rpmbuild -ba ~/rpmbuild/SPECS/git.spec</code>
+
+# install
+
+<code>yum -y localinstall ~/rpmbuild/RPMS/$(uname -m)/git-1.9.rc0-1.$(uname -m).rpm /root/rpmbuild/RPMS/$(uname -m)/git-debuginfo-1.9.rc0-1.$(uname -m).rpm</code>
