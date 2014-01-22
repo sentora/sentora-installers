@@ -28,23 +28,49 @@
 
 <code>createrepo ./</code>
 
-<code>echo # CentOS-Media.repo > /etc/yum.repos.d/CentOS-Media.repo</code>
+change CentOS-Media.repo
 
-<code>echo # yum --enablerepo=c6-media [command] >> /etc/yum.repos.d/CentOS-Media.repo</code>
+<code>vi /etc/yum.repos.d/CentOS-Media.repo</code>
 
-<code>echo #  yum --disablerepo=\* --enablerepo=c6-media [command] >> /etc/yum.repos.d/CentOS-Media.repo</code>
+replace
 
-<code>echo #  [c6-media] >> /etc/yum.repos.d/CentOS-Media.repo</code>
+baseurl=file:///media/CentOS/
 
-<code>echo #  name=CentOS-6 - Media >> /etc/yum.repos.d/CentOS-Media.repo</code>
+        file:///media/cdrom/
 
-<code>echo #  baseurl=file:///root/rpmbuild/RPMS/$basearch >> /etc/yum.repos.d/CentOS-Media.repo</code>
+        file:///media/cdrecorder/
+        
+by
 
-<code>echo #  gpgcheck=0 >> /etc/yum.repos.d/CentOS-Media.repo</code>
+baseurl=file:///root/rpmbuild/RPMS/$basearch
 
-<code>echo #  enabled=1 >> /etc/yum.repos.d/CentOS-Media.repo</code>
+or not root
 
-<code>echo #  priority=1 >> /etc/yum.repos.d/CentOS-Media.repo</code>
+baseurl=file:///home/yourname/rpmbuild/RPMS/$basearch
+
+replace
+
+gpgcheck=1
+
+by
+
+gpgcheck=0
+
+replace
+
+enabled=0
+
+by
+
+enabled=1
+
+add
+
+priority=1
+
+esc
+
+:wq
 
 <code>yum -y install yum-plugin-priorities</code>
 
