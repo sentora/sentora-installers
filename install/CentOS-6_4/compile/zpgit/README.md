@@ -14,6 +14,12 @@
 
 <code>yum -y groupinstall "Development Tools" --downloadonly --downloaddir=~/rpmbuild/RPMS/$(uname -m)</code>
 
+<code>rm -f ~/rpmbuild/RPMS/$(uname -m)/apr*</code>
+
+<code>rm -f ~/rpmbuild/RPMS/$(uname -m)/git*</code>
+
+<code>rm -f ~/rpmbuild/RPMS/$(uname -m)/perl-Git*</code>
+
 <code>yum -y groupinstall "Development Tools"</code>
 
 <code>wget https://github.com/git/git/archive/v1.9-rc0.tar.gz -O ~/rpmbuild/SOURCES/zpgit-1.9-rc0.tar.gz</code>
