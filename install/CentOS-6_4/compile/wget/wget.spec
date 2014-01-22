@@ -30,4 +30,4 @@ make install DESTDIR=$RPM_BUILD_ROOT
 
 %files
 %defattr(777,root,root)
-/%{installdir}/usr/*
+/%{installdir}/*
