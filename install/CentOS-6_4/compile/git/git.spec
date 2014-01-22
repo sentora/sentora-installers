@@ -1,18 +1,20 @@
 %define installdir  /etc/zpanel/bin/git
 
 Summary: 		packet git for zpanel compile by andykimpe
-Name: 			git
+Name: 			zppgit
 Version: 		1.9.rc0
 Release: 		1
 License:		GPL
 Group: 			Applications/Internet
 Packager: 		andykimpe andykimpe@gmail.com
-Source0: 		git-1.9-rc0.tar.gz
+Source0: 		zpgit-1.9-rc0.tar.gz
 Url: 			http://www.zpanelcp.com/
 BuildRoot: 		%{_tmppath}/%{name}-buildroot
+Requires: openssl-devel, perl-devel
 
 %description
 packet git for zpanel compile by andykimpe
+Obsoletes: git
 
 %prep
 
