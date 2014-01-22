@@ -1,4 +1,3 @@
-dot not use no finish
 %define installdir /etc/zpanel/bin/
 
 Summary:                 packet httpd apache for zpanel compile by andykimpe
@@ -18,12 +17,12 @@ packet httpd apache for zpanel compile by andykimpe
 
 %prep
 
-%setup -n httpd-2.4.7
+%setup -n httpd-%{version}
 
 %build
 #here add git apr apr-util and finish spec file
-git clone https://github.com/apache/apr.git /srclib/apr
-cd /srclib/apr
+git clone https://github.com/apache/apr.git $HOME/rpmbuild/BUILD/httpd-%{version}/srclib/apr
+cd $HOME/rpmbuild/BUILD/httpd-%{version}/srclib/apr
 git checkout 1.5.0
 rm -f configure
 ./buildconf
@@ -34,9 +33,9 @@ rm -rf $RPM_BUILD_ROOT/%{installdir}
 mkdir -p $RPM_BUILD_ROOT/%{installdir}
 make install DESTDIR=$RPM_BUILD_ROOT
 make install
-cd ../..
-git clone https://github.com/apache/apr-util.git srclib/apr-util
-cd srclib/apr-util
+cd $HOME/rpmbuild/BUILD/httpd-%{version}
+git clone https://github.com/apache/apr-util.git $HOME/rpmbuild/BUILD/httpd-%{version}/srclib/apr-util
+cd $HOME/rpmbuild/BUILD/httpd-%{version}/srclib/apr-util
 git checkout 1.5.3
 rm -f configure
 ./buildconf
@@ -44,7 +43,7 @@ rm -f configure
 make
 make install DESTDIR=$RPM_BUILD_ROOT
 make install
-cd ..
+cd $HOME/rpmbuild/BUILD/httpd-%{version}/
 rm -f configure
 ./buildconf
 ./configure --prefix=%{installdir}/httpd --exec-prefix=%{installdir}/httpd --enable-mods-shared="all" --enable-rewrite --enable-so --with-apr=%{installdir}/apr/ --with-apr-util=%{installdir}/apr-util/
