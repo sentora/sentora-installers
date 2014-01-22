@@ -20,7 +20,6 @@ packet wget compile by andykimpe
 %setup -n wget-1.15
 
 %build
-make configure
 ./configure --prefix=%{installdir}
 make
 
