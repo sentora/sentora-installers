@@ -28,9 +28,29 @@
 
 <code>createrepo ./</code>
 
-<code>cat > /etc/yum.repos.d/CentOS-Media.repo <<EOF </code>
+<code>echo # CentOS-Media.repo > /etc/yum.repos.d/CentOS-Media.repo</code>
 
-<code>yum -y remove git</code>
+<code>echo # yum --enablerepo=c6-media [command] >> /etc/yum.repos.d/CentOS-Media.repo</code>
+
+<code>echo #  yum --disablerepo=\* --enablerepo=c6-media [command] >> /etc/yum.repos.d/CentOS-Media.repo</code>
+
+<code>echo #  [c6-media] >> /etc/yum.repos.d/CentOS-Media.repo</code>
+
+<code>echo #  name=CentOS-6 - Media >> /etc/yum.repos.d/CentOS-Media.repo</code>
+
+<code>echo #  baseurl=file:///root/rpmbuild/RPMS/$basearch >> /etc/yum.repos.d/CentOS-Media.repo</code>
+
+<code>echo #  gpgcheck=0 >> /etc/yum.repos.d/CentOS-Media.repo</code>
+
+<code>echo #  enabled=1 >> /etc/yum.repos.d/CentOS-Media.repo</code>
+
+<code>echo #  priority=1 >> /etc/yum.repos.d/CentOS-Media.repo</code>
+
+<code>yum -y install yum-plugin-priorities</code>
+
+<code>yum -y update</code>
+
+<code>yum replace git --replace-with=zpgit</code>
 
 <code>yum -y localinstall ~/rpmbuild/RPMS/$(uname -m)/zpgit-1.9.rc0-1.$(uname -m).rpm \ </code>
 
