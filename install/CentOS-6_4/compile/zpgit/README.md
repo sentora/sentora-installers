@@ -10,9 +10,9 @@
 
 <code>wget https://github.com/git/git/archive/v1.9-rc0.tar.gz -O ~/rpmbuild/SOURCES/zpgit-1.9-rc0.tar.gz</code>
 
-<code>wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/zpgit/zpgit.spec -O ~/rpmbuild/SPECS/git.spec</code>
+<code>wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/zpgit/zpgit.spec -O ~/rpmbuild/SPECS/zpgit.spec</code>
 
-<code>rpmbuild -ba ~/rpmbuild/SPECS/git.spec</code>
+<code>rpmbuild -ba ~/rpmbuild/SPECS/zpgit.spec</code>
 
 # install
 
