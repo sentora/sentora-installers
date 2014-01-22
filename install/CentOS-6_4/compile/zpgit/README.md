@@ -66,6 +66,8 @@ add
 
 priority=1
 
+protect=1
+
 esc
 
 :wq
