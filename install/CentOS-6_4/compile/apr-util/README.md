@@ -14,6 +14,8 @@
 
 <code>yum -y install openldap-devel nss-devel --downloadonly --downloaddir=~/rpmbuild/RPMS/$(uname -m)</code>
 
+<code>yum -y install openldap-devel nss-devel</code>
+
 <code>rpmbuild -tb apr-util-1.5.3.tar.bz2</code>
 
 #Regenerate repo
