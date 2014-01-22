@@ -8,7 +8,7 @@
 
 <code>yum -y update</code>
 
-<code>yum -y install wget openssl-devel zlib-devel perl-devel --downloadonly --downloaddir=~/rpmbuild/RPMS/$(uname -m)</code>
+<code>yum -y install openssl-devel zlib-devel perl-devel --downloadonly --downloaddir=~/rpmbuild/RPMS/$(uname -m)</code>
 
 <code>yum -y install wget openssl-devel zlib-devel perl-devel</code>
 
