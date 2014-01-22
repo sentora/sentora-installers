@@ -50,7 +50,7 @@ by
 
 baseurl=file:///root/rpmbuild/RPMS/$basearch
 
-or not root
+or no root
 
 baseurl=file:///home/yourname/rpmbuild/RPMS/$basearch
 
@@ -80,7 +80,11 @@ esc
 
 :wq
 
+<code>yum -y install yum-plugin-priorities --downloadonly --downloaddir=~/rpmbuild/RPMS/$(uname -m)</code>
+
 <code>yum -y install yum-plugin-priorities</code>
+
+<code>yum -y update --downloadonly --downloaddir=~/rpmbuild/RPMS/$(uname -m)</code>
 
 <code>yum -y update</code>
 
