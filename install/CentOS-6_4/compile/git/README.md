@@ -2,11 +2,11 @@
 
 <code>yum -y update</code>
 
-<code>yum -y install rpm-build rpm-devel wget openssl-devel zlib-devel perl-devel</code>
-
-<code>mkdir -p ~/rpmbuild/{SOURCES,SPECS,BUILD,RPMS,SRPMS}</code>
+<code>yum -y install wget openssl-devel zlib-devel perl-devel</code>
 
 <code>yum -y groupinstall "Development Tools"</code>
+
+<code>mkdir -p ~/rpmbuild/{SOURCES,SPECS,BUILD,RPMS,SRPMS}</code>
 
 <code>wget https://github.com/git/git/archive/v1.9-rc0.tar.gz -O ~/rpmbuild/SOURCES/git-1.9-rc0.tar.gz</code>
 
