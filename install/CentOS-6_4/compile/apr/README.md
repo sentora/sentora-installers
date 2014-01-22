@@ -12,6 +12,6 @@
 
 <code>createrepo --update ./</code>
 
-#Install (just update lol)
+#Install
 
-<code>yum -y update</code>
+<code>yum -y install apr-devel</code>
