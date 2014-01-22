@@ -44,9 +44,7 @@
 
 <code>yum -y install createrepo</code>
 
-<code>cd ~/rpmbuild/RPMS/$(uname -m)</code>
-
-<code>createrepo ./</code>
+<code>createrepo ~/rpmbuild/RPMS/$(uname -m)</code>
 
 change CentOS-Media.repo
 
