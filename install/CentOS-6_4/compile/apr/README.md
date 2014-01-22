@@ -2,13 +2,13 @@
 
 <code>wget http://www.gtlib.gatech.edu/pub/apache/apr/apr-1.5.0.tar.bz2 \ </code>
 
-<code>-P ~/rpmbuild/SOURCES</code>
+<code>-P $HOME/rpmbuild/SOURCES</code>
 
-<code>rpmbuild -tb ~/rpmbuild/SOURCES/apr-1.5.0.tar.bz2</code>
+<code>rpmbuild -tb $HOME/rpmbuild/SOURCES/apr-1.5.0.tar.bz2</code>
 
 #Regenerate repo
 
-<code>createrepo --update ~/rpmbuild/RPMS/$(uname -m)</code>
+<code>createrepo --update $HOME/rpmbuild/RPMS/$(uname -m)</code>
 
 #Install
 
