@@ -22,7 +22,7 @@ Obsoletes: git
 
 %build
 make configure
-./configure --prefix=%{installdir}
+./configure --prefix=%{installdir} --with-ssl=openssl
 make
 
 %install
