@@ -19,3 +19,5 @@
 <code>sed -i 's/enabled=0/enabled=1/g' "/etc/yum.repos.d/CentOS-Media.repo"</code>
 
 <code>yum -y update</code>
+
+<code>yum -y install apr-devel</code>
