@@ -18,6 +18,18 @@
 
 # install
 
+<code>yum -y install http://mirror.webtatic.com/yum/el6/latest.rpm</code>
+
+<code>yum -y update</code>
+
+<code>yum-plugin-replace createrepo</code>
+
+<code>cd ~/rpmbuild/RPMS/$(uname -m)</code>
+
+<code>createrepo ./</code>
+
+<code>cat > /etc/yum.repos.d/CentOS-Media.repo <<EOF</code>
+
 <code>yum -y remove git</code>
 
 <code>yum -y localinstall ~/rpmbuild/RPMS/$(uname -m)/zpgit-1.9.rc0-1.$(uname -m).rpm \ </code>
