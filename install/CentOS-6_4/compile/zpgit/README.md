@@ -20,9 +20,9 @@
 
 <code>yum -y remove git</code>
 
-<code>yum -y localinstall ~/rpmbuild/RPMS/$(uname -m)/git-1.9.rc0-1.$(uname -m).rpm \ </code>
+<code>yum -y localinstall ~/rpmbuild/RPMS/$(uname -m)/zpgit-1.9.rc0-1.$(uname -m).rpm \ </code>
 
-<code>/root/rpmbuild/RPMS/$(uname -m)/git-debuginfo-1.9.rc0-1.$(uname -m).rpm</code>
+<code>/root/rpmbuild/RPMS/$(uname -m)/zpgit-debuginfo-1.9.rc0-1.$(uname -m).rpm</code>
 
 #Result
 
