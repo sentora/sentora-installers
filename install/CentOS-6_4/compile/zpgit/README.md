@@ -18,11 +18,9 @@
 
 # install
 
-<code>yum -y install http://mirror.webtatic.com/yum/el6/latest.rpm</code>
-
 <code>yum -y update</code>
 
-<code>yum -y install yum-plugin-replace createrepo</code>
+<code>yum -y install createrepo</code>
 
 <code>cd ~/rpmbuild/RPMS/$(uname -m)</code>
 
@@ -76,7 +74,9 @@ esc
 
 <code>yum -y update</code>
 
-<code>yum -y replace git --replace-with=zpgit</code>
+<code>yum -y remove git</code>
+
+<code>yum -y install zpgit</code>
 
 #Result
 
