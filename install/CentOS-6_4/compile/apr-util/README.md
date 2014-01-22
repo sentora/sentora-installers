@@ -30,4 +30,4 @@
 
 #Install
 
-<code>yum -y install apr-devel</code>
+<code>yum -y install apr-util-devel</code>
