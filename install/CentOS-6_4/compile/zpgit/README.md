@@ -28,7 +28,7 @@
 
 <code>createrepo ./</code>
 
-<code>cat > /etc/yum.repos.d/CentOS-Media.repo <<EOF</code>
+<code>cat > /etc/yum.repos.d/CentOS-Media.repo <<EOF </code>
 
 <code>yum -y remove git</code>
 
