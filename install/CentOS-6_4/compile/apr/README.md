@@ -1,17 +1,23 @@
 #Create rpm for apr
 
-<code>cd ~/rpmbuild/SOURCES</code>
+<code>wget http://www.gtlib.gatech.edu/pub/apache/apr/apr-1.5.0.tar.bz2 \ </code>
 
-<code>wget http://www.gtlib.gatech.edu/pub/apache/apr/apr-1.5.0.tar.bz2</code>
+<code>-P ~/rpmbuild/SOURCES</code>
 
-<code>rpmbuild -tb apr-1.5.0.tar.bz2</code>
+<code>rpmbuild -tb ~/rpmbuild/SOURCES/apr-1.5.0.tar.bz2</code>
 
 #Regenerate repo
 
-<code>cd ~/rpmbuild/RPMS/$(uname -m)</code>
-
-<code>createrepo --update ./</code>
+<code>createrepo --update ~/rpmbuild/RPMS/$(uname -m)</code>
 
 #Install
+
+<code>sed -i 's/enabled=1/enabled=0/g' "/etc/yum.repos.d/CentOS-Media.repo"</code>
+
+<code>yum -y update</code>
+
+<code>sed -i 's/enabled=0/enabled=1/g' "/etc/yum.repos.d/CentOS-Media.repo"</code>
+
+<code>yum -y update</code>
 
 <code>yum -y install apr-devel</code>
