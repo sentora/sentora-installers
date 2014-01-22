@@ -19,3 +19,10 @@
 <code>yum -y localinstall ~/rpmbuild/RPMS/$(uname -m)/git-1.9.rc0-1.$(uname -m).rpm \ </code>
 
 <code>/root/rpmbuild/RPMS/$(uname -m)/git-debuginfo-1.9.rc0-1.$(uname -m).rpm</code>
+
+#Result
+
+[root@vps1 ~]# git --version
+git version 1.9-rc0
+[root@vps1 ~]#
+
