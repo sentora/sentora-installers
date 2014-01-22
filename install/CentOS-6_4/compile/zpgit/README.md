@@ -1,10 +1,12 @@
 #Create rpm for git enter command
 
-<code>yum -y update</code>
-
 <code>mkdir -p ~/rpmbuild/{SOURCES,SPECS,BUILD,RPMS,SRPMS}</code>
 
 <code>yum install -y yum-plugin-downloadonly</code>
+
+<code>yum -y update --downloadonly --downloaddir=~/rpmbuild/RPMS/$(uname -m)</code>
+
+<code>yum -y update</code>
 
 <code>yum -y install wget openssl-devel zlib-devel perl-devel --downloadonly --downloaddir=~/rpmbuild/RPMS/$(uname -m)</code>
 
