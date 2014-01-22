@@ -22,7 +22,7 @@
 
 <code>yum -y update</code>
 
-<code>yum-plugin-replace createrepo</code>
+<code>yum -y install yum-plugin-replace createrepo</code>
 
 <code>cd ~/rpmbuild/RPMS/$(uname -m)</code>
 
