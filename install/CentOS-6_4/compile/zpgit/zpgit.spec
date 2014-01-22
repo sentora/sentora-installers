@@ -1,7 +1,7 @@
 %define installdir  /etc/zpanel/bin/git
 
 Summary: 		packet git for zpanel compile by andykimpe
-Name: 			zppgit
+Name: 			zpgit
 Version: 		1.9.rc0
 Release: 		1
 License:		GPL
