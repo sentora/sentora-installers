@@ -1,4 +1,4 @@
-#create rpm for git enter command
+#Create rpm for git enter command
 
 <code>yum -y install rpm-build rpm-devel wget openssl-devel zlib-devel perl-devel</code>
 
@@ -23,6 +23,9 @@
 #Result
 
 [root@vps1 ~]# git --version
+
 git version 1.9-rc0
+
 [root@vps1 ~]#
+
 
