@@ -20,7 +20,7 @@ packet wget compile by andykimpe
 %setup -n wget-1.15
 
 %build
-./configure --prefix=%{installdir}
+./configure --prefix=%{installdir} --with-ssl=openssl
 make
 
 %install
