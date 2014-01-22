@@ -11,7 +11,7 @@ Packager:                andykimpe andykimpe@gmail.com
 Source0:                 httpd-2.4.7.tar.bz2
 Url:                     http://www.zpanelcp.com/
 BuildRoot:               %{_tmppath}/%{name}-buildroot
-Requires: apr-devel, apr-util-devel, distcache-devel, zpgit
+Requires: apr-devel, apr-util-devel, distcache-devel, git
 
 %description
 packet httpd apache for zpanel compile by andykimpe
