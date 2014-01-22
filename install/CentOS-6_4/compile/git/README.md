@@ -34,7 +34,7 @@
 
 <code>rpmbuild -ba ~/rpmbuild/SPECS/git.spec</code>
 
-# install
+#Create repo
 
 <code>yum -y install createrepo --downloadonly --downloaddir=~/rpmbuild/RPMS/$(uname -m)</code>
 
@@ -91,6 +91,8 @@ esc
 <code>yum -y install yum-plugin-priorities --downloadonly --downloaddir=~/rpmbuild/RPMS/$(uname -m)</code>
 
 <code>yum -y install yum-plugin-priorities</code>
+
+#Install (just update lol)
 
 <code>yum -y update --downloadonly --downloaddir=~/rpmbuild/RPMS/$(uname -m)</code>
 
