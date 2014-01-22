@@ -10,7 +10,7 @@
 
 <code>yum -y install mysql-devel sqlite-devel freetds-devel unixODBC-devel --downloadonly --downloaddir=~/rpmbuild/RPMS/$(uname -m)</code>
 
-<code>yum -y install sqlite-devel freetds-devel unixODBC-devel</code>
+<code>yum -y install mysql-devel sqlite-devel freetds-devel unixODBC-devel</code>
 
 <code>yum -y install openldap-devel nss-devel --downloadonly --downloaddir=~/rpmbuild/RPMS/$(uname -m)</code>
 
