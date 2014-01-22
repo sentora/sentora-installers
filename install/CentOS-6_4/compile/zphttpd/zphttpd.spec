@@ -35,7 +35,7 @@ mkdir -p $RPM_BUILD_ROOT/%{installdir}
 make install DESTDIR=$RPM_BUILD_ROOT
 make install
 cd ../..
-git clone http://192.168.42.1/andykimpe/apr-util.git srclib/apr-util
+git clone https://github.com/apache/apr-util.git srclib/apr-util
 cd srclib/apr-util
 git checkout 1.5.3
 rm -f configure
