@@ -32,7 +32,11 @@
 
 # install
 
+<code>yum -y update --downloadonly --downloaddir=~/rpmbuild/RPMS/$(uname -m)</code>
+
 <code>yum -y update</code>
+
+<code>yum -y install createrepo --downloadonly --downloaddir=~/rpmbuild/RPMS/$(uname -m)</code>
 
 <code>yum -y install createrepo</code>
 
