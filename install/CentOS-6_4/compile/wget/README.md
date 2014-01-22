@@ -16,5 +16,5 @@
 
 #Install 
 
-<code>yum -y install wget-1.15-1.x86_64.rpm</code>
+<code>yum -y update</code>
 
