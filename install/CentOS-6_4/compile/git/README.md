@@ -1,6 +1,6 @@
 create rpm for git enter command
 
-<code>yum -y install rpm-build rpm-devel wget</code>
+<code>yum -y install rpm-build rpm-devel wget openssl-devel</code>
 
 <code>mkdir -p ~/rpmbuild/{SOURCES,SPECS,BUILD,RPMS,SRPMS}</code>
 
