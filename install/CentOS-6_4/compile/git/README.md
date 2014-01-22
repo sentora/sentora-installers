@@ -22,6 +22,10 @@
 
 <code>yum -y groupinstall "Development Tools"</code>
 
+<code>yum -y install curl-devel expat-devel xmlto asciidoc --downloadonly --downloaddir=~/rpmbuild/RPMS/$(uname -m)</code>
+
+<code>yum -y install curl-devel expat-devel xmlto asciidoc</code>
+
 <code>wget https://github.com/git/git/archive/v1.9-rc0.tar.gz -O ~/rpmbuild/SOURCES/git-1.9-rc0.tar.gz</code>
 
 <code>cd ~/rpmbuild/SPECS/</code> 
