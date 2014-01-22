@@ -76,11 +76,7 @@ esc
 
 <code>yum -y update</code>
 
-<code>yum replace git --replace-with=zpgit</code>
-
-<code>yum -y localinstall ~/rpmbuild/RPMS/$(uname -m)/zpgit-1.9.rc0-1.$(uname -m).rpm \ </code>
-
-<code>/root/rpmbuild/RPMS/$(uname -m)/zpgit-debuginfo-1.9.rc0-1.$(uname -m).rpm</code>
+<code>yum -y replace git --replace-with=zpgit</code>
 
 #Result
 
