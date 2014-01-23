@@ -35,11 +35,11 @@ make install DESTDIR=$RPM_BUILD_ROOT
 # here add postinstall apache
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 setenforce 0
-sed -i 's/#LoadModule/LoadModule/g' %{installdir}/httpd/conf/httpd.conf
-sed -i 's/ServerAdmin you@example.com/ServerAdmin postmaster@$(hostname)/g' %{installdir}/httpd/conf/httpd.conf
-sed -i 's/#ServerName www.example.com/ServerName $(hostname)/g' %{installdir}/httpd/conf/httpd.conf
+sed -i 's/#LoadModule/LoadModule/g' %{installdir}/conf/httpd.conf
+sed -i 's/ServerAdmin you@example.com/ServerAdmin postmaster@$(hostname)/g' %{installdir}/conf/httpd.conf
+sed -i 's/#ServerName www.example.com/ServerName $(hostname)/g' %{installdir}/conf/httpd.conf
 rm -f /etc/init.d/httpd
-mv %{installdir}/httpd/zphttpd-init /etc/init.d/httpd
+mv %{installdir}/zphttpd-init /etc/init.d/httpd
 chmod +x /etc/init.d/httpd
 chkconfig --add httpd
 chkconfig httpd on
@@ -53,7 +53,7 @@ chkconfig iptables off
 # here add postuninstall
 chkconfig --del httpd
 rm -f /etc/init.d/httpd
-%{installdir}/httpd/bin/apachectl -k stop
+%{installdir}/bin/apachectl -k stop
 
 %files
 %defattr(777,root,root)
