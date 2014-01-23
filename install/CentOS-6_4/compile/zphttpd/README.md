@@ -40,3 +40,9 @@ Create rpm for zphttpd
 <code>yum -y update</code>
 
 <code>yum -y install zphttpd</code>
+
+#Info
+
+service auto starting
+
+service zphttpd help for information
