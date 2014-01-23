@@ -2,19 +2,17 @@ Create rpm for zpapr-util (internal apr-util for zpanel)
 
 <code>cd $HOME/rpmbuild/SOURCES</code>
 
-<code>rm -rf apr-util-1.5.3.tar.bz2</code>
+<code>git clone https://github.com/apache/apr-util.git zpapr-util-1.5.3</code>
 
-<code>git clone https://github.com/apache/apr-util.git apr-util-1.5.3</code>
-
-<code>cd apr-util-1.5.3</code>
+<code>cd zpapr-util-1.5.3</code>
 
 <code>git checkout 1.5.3</code>
 
 <code>cd ..</code>
 
-<code>tar cvjf apr-util-1.5.3.tar.bz2 apr-util-1.5.3</code>
+<code>tar cvjf zpapr-util-1.5.3.tar.bz2 zpapr-util-1.5.3</code>
 
-<code>rm -rf apr-util-1.5.3/</code>
+<code>rm -rf zpapr-util-1.5.3/</code>
 
 <code>wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/zpapr-util/zpapr-util.spec \ </code>
 
