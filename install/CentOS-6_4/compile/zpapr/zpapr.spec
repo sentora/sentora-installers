@@ -7,7 +7,7 @@ Release: 1
 License: GPL
 Group: Applications/Internet
 Packager: andykimpe andykimpe@gmail.com
-Source0: apr-1.5.0.tar.bz2
+Source0: zpapr-1.5.0.tar.bz2
 Url: http://www.zpanelcp.com/
 BuildRoot: %{_tmppath}/%{name}-buildroot
 Requires: apr-devel, apr-util-devel, distcache-devel
@@ -17,10 +17,10 @@ packet apr for zpanel compile by andykimpe
 
 %prep
 
-%setup -n apr-%{version}
+%setup -n zpapr-%{version}
 
 %build
-cd $HOME/rpmbuild/BUILD/apr-%{version}/
+cd $HOME/rpmbuild/BUILD/zpapr-%{version}/
 rm -f configure
 ./buildconf
 mkdir include/private/
