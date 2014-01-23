@@ -15,6 +15,8 @@ part 3 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-
 
 part 4 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/apr-util" target="_black">apr-util</a> apr 1.5.3
 
-part 5 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/distcache" target="_black">distcache</a> distcache 1.4.5-23
+part 5 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/distcache" target="_black">distcache</a> distcache 1.4.5
 
 
+
+part 5 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/zpapr" target="_black">zpapr</a> internal apr 1.5.0 for zpanel
