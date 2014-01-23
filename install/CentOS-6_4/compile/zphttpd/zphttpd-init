@@ -45,16 +45,16 @@ config=/etc/zpanel/bin/httpd/conf/httpd.conf
 
 
 start() {
-        echo "Starting httpd 2.4.7"
+        echo "Starting zphttpd 2.4.7"
         $apachectl -k start
 }
 stop() {
-        echo "Stopping httpd 2.4.7"
+        echo "Stopping zphttpd 2.4.7"
         $apachectl -k stop
         sleep 15
 }
 reload() {
-        echo -n "Reloading httpd 2.4.7"
+        echo -n "Reloading zphttpd 2.4.7"
         $apachectl -k restart
 }
 
@@ -84,7 +84,7 @@ case "$1" in
         $apachectl -E $config
         ;;
   graceful)
-        echo "Gracefully restarting httpd 2.4.7"
+        echo "Gracefully restarting zphttpd 2.4.7"
         $apachectl -k graceful
         ;;
   *)
