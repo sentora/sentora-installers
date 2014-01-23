@@ -10,6 +10,7 @@ Packager: andykimpe andykimpe@gmail.com
 Source0: apr-1.5.0.tar.bz2
 Url: http://www.zpanelcp.com/
 BuildRoot: %{_tmppath}/%{name}-buildroot
+Requires: apr-devel, apr-util-devel, distcache-devel
 
 %description
 packet apr for zpanel compile by andykimpe
