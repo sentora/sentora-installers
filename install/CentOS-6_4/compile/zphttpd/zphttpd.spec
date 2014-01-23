@@ -23,7 +23,7 @@ packet httpd apache for zpanel compile by andykimpe
 #here add git apr apr-util and finish spec file
 cd $HOME/rpmbuild/BUILD/httpd-%{version}
 rm -f configure
-./buildconf
+./buildconf --with-apr=$HOME/rpmbuild/BUILD/apr-1.5.0 --with-apr-util=$HOME/rpmbuild/BUILD/apr-util-1.5.3
 ./configure --prefix=%{installdir} --exec-prefix=%{installdir} --enable-mods-shared="all" --enable-rewrite --enable-so --with-apr=/etc/zpanel/bin/apr/ --with-apr-util=/etc/zpanel/bin/apr-util/
 make
 wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/zphttpd/zphttpd-init
