@@ -37,5 +37,5 @@ Create rpm for zpapr (internal apr for zpanel)
 
 <code>yum -y update</code>
 
-</code>yum -y install zpapr</code>
+<code>yum -y install zpapr</code>
 
