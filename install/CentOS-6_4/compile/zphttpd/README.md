@@ -9,6 +9,18 @@ Create rpm for zphttpd
 
 <code>-P $HOME/rpmbuild/SPECS</code>
 
-<code>wget http://www.gtlib.gatech.edu/pub/apache/httpd/httpd-2.4.7.tar.bz2 -P $HOME/rpmbuild/SOURCES</code>
+<code>cd $HOME/rpmbuild/SOURCES</code>
+
+<code>git clone https://github.com/apache/httpd.git httpd-2.4.7</code>
+
+<code>cd httpd-2.4.7</code>
+
+<code>git checkout 2.4.7</code>
+
+<code>cd ..</code>
+
+<code>tar cvjf httpd-2.4.7.tar.bz2 httpd-2.4.7</code>
+
+<code>rm -rf httpd-2.4.7/</code>
 
 <code>rpmbuild -ba $HOME/rpmbuild/SPECS/zphttpd.spec</code>
