@@ -20,7 +20,7 @@ Create rpm for zpapr-util (internal apr-util for zpanel)
 
 <code>-P $HOME/rpmbuild/SPECS</code>
 
-<code>rpmbuild -ba $HOME/rpmbuild/SPECS/zpapr-util.spec</code>
+<code>rpmbuild -ba $HOME/rpmbuild/SPECS/zpapr-util.spec</code> 
 
 #Regenerate repo
 
