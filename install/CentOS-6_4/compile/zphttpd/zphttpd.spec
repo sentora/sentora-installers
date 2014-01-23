@@ -1,37 +1,34 @@
 %define installdir /etc/zpanel/bin/httpd
 
-Summary:                 packet httpd apache for zpanel compile by andykimpe
+Summary:                 packet zphttpd (httpd apache) for zpanel compile by andykimpe
 Name:                    zphttpd
 Version:                 2.4.7
 Release:                 1
 License:                 GPL
 Group:                   Applications/Internet
 Packager:                andykimpe andykimpe@gmail.com
-Source0:                 httpd-2.4.7.tar.bz2
+Source0:                 zphttpd-2.4.7.tar.bz2
 Url:                     http://www.zpanelcp.com/
 BuildRoot:               %{_tmppath}/%{name}-buildroot
 Requires: apr-devel, apr-util-devel, distcache-devel, git, pcre-devel, lua-devel, libxml2-devel,zpapr, zpapr-util
 
 %description
-packet httpd apache for zpanel compile by andykimpe
+packet zphttpd (httpd apache) for zpanel compile by andykimpe
 
 %prep
 
-%setup -n httpd-%{version}
+%setup -n zphttpd-%{version}
 
 %build
-#here add git apr apr-util and finish spec file
-cd $HOME/rpmbuild/BUILD/httpd-%{version}
+cd $HOME/rpmbuild/BUILD/zphttpd-%{version}
 rm -f configure
-./buildconf --with-apr=$HOME/rpmbuild/BUILD/apr-1.5.0 --with-apr-util=$HOME/rpmbuild/BUILD/apr-util-1.5.3
+./buildconf --with-apr=$HOME/rpmbuild/BUILD/zpapr-1.5.0 --with-apr-util=$HOME/rpmbuild/BUILD/zpapr-util-1.5.3
 ./configure --prefix=%{installdir} --exec-prefix=%{installdir} --enable-mods-shared="all" --enable-rewrite --enable-so --with-apr=/etc/zpanel/bin/apr/ --with-apr-util=/etc/zpanel/bin/apr-util/
 make
 %install
 make install DESTDIR=$RPM_BUILD_ROOT
 
 %post
-
-# here add postinstall apache
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 setenforce 0
 sed -i 's/#LoadModule/LoadModule/g' %{installdir}/conf/httpd.conf
@@ -49,7 +46,6 @@ chkconfig iptables off
 
 
 %preun
-# here add postuninstall
 chkconfig --del httpd
 rm -f /etc/init.d/httpd
 %{installdir}/bin/apachectl -k stop
