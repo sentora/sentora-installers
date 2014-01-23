@@ -23,7 +23,7 @@ packet apr-util for zpanel compile by andykimpe
 cd $HOME/rpmbuild/BUILD/apr-util-%{version}/
 rm -f configure
 ./buildconf
-./configure --prefix=%{installdir} --with-apr=/etc/zpanel/bin/apr/bin/apr-1-config
+./configure --prefix=%{installdir} --with-apr=/etc/zpanel/bin/apr
 make
 
 %install
