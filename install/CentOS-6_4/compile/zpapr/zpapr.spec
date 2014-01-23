@@ -37,6 +37,9 @@ make install DESTDIR=$RPM_BUILD_ROOT
 
 %preun
 
+%postun
+rm -rf %{installdir}
+
 %files
 %defattr(777,root,root)
 /%{installdir}/*
