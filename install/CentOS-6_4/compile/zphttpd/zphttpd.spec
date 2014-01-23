@@ -1,4 +1,4 @@
-%define installdir /etc/zpanel/bin/
+%define installdir /etc/zpanel/bin/httpd
 
 Summary:                 packet httpd apache for zpanel compile by andykimpe
 Name:                    zphttpd
@@ -21,38 +21,14 @@ packet httpd apache for zpanel compile by andykimpe
 
 %build
 #here add git apr apr-util and finish spec file
-git clone https://github.com/apache/apr.git $HOME/rpmbuild/BUILD/httpd-%{version}/srclib/apr
-cd $HOME/rpmbuild/BUILD/httpd-%{version}/srclib/apr
-git checkout 1.5.0
-rm -f configure
-./buildconf
-mkdir include/private/
-./configure --prefix=%{installdir}/apr
-make
-rm -rf $RPM_BUILD_ROOT/%{installdir}
-mkdir -p $RPM_BUILD_ROOT/%{installdir}
-make install DESTDIR=$RPM_BUILD_ROOT
-make install
 cd $HOME/rpmbuild/BUILD/httpd-%{version}
-git clone https://github.com/apache/apr-util.git $HOME/rpmbuild/BUILD/httpd-%{version}/srclib/apr-util
-cd $HOME/rpmbuild/BUILD/httpd-%{version}/srclib/apr-util
-git checkout 1.5.3
 rm -f configure
 ./buildconf
-./configure --prefix=%{installdir}/apr-util/  --with-apr=%{installdir}/apr/
-make
-make install DESTDIR=$RPM_BUILD_ROOT
-make install
-cd $HOME/rpmbuild/BUILD/httpd-%{version}/
-rm -f configure
-./buildconf
-./configure --prefix=%{installdir}/httpd --exec-prefix=%{installdir}/httpd --enable-mods-shared="all" --enable-rewrite --enable-so --with-apr=%{installdir}/apr/ --with-apr-util=%{installdir}/apr-util/
+./configure --prefix=%{installdir} --exec-prefix=%{installdir} --enable-mods-shared="all" --enable-rewrite --enable-so --with-apr=/etc/zpanel/bin/apr/ --with-apr-util=/etc/zpanel/bin/apr-util/
 make
 wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/zphttpd/zphttpd-init
 %install
 make install DESTDIR=$RPM_BUILD_ROOT
-rm -rf /etc/zpanel/bin/apr
-rm -rf /etc/zpanel/bin/apr-util
 
 %post
 
