@@ -37,12 +37,11 @@ setenforce 0
 sed -i 's/#LoadModule/LoadModule/g' %{installdir}/conf/httpd.conf
 sed -i 's/ServerAdmin you@example.com/ServerAdmin postmaster@$(hostname)/g' %{installdir}/conf/httpd.conf
 sed -i 's/#ServerName www.example.com/ServerName $(hostname)/g' %{installdir}/conf/httpd.conf
-rm -f /etc/init.d/httpd
-wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/zphttpd/zphttpd-init -q -O /etc/init.d/httpd
-chmod +x /etc/init.d/httpd
-chkconfig --add httpd
-chkconfig httpd on
-service httpd start
+wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/zphttpd/zphttpd-init -q -O /etc/init.d/zphttpd
+chmod +x /etc/init.d/zphttpd
+chkconfig --add zphttpd
+chkconfig zphttpd on
+service zphttpd start
 service iptables save
 service iptables stop
 chkconfig iptables off
