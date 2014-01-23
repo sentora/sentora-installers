@@ -16,7 +16,7 @@ packet apr for zpanel compile by andykimpe
 
 %prep
 
-%setup -n httpd-%{version}
+%setup -n apr-%{version}
 
 %build
 cd $HOME/rpmbuild/BUILD/apr-%{version}/
