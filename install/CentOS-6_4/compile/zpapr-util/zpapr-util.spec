@@ -1,28 +1,28 @@
 %define installdir /etc/zpanel/bin/apr-util
 
-Summary: packet apr-util for zpanel compile by andykimpe
+Summary: packet zpapr-util for zpanel compile by andykimpe
 Name: zpapr-util
 Version: 1.5.3
 Release: 1
 License: GPL
 Group: Applications/Internet
 Packager: andykimpe andykimpe@gmail.com
-Source0: apr-util-1.5.3.tar.bz2
+Source0: zpapr-util-1.5.3.tar.bz2
 Url: http://www.zpanelcp.com/
 BuildRoot: %{_tmppath}/%{name}-buildroot
 Requires: apr-devel, apr-util-devel, zpapr
 
 %description
-packet apr-util for zpanel compile by andykimpe
+packet zpapr-util for zpanel compile by andykimpe
 
 %prep
 
-%setup -n apr-util-%{version}
+%setup -n zpapr-util-%{version}
 
 %build
-cd $HOME/rpmbuild/BUILD/apr-util-%{version}/
+cd $HOME/rpmbuild/BUILD/zpapr-util-%{version}/
 rm -f configure
-./buildconf --with-apr=$HOME/rpmbuild/BUILD/apr-1.5.0
+./buildconf --with-apr=$HOME/rpmbuild/BUILD/zpapr-1.5.0
 ./configure --prefix=%{installdir} --with-apr=/etc/zpanel/bin/apr/
 make
 
