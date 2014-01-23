@@ -23,3 +23,19 @@ Create rpm for zpapr (internal apr for zpanel)
 
 <code>rpmbuild -ba $HOME/rpmbuild/SPECS/zpapr.spec</code>
 
+#Regenerate repo
+
+<code>createrepo --update $HOME/rpmbuild/RPMS/$(uname -m)</code>
+
+#Install
+
+<code>sed -i 's/enabled=1/enabled=0/g' "/etc/yum.repos.d/CentOS-Media.repo"</code>
+
+<code>yum -y update</code>
+
+<code>sed -i 's/enabled=0/enabled=1/g' "/etc/yum.repos.d/CentOS-Media.repo"</code>
+
+<code>yum -y update</code>
+
+</code>yum -y install zpapr</code>
+
