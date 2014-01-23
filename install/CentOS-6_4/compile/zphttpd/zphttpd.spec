@@ -48,8 +48,8 @@ chkconfig iptables off
 
 
 %preun
-chkconfig --del httpd
-rm -f /etc/init.d/httpd
+chkconfig --del zphttpd
+rm -f /etc/init.d/zphttpd
 %{installdir}/bin/apachectl -k stop
 
 %postun
