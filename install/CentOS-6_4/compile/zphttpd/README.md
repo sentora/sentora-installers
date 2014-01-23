@@ -39,4 +39,4 @@ Create rpm for zphttpd
 
 <code>yum -y update</code>
 
-<code>yum -y install zpapr-httpd</code>
+<code>yum -y install zphttpd</code>
