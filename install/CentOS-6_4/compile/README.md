@@ -19,4 +19,4 @@ part 5 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-
 
 
 
-part 5 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/zpapr" target="_black">zpapr</a> internal apr 1.5.0 for zpanel
+part 6 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/zpapr" target="_black">zpapr</a> internal apr 1.5.0 for zpanel
