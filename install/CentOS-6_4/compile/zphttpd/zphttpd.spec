@@ -26,7 +26,7 @@ rm -f configure
 ./buildconf --with-apr=$HOME/rpmbuild/BUILD/apr-1.5.0 --with-apr-util=$HOME/rpmbuild/BUILD/apr-util-1.5.3
 ./configure --prefix=%{installdir} --exec-prefix=%{installdir} --enable-mods-shared="all" --enable-rewrite --enable-so --with-apr=/etc/zpanel/bin/apr/ --with-apr-util=/etc/zpanel/bin/apr-util/
 make
-wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/zphttpd/zphttpd-init -P DESTDIR=$RPM_BUILD_ROOT
+wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/zphttpd/zphttpd-init -P $RPM_BUILD_ROOT/%{installdir}
 %install
 make install DESTDIR=$RPM_BUILD_ROOT
 
