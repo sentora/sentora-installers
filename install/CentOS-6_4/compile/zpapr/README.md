@@ -17,3 +17,9 @@ Create rpm for zpapr (internal apr for zpanel)
 
 <code>rm -rf apr-1.5.0/</code>
 
+<code>wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/zpapr/zpapr.spec \ </code>
+
+<code>-P $HOME/rpmbuild/SPECS</code>
+
+<code>rpmbuild -ba $HOME/rpmbuild/SPECS/zpapr.spec</code>
+
