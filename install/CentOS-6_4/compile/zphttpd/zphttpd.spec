@@ -55,6 +55,9 @@ chkconfig --del httpd
 rm -f /etc/init.d/httpd
 %{installdir}/bin/apachectl -k stop
 
+%postun
+rm -rf %{installdir}
+
 %files
 %defattr(777,root,root)
 /%{installdir}/*
