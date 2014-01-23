@@ -12,6 +12,8 @@ Url:                     http://www.zpanelcp.com/
 BuildRoot:               %{_tmppath}/%{name}-buildroot
 BuildRequires: apr-devel, apr-util-devel, distcache-devel, git, pcre-devel, lua-devel, libxml2-devel,zpapr, zpapr-util
 Requires: apr-devel, apr-util-devel, distcache-devel, git, pcre-devel, lua-devel, libxml2-devel,zpapr, zpapr-util
+Conflicts: httpd
+
 
 %description
 packet zphttpd (httpd apache) for zpanel compile by andykimpe
