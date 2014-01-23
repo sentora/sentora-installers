@@ -26,6 +26,8 @@ rm -f configure
 ./buildconf --with-apr=$HOME/rpmbuild/BUILD/apr-1.5.0 --with-apr-util=$HOME/rpmbuild/BUILD/apr-util-1.5.3
 ./configure --prefix=%{installdir} --exec-prefix=%{installdir} --enable-mods-shared="all" --enable-rewrite --enable-so --with-apr=/etc/zpanel/bin/apr/ --with-apr-util=/etc/zpanel/bin/apr-util/
 make
+mkdir -p $HOME/rpmbuild/BUILDROOT/zphttpd-2.4.7-1.$(uname -m)/%{installdir}
+wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/zphttpd/zphttpd-init -P $HOME/rpmbuild/BUILDROOT/zphttpd-2.4.7-1.$(uname -m)/%{installdir}
 %install
 make install DESTDIR=$RPM_BUILD_ROOT
 
@@ -38,7 +40,7 @@ sed -i 's/#LoadModule/LoadModule/g' %{installdir}/conf/httpd.conf
 sed -i 's/ServerAdmin you@example.com/ServerAdmin postmaster@$(hostname)/g' %{installdir}/conf/httpd.conf
 sed -i 's/#ServerName www.example.com/ServerName $(hostname)/g' %{installdir}/conf/httpd.conf
 rm -f /etc/init.d/httpd
-wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/zphttpd/zphttpd-init -q -P /etc/init.d/httpd
+mv /%{installdir}/zphttpd-init -q -P /etc/init.d/httpd
 chmod +x /etc/init.d/httpd
 chkconfig --add httpd
 chkconfig httpd on
