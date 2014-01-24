@@ -31,6 +31,7 @@ mkdir -p %{installdir}
 cp php.ini-development %{installdir}/php.ini
 mkdir -p /etc/zpanel/bin/httpd/conf.d
 wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/zpphp/php.conf -q -O /etc/zpanel/bin/httpd/conf.d/php.conf
+cp /etc/zpanel/bin/httpd/conf/httpd.conf /etc/zpanel/bin/httpd/conf/httpd.conf.php-install
 %install
 make install DESTDIR=$RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/%{installdir}
@@ -42,6 +43,10 @@ cp /etc/zpanel/bin/httpd/modules/libphp5.so $RPM_BUILD_ROOT/etc/zpanel/bin/httpd
 cp %{installdir}/php.ini $RPM_BUILD_ROOT/%{installdir}
 rm -f /etc/zpanel/bin/httpd/conf/httpd.conf
 mv /etc/zpanel/bin/httpd/conf/httpd.conf.bak /etc/zpanel/bin/httpd/conf/httpd.conf
+rm -f /etc/zpanel/bin/httpd/conf/httpd.conf
+mv /etc/zpanel/bin/httpd/conf/httpd.conf.php-install /etc/zpanel/bin/httpd/conf/httpd.conf
+rm -f /etc/zpanel/bin/httpd/conf.d/php.conf /etc/zpanel/bin/httpd/modules/libphp5.so
+rm -rf %{installdir}
 
 %post
 mkdir %{installdir}/php.d
