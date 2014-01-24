@@ -10,7 +10,7 @@ Packager: andykimpe andykimpe@gmail.com
 Source0: zpapr-util-1.5.3.tar.bz2
 Url: http://www.zpanelcp.com/
 BuildRoot: %{_tmppath}/%{name}-buildroot
-Requires: apr-devel, apr-util-devel, zpapr
+Requires: zpapr,expat-devel, libuuid-devel, postgresql-devel, mysql-devel, sqlite-devel, freetds-devel, openldap-devel, nss-devel, unixODBC-devel,
 
 %description
 packet zpapr-util for zpanel compile by andykimpe
