@@ -4,7 +4,7 @@ Summary: packet zpapr-util for zpanel compile by andykimpe
 Name: zpapr-util
 Version: 1.5.3
 Release: 1
-License: GPL
+License: Apache License, Version 2.0
 Group: Applications/Internet
 Packager: andykimpe andykimpe@gmail.com
 Source0: zpapr-util-1.5.3.tar.bz2
