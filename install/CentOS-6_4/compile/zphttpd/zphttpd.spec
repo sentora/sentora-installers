@@ -7,7 +7,7 @@ Release:                 1
 License:                 GPL
 Group:                   Applications/Internet
 Packager:                andykimpe andykimpe@gmail.com
-Source0:                 zphttpd-2.4.7.tar.bz2
+Source0:                 zphttpd-%{version}.tar.bz2
 Url:                     http://www.zpanelcp.com/
 BuildRoot:               %{_tmppath}/%{name}-buildroot
 BuildRequires: git, pcre-devel, lua-devel, libxml2-devel,zpapr, zpapr-util
