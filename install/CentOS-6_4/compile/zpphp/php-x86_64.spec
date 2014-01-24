@@ -44,6 +44,8 @@ rm -f /etc/zpanel/bin/httpd/conf/httpd.conf
 mv /etc/zpanel/bin/httpd/conf/httpd.conf.bak /etc/zpanel/bin/httpd/conf/httpd.conf
 
 %post
+mkdir %{installdir}/php.d
+cp /etc/zpanel/bin/httpd/conf/httpd.conf /etc/zpanel/bin/httpd/conf/httpd.conf.php-install
 echo Include conf.d/*.conf >> /etc/zpanel/bin/httpd/conf/httpd.conf
 service zphttpd restart
 
@@ -53,6 +55,9 @@ service zphttpd restart
 
 %postun
 rm -rf %{installdir}
+rm -f /etc/zpanel/bin/httpd/conf/httpd.conf
+mv /etc/zpanel/bin/httpd/conf/httpd.conf.php-install /etc/zpanel/bin/httpd/conf/httpd.conf
+rm -f /etc/zpanel/bin/httpd/conf.d/php.conf /etc/zpanel/bin/httpd/modules/libphp5.so
 
 %files
 %defattr(777,root,root)
