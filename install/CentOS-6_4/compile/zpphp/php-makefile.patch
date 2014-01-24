@@ -1,0 +1,11 @@
+--- Makefile	2014-01-24 04:16:30.000000000 +0100
++++ Makefile.origin	2014-01-24 04:06:49.000000000 +0100
+@@ -83,7 +83,7 @@
+ INCLUDES = -I/root/rpmbuild/SOURCES/zpphp-5.4.24/ext/date/lib -I/root/rpmbuild/SOURCES/zpphp-5.4.24/ext/ereg/regex -I/usr/include/libxml2 -I$(top_builddir)/TSRM -I$(top_builddir)/Zend
+ EXTRA_INCLUDES =
+ INCLUDE_PATH = .:
+-INSTALL_IT = $(mkinstalldirs) '$(INSTALL_ROOT)/etc/zpanel/bin/httpd/modules' && $(mkinstalldirs) '$(INSTALL_ROOT)/etc/zpanel/bin/httpd/conf' && /etc/zpanel/bin/httpd/bin/apxs -S LIBEXECDIR='$(INSTALL_ROOT)/etc/zpanel/bin/httpd/modules' -S SYSCONFDIR='$(INSTALL_ROOT)/etc/zpanel/bin/httpd/conf' -i -a -n php5 libphp5.la && sed -i 's|LoadModule php5_module        modules/libphp5.so|Include conf.d/*.conf|' "/etc/zpanel/bin/httpd/conf/httpd.conf"
++INSTALL_IT = $(mkinstalldirs) '$(INSTALL_ROOT)/etc/zpanel/bin/httpd/modules' && $(mkinstalldirs) '$(INSTALL_ROOT)/etc/zpanel/bin/httpd/conf' && /etc/zpanel/bin/httpd/bin/apxs -S LIBEXECDIR='$(INSTALL_ROOT)/etc/zpanel/bin/httpd/modules' -S SYSCONFDIR='$(INSTALL_ROOT)/etc/zpanel/bin/httpd/conf' -i -a -n php5 libphp5.la
+ LFLAGS =
+ LIBTOOL = $(SHELL) $(top_builddir)/libtool --silent --preserve-dup-deps
+ LN_S = ln -s
