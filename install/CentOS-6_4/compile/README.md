@@ -23,7 +23,7 @@ the superior version are not compatible with php
 
 on the version of linux running a kernel supeior or equal to 2.6
 
-kernel 2.6 apache 2.3 and supeior equal blank page
+kernel 2.6 apache 2.3 and superior equal blank page
 
 part 6 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/zpphp" target="_black">zphp</a> internal php 5.4.24 for zpanel
 
