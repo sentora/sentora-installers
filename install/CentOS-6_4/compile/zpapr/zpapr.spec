@@ -4,7 +4,7 @@ Summary: packet apr for zpanel compile by andykimpe
 Name: zpapr
 Version: 1.5.0
 Release: 1
-License: GPL
+License: Apache License, Version 2.0
 Group: Applications/Internet
 Packager: andykimpe andykimpe@gmail.com
 Source0: zpapr-1.5.0.tar.bz2
