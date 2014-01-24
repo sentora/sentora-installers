@@ -4,7 +4,7 @@ Summary:                 packet zphttpd (httpd apache) for zpanel compile by and
 Name:                    zphttpd
 Version:                 2.2.26
 Release:                 1
-License:                 GPL
+License: Apache License, Version 2.0
 Group:                   Applications/Internet
 Packager:                andykimpe andykimpe@gmail.com
 Source0:                 zphttpd-%{version}.tar.bz2
