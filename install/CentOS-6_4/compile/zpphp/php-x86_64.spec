@@ -40,6 +40,7 @@ mkdir -p $RPM_BUILD_ROOT/etc/zpanel/bin/httpd/conf.d
 cp /etc/zpanel/bin/httpd/conf.d/php.conf $RPM_BUILD_ROOT/etc/zpanel/bin/httpd/conf.d
 mkdir -p $RPM_BUILD_ROOT/etc/zpanel/bin/httpd/modules/
 cp /etc/zpanel/bin/httpd/modules/libphp5.so $RPM_BUILD_ROOT/etc/zpanel/bin/httpd/modules/
+cp %{installdir}/php.ini $RPM_BUILD_ROOT/%{installdir}
 
 %post
 mkdir -p /%{installdir}/usr/include/php/include/
@@ -55,6 +56,7 @@ rm -rf %{installdir}
 
 %files
 %defattr(777,root,root)
+/%{installdir}/php.ini
 /%{installdir}/bin/php
 /%{installdir}/bin/php-cgi
 /%{installdir}/bin/php-config
