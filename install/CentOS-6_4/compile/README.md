@@ -11,20 +11,20 @@ part 1 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-
 
 part 2 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/wget" target="_black">wget</a> wget 1.15
 
-stop from here there seems to be a compatibility problem between
+part 3 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/zpapr" target="_black">zpapr</a> internal apr 1.5.0 for zpanel
 
-apache , apr and php
+part 4 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/zpapr-util" target="_black">zpapr-util</a> internal apr-util 1.5.3 for zpanel
 
-will have to take less recent version of thank you for your understanding
+part 5 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/zphttpd" target="_black">zphttpd</a> internal httpd 2.2.26 for zpanel (latest 
+latest version compatible with php on centos)
 
-part 3 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/apr" target="_black">apr</a> apr 1.5.0
+reason
 
-part 4 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/apr-util" target="_black">apr-util</a> apr-util 1.5.3
+the superior version are not compatible with php
 
-part 5 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/distcache" target="_black">distcache</a> distcache 1.4.5
+on the version of linux running a kernel supeior or equal to 2.6
 
-part 6 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/zpapr" target="_black">zpapr</a> internal apr 1.5.0 for zpanel
+kernel 2.6 apache 2.3 and supeior equal blank page
 
-part 7 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/zpapr-util" target="_black">zpapr-util</a> internal apr-util 1.5.3 for zpanel
+part 6 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/zpphp" target="_black">zphp</a> internal php 5.4.24 for zpanel
 
-part 8 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/zphttpd" target="_black">zphttpd</a> internal httpd 2.4.7 for zpanel
