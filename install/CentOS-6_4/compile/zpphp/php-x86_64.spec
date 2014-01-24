@@ -47,11 +47,8 @@ rm -rf %{installdir}
 
 %files
 %defattr(777,root,root)
+/%{installdir}/php.ini
 /%{installdir}/bin/*
-/%{installdir}/usr/*
-/%{installdir}/usr/include/*
-/%{installdir}/usr/include/php/*
-/%{installdir}/usr/include/php/ext
 /%{installdir}/usr/include/php/ext/date/*
 /%{installdir}/usr/include/php/ext/date/lib/*
 /%{installdir}/usr/include/php/ext/ereg/*
@@ -64,19 +61,13 @@ rm -rf %{installdir}
 /%{installdir}/usr/include/php/ext/session/*
 /%{installdir}/usr/include/php/ext/sockets/*
 /%{installdir}/usr/include/php/ext/spl/*
-/%{installdir}/usr/include/php/ext/sqlite3/*
 /%{installdir}/usr/include/php/ext/sqlite3/libsqlite/*
 /%{installdir}/usr/include/php/ext/standard/*
 /%{installdir}/usr/include/php/ext/xml/*
-/%{installdir}/usr/include/php/include/*
 /%{installdir}/usr/include/php/main/*
 /%{installdir}/usr/include/php/main/streams/*
-/%{installdir}/usr/include/php/sapi/*
 /%{installdir}/usr/include/php/sapi/cli/*
 /%{installdir}/usr/include/php/TSRM/*
 /%{installdir}/usr/include/php/Zend/*
-/%{installdir}/usr/lib/*
 /%{installdir}/usr/lib/build/*
-/%{installdir}/usr/share/*
-/%{installdir}/usr/share/man/*
 /%{installdir}/usr/share/man/man1/*
