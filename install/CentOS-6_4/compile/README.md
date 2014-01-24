@@ -15,8 +15,7 @@ part 3 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-
 
 part 4 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/zpapr-util" target="_black">zpapr-util</a> internal apr-util 1.5.3 for zpanel
 
-part 5 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/zphttpd" target="_black">zphttpd</a> internal httpd 2.2.26 for zpanel (latest 
-latest version compatible with php on centos)
+part 5 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/compile/zphttpd" target="_black">zphttpd</a> internal httpd 2.2.26 for zpanel (latest version compatible with php on centos)
 
 reason
 
