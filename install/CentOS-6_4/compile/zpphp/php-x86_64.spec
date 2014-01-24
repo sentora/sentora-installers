@@ -2,7 +2,7 @@
 
 Summary: packet zpphp (php) for zpanel compile by andykimpe
 Name: zpphp
-Version: 2.4.24
+Version: 5.4.24
 Release: 1
 License: The PHP license
 Group: Applications/Internet
