@@ -25,13 +25,17 @@ packet zpphp (php) for zpanel compile by andykimpe
 %build
 cd $HOME/rpmbuild/BUILD/zpphp-%{version}
 ./buildconf --force
-./configure --program-prefix= --prefix=%{installdir} --exec-prefix=%{installdir} --bindir=%{installdir}/bin --sbindir=%{installdir}/bin --sysconfdir=%{installdir} --datadir=%{installdir}/usr/share --includedir=%{installdir}/usr/include --libdir=%{installdir}/usr/lib --libexecdir=%{installdir}/usr/libexec --localstatedir=%{installdir}/var --sharedstatedir=%{installdir}/var/lib --mandir=%{installdir}/usr/share/man --infodir=%{installdir}/usr/share/info --cache-file=../config.cache --with-libdir=lib64 --with-config-file-path=%{installdir} --with-config-file-scan-dir=%{installdir}/php.d --disable-debug --with-pic --disable-rpath --without-pear --with-bz2 --with-freetype-dir=/usr --with-png-dir=/usr --with-xpm-dir=/usr --enable-gd-native-ttf --without-gdbm --with-gettext --with-gmp --with-iconv --with-jpeg-dir=/usr --with-openssl --with-pcre-regex=/usr --with-zlib --with-layout=GNU --enable-exif --enable-ftp  --enable-sockets --enable-sysvsem --enable-sysvshm --enable-sysvmsg --with-kerberos  --enable-shmop --enable-calendar  --with-libxml-dir=/usr --enable-xml  --with-apxs2=/etc/zpanel/bin/httpd/bin/apxs --without-mysql --without-gd --disable-dom --disable-dba --without-unixODBC --disable-pdo --disable-xmlreader --disable-xmlwriter --disable-phar --disable-fileinfo --disable-json --without-pspell --disable-wddx --without-curl --disable-posix --disable-sysvmsg --disable-sysvshm --disable-sysvsem
+./configure --program-prefix= --prefix=$RPM_BUILD_ROOT/%{installdir} --exec-prefix=$RPM_BUILD_ROOT/%{installdir} --bindir=$RPM_BUILD_ROOT/%{installdir}/bin --sbindir=$RPM_BUILD_ROOT/%{installdir}/bin --sysconfdir=$RPM_BUILD_ROOT/%{installdir} --datadir=$RPM_BUILD_ROOT/%{installdir}/usr/share --includedir=$RPM_BUILD_ROOT/%{installdir}/usr/include --libdir=$RPM_BUILD_ROOT/%{installdir}/usr/lib --libexecdir=$RPM_BUILD_ROOT/%{installdir}/usr/libexec --localstatedir=$RPM_BUILD_ROOT/%{installdir}/var --sharedstatedir=$RPM_BUILD_ROOT/%{installdir}/var/lib --mandir=%{installdir}/usr/share/man --infodir=$RPM_BUILD_ROOT/%{installdir}/usr/share/info --cache-file=../config.cache --with-libdir=lib64 --with-config-file-path=$RPM_BUILD_ROOT/%{installdir} --with-config-file-scan-dir=$RPM_BUILD_ROOT/%{installdir}/php.d --disable-debug --with-pic --disable-rpath --without-pear --with-bz2 --with-freetype-dir=/usr --with-png-dir=/usr --with-xpm-dir=/usr --enable-gd-native-ttf --without-gdbm --with-gettext --with-gmp --with-iconv --with-jpeg-dir=/usr --with-openssl --with-pcre-regex=/usr --with-zlib --with-layout=GNU --enable-exif --enable-ftp  --enable-sockets --enable-sysvsem --enable-sysvshm --enable-sysvmsg --with-kerberos  --enable-shmop --enable-calendar  --with-libxml-dir=/usr --enable-xml  --with-apxs2=/etc/zpanel/bin/httpd/bin/apxs --without-mysql --without-gd --disable-dom --disable-dba --without-unixODBC --disable-pdo --disable-xmlreader --disable-xmlwriter --disable-phar --disable-fileinfo --disable-json --without-pspell --disable-wddx --without-curl --disable-posix --disable-sysvmsg --disable-sysvshm --disable-sysvsem
 make
 mkdir -p %{installdir}
 cp php.ini-development %{installdir}/php.ini
 wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/zpphp/php-makefile.patch -qO- | patch -p0
 %install
-make install DESTDIR=$RPM_BUILD_ROOT
+make install
+mkdir -p $RPM_BUILD_ROOT/etc/zpanel/bin/httpd/conf.d/
+mkdir -p $RPM_BUILD_ROOT/etc/zpanel/bin/httpd/modules/
+cp /etc/zpanel/bin/httpd/conf.d/php.conf $RPM_BUILD_ROOT/etc/zpanel/bin/httpd/conf.d/
+/etc/zpanel/bin/httpd/modules/libphp5.so $RPM_BUILD_ROOT/etc/zpanel/bin/httpd/modules/
 
 %post
 mkdir -p /etc/zpanel/bin/httpd/conf.d
