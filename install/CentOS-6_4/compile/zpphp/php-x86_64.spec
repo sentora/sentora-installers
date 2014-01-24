@@ -34,7 +34,7 @@ wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/
 wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/zpphp/php-makefile.patch -qO- | patch -p0
 %install
 make install DESTDIR=$RPM_BUILD_ROOT
-mkdir $RPM_BUILD_ROOT/%{installdir}
+mkdir -P $RPM_BUILD_ROOT/%{installdir}
 cp -R %{installdir}/* $RPM_BUILD_ROOT/%{installdir}
 mkdir -P $RPM_BUILD_ROOT/etc/zpanel/bin/httpd/conf.d
 cp /etc/zpanel/bin/httpd/conf.d/php.conf $RPM_BUILD_ROOT/etc/zpanel/bin/httpd/conf.d
