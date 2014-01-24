@@ -47,30 +47,4 @@ rm -rf %{installdir}
 
 %files
 %defattr(777,root,root)
-/%{installdir}/php.ini
-/%{installdir}/bin/*
-/%{installdir}/usr/include/php/ext/date/*
-/%{installdir}/usr/include/php/ext/date/lib/*
-/%{installdir}/usr/include/php/ext/ereg/*
-/%{installdir}/usr/include/php/ext/ereg/regex/*
-/%{installdir}/usr/include/php/ext/filter/*
-/%{installdir}/usr/include/php/ext/hash/*
-/%{installdir}/usr/include/php/ext/iconv/*
-/%{installdir}/usr/include/php/ext/libxml/*
-/%{installdir}/usr/include/php/ext/pcre/*
-/%{installdir}/usr/include/php/ext/session/*
-/%{installdir}/usr/include/php/ext/sockets/*
-/%{installdir}/usr/include/php/ext/spl/*
-/%{installdir}/usr/include/php/ext/sqlite3/libsqlite/*
-/%{installdir}/usr/include/php/ext/standard/*
-/%{installdir}/usr/include/php/ext/xml/*
-/%{installdir}/usr/include/php/main/*
-/%{installdir}/usr/include/php/main/streams/*
-/%{installdir}/usr/include/php/sapi/cli/*
-/%{installdir}/usr/include/php/TSRM/*
-/%{installdir}/usr/include/php/Zend/*
-/%{installdir}/usr/lib/build/*
-/%{installdir}/usr/share/man/man1/*
-/etc/zpanel/bin/httpd/conf.d/php.conf
-/etc/zpanel/bin/httpd/modules/libphp5.so
 
