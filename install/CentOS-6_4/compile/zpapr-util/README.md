@@ -14,6 +14,22 @@ Create rpm for zpapr-util (internal apr-util for zpanel)
 
 <code>rm -rf zpapr-util-1.5.3/</code>
 
+<code>yum -y install expat-devel libuuid-devel postgresql-devel --downloadonly --downloaddir=$HOME/rpmbuild/RPMS/$(uname -m)</code>
+
+<code>yum -y install expat-devel libuuid-devel postgresql-devel</code>
+
+<code>yum -y install http://dl.fedoraproject.org/pub/epel/6/$(uname -m)/epel-release-6-8.noarch.rpm</code>
+
+<code>yum -y update</code>
+
+<code>yum -y install mysql-devel sqlite-devel freetds-devel --downloadonly --downloaddir=$HOME/rpmbuild/RPMS/$(uname -m)</code>
+
+<code>yum -y install mysql-devel sqlite-devel freetds-devel</code>
+
+<code>yum -y install openldap-devel nss-devel unixODBC-devel --downloadonly --downloaddir=$HOME/rpmbuild/RPMS/$(uname -m)</code>
+
+<code>yum -y install openldap-devel nss-devel unixODBC-devel</code>
+
 <code>wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/zpapr-util/zpapr-util.spec \ </code>
 
 <code>-P $HOME/rpmbuild/SPECS</code>
