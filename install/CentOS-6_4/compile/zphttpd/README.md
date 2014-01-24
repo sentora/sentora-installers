@@ -11,17 +11,17 @@ Create rpm for zphttpd
 
 <code>cd $HOME/rpmbuild/SOURCES</code>
 
-<code>git clone https://github.com/apache/httpd.git zphttpd-2.4.7</code>
+<code>git clone https://github.com/apache/httpd.git zphttpd-2.2.26</code>
 
-<code>cd zphttpd-2.4.7</code>
+<code>cd zphttpd-2.2.26</code>
 
-<code>git checkout 2.4.7</code>
+<code>git checkout 2.2.26</code>
 
 <code>cd ..</code>
 
-<code>tar cvjf zphttpd-2.4.7.tar.bz2 zphttpd-2.4.7</code>
+<code>tar cvjf zphttpd-2.2.26.tar.bz2 zphttpd-2.2.26</code>
 
-<code>rm -rf zphttpd-2.4.7/</code>
+<code>rm -rf zphttpd-2.2.26/</code>
 
 <code>rpmbuild -ba $HOME/rpmbuild/SPECS/zphttpd.spec</code>
 
