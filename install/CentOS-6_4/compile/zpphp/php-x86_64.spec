@@ -44,6 +44,8 @@ service zphttpd restart
 
 %postun
 rm -rf %{installdir}
+rm -f /etc/zpanel/bin/httpd/conf.d/php.conf
+rm -f /etc/zpanel/bin/httpd/modules/libphp5.so
 
 %files
 %defattr(777,root,root)
@@ -71,3 +73,5 @@ rm -rf %{installdir}
 /%{installdir}/usr/include/php/Zend/*
 /%{installdir}/usr/lib/build/*
 /%{installdir}/usr/share/man/man1/*
+/etc/zpanel/bin/httpd/conf.d/php.conf
+/etc/zpanel/bin/httpd/modules/libphp5.so
