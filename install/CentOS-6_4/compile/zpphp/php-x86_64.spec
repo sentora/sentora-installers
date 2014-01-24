@@ -38,6 +38,8 @@ mkdir -p $RPM_BUILD_ROOT/%{installdir}
 cp -R %{installdir}/* $RPM_BUILD_ROOT/%{installdir}
 mkdir -p $RPM_BUILD_ROOT/etc/zpanel/bin/httpd/conf.d
 cp /etc/zpanel/bin/httpd/conf.d/php.conf $RPM_BUILD_ROOT/etc/zpanel/bin/httpd/conf.d
+mkdir -p $RPM_BUILD_ROOT/etc/zpanel/bin/httpd/modules/
+cp /etc/zpanel/bin/httpd/modules/libphp5.so $RPM_BUILD_ROOT/etc/zpanel/bin/httpd/modules/
 
 %post
 mkdir -p /%{installdir}/usr/include/php/include/
