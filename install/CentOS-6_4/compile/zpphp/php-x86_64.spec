@@ -16,7 +16,7 @@ Conflicts: php, php54, php55, php54w, php55w
 
 
 %description
-packet zpphp (php) for zpanel compile by andykimpe
+packet zpphp (php) for zpanel compile by andykimpe 
 
 %prep
 
