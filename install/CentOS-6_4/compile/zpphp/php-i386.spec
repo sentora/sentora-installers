@@ -46,5 +46,4 @@ rm -rf %{installdir}
 
 %files
 %defattr(777,root,root)
-/%{installdir}/bin/*
-/%{installdir}/usr/*
+/%{installdir}
