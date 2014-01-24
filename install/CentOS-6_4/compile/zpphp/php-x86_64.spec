@@ -20,7 +20,7 @@ packet zpphp (php) for zpanel compile by andykimpe
 
 %prep
 
-%setup -n zphttpd-%{version}
+%setup -n zpphp-%{version}
 
 %build
 cd $HOME/rpmbuild/BUILD/zpphp-%{version}
