@@ -1,4 +1,4 @@
-Create rpm for zphttpd
+#Create rpm for zphttpd
 
 
 <code>yum -y install pcre-devel lua-devel libxml2-devel --downloadonly --downloaddir=$HOME/rpmbuild/RPMS/$(uname -m)</code>
