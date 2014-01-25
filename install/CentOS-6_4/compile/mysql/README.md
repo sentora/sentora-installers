@@ -42,7 +42,7 @@ mysql  Ver 14.14 Distrib 5.6.15, for Linux (x86_64) using  EditLine wrapper
 
 test mysql connexion
 
-service mysql start
+<code>service mysql start
 
 chkconfig mysql on
 
@@ -64,4 +64,4 @@ owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-mysql>
+mysql></code>
