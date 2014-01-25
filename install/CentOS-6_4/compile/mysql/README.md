@@ -1,6 +1,6 @@
 #Create rpm for zpmysql
 
-<code>yum -y install gperf ncurses-devel time</code>
+<code>yum -y install gperf ncurses-devel time cmake</code>
 
 <code>wget http://cdn.mysql.com/Downloads/MySQL-5.6/MySQL-5.6.15-1.el6.src.rpm \ </code>
 
