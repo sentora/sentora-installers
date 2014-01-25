@@ -2,27 +2,11 @@
 
 <code>mkdir -p $HOME/rpmbuild/{SOURCES,SPECS,BUILD,RPMS/$(uname -m),SRPMS}</code>
 
-<code>yum install -y yum-plugin-downloadonly</code>
-
-<code>yum -y update --downloadonly --downloaddir=$HOME/rpmbuild/RPMS/$(uname -m)</code>
-
 <code>yum -y update</code>
-
-<code>yum -y install openssl-devel zlib-devel perl-devel --downloadonly --downloaddir=$HOME/rpmbuild/RPMS/$(uname -m)</code>
 
 <code>yum -y install wget openssl-devel zlib-devel perl-devel</code>
 
-<code>yum -y groupinstall "Development Tools" --downloadonly --downloaddir=$HOME/rpmbuild/RPMS/$(uname -m)</code>
-
-<code>rm -f $HOME/rpmbuild/RPMS/$(uname -m)/apr*</code>
-
-<code>rm -f $HOME/rpmbuild/RPMS/$(uname -m)/git*</code>
-
-<code>rm -f $HOME/rpmbuild/RPMS/$(uname -m)/perl-Git*</code>
-
 <code>yum -y groupinstall "Development Tools"</code>
-
-<code>yum -y install curl-devel expat-devel xmlto asciidoc --downloadonly --downloaddir=$HOME/rpmbuild/RPMS/$(uname -m)</code>
 
 <code>yum -y install curl-devel expat-devel xmlto asciidoc</code>
 
@@ -35,8 +19,6 @@
 <code>rpmbuild -ba $HOME/rpmbuild/SPECS/git.spec</code>
 
 #Create repo
-
-<code>yum -y install createrepo --downloadonly --downloaddir=$HOME/rpmbuild/RPMS/$(uname -m)</code>
 
 <code>yum -y install createrepo</code>
 
@@ -88,13 +70,9 @@ esc
 
 :wq
 
-<code>yum -y install yum-plugin-priorities --downloadonly --downloaddir=$HOME/rpmbuild/RPMS/$(uname -m)</code>
-
 <code>yum -y install yum-plugin-priorities</code>
 
 #Install (just update lol)
-
-<code>yum -y update --downloadonly --downloaddir=$HOME/rpmbuild/RPMS/$(uname -m)</code>
 
 <code>yum -y update</code>
 
