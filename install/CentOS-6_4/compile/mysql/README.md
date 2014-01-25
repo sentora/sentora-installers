@@ -51,6 +51,8 @@ cat /root/.mysql_secret</code>
 <code># The random password set for the root user at Sat Jan 25 02:56:23 2014 (local time): hVvjKVuI
 
 [root@vps1 ~]# mysql -u root -phVvjKVuI
+
+
 Warning: Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 5
