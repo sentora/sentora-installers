@@ -7,3 +7,5 @@
 <code>wget http://cdn.mysql.com/Downloads/MySQL-5.6/MySQL-5.6.15-1.el6.src.rpm</code>
 
 <code> rpm2cpio MySQL-5.6.15-1.el6.src.rpm  | cpio -idmv</code>
+
+<code>tar -xvf mysql-5.6.15.tar.gz</code>
