@@ -56,3 +56,5 @@ minimal required Main Restricted Universe Multiverse partner + all source activa
 <code>cp -R /etc/zpanel/bin/apr/* zpapr/etc/zpanel/bin/apr</code>
 
 <code>sudo rm -rf /etc/zpanel/bin/apr</code>
+
+<code>mkdir zpapr/DEBIAN</code>
