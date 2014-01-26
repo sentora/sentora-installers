@@ -33,10 +33,10 @@ make install DESTDIR=$RPM_BUILD_ROOT
 #%nuke
 	
 %post
-%install_info --info-dir=%{_infodir} %{_infodir}/wget.info.gz
+
 	
 %postun
-%install_info_delete --info-dir=%{_infodir} %{_infodir}/wget.info.gz
+
  	
 %files -f %{name}.lang
 %defattr(-,root,root,-)
