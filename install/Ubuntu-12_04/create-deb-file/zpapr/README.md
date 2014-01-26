@@ -26,7 +26,7 @@ minimal required Main Restricted Universe Multiverse partner + all source activa
 
 <code>sudo apt-get -y install git-core</code>
 
-<code>sudo apt-get -y install build-essential</code>
+<code>sudo apt-get -y install build-essential wget</code>
 
 <code>sudo apt-get -y build-dep apr</code>
 
@@ -58,3 +58,7 @@ minimal required Main Restricted Universe Multiverse partner + all source activa
 <code>sudo rm -rf /etc/zpanel/bin/apr</code>
 
 <code>mkdir zpapr/DEBIAN</code>
+
+<code>wget https://github.com/zpanel/installers/raw/master/install/Ubuntu-12_04/create-deb-file/zpapr/control-$(uname -m) \ </code>
+
+<code>-O zpapr/DEBIAN/control</code>
