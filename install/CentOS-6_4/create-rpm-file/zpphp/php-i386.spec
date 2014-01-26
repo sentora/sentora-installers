@@ -30,7 +30,7 @@ make
 mkdir -p %{installdir}
 cp php.ini-development %{installdir}/php.ini
 mkdir -p /etc/zpanel/bin/httpd/conf.d
-wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/zpphp/php.conf -q -O /etc/zpanel/bin/httpd/conf.d/php.conf
+wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/create-rpm-file/zpphp/php.conf -O /etc/zpanel/bin/httpd/conf.d/php.conf
 cp /etc/zpanel/bin/httpd/conf/httpd.conf /etc/zpanel/bin/httpd/conf/httpd.conf.php-install
 %install
 make install DESTDIR=$RPM_BUILD_ROOT
