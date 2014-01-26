@@ -2,7 +2,7 @@
 
 <code>yum -y install pcre-devel lua-devel libxml2-devel</code>
 
-<code>wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/zphttpd/zphttpd.spec \ </code>
+<code>wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/create-rpm-file/zphttpd/zphttpd.spec \ </code>
 
 <code>-P $HOME/rpmbuild/SPECS</code>
 
