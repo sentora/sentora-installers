@@ -12,6 +12,8 @@
 
 <code>git checkout 1.5.0</code>
 
+<code>./buildconf</code>
+
 <code>./configure --prefix=/etc/zpanel/bin/apr</code>
 
 <code>make</code>
