@@ -2,7 +2,7 @@
 
 <code>wget http://ftp.gnu.org/gnu/wget/wget-1.15.tar.gz -P $HOME/rpmbuild/SOURCES/</code>
 
-<code>wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/wget/wget.spec \ </code>
+<code>wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/create-rpm-file/wget/wget.spec \ </code>
 
 <code>-P $HOME/rpmbuild/SPECS/</code>
 
