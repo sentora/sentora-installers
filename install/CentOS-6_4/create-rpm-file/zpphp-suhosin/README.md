@@ -8,7 +8,7 @@
 
 <code>rm -rf zpphp-suhosin-9.34.dev</code>
 
-<code>wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/zpphp-suhosin/zpphp-suhosin.spec \ </code>
+<code>wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/create-rpm-file/zpphp-suhosin/zpphp-suhosin.spec \ </code>
 
 <code>-P $HOME/rpmbuild/SPECS</code>
 
