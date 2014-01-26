@@ -1,0 +1,9 @@
+Package: zpapr
+Version: 1.5.0
+Section: base
+Priority: optional
+Architecture: amd64
+Depends: bash
+Maintainer: andykimpe <andykimpe@gmail.com>
+Description: zparp apr compile by andykimpe
+Homepage: http://www.zpanelcp.com
