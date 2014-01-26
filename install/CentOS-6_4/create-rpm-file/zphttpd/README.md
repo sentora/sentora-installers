@@ -1,6 +1,6 @@
 #Create rpm for zphttpd
 
-<code>yum -y install pcre-devel lua-devel libxml2-devel</code>
+<code>sudo yum -y install pcre-devel lua-devel libxml2-devel</code>
 
 <code>wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/create-rpm-file/zphttpd/zphttpd.spec \ </code>
 
@@ -28,15 +28,15 @@
 
 #Install
 
-<code>sed -i 's/enabled=1/enabled=0/g' "/etc/yum.repos.d/CentOS-Media.repo"</code>
+<code>sudo sed -i 's/enabled=1/enabled=0/g' "/etc/yum.repos.d/CentOS-Media.repo"</code>
 
-<code>yum -y update</code>
+<code>sudo yum -y update</code>
 
-<code>sed -i 's/enabled=0/enabled=1/g' "/etc/yum.repos.d/CentOS-Media.repo"</code>
+<code>sudo sed -i 's/enabled=0/enabled=1/g' "/etc/yum.repos.d/CentOS-Media.repo"</code>
 
-<code>yum -y update</code>
+<code>sudo yum -y update</code>
 
-<code>yum -y install zphttpd</code>
+<code>sudo yum -y install zphttpd</code>
 
 #Info
 
