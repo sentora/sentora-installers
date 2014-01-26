@@ -1,6 +1,6 @@
 #Create rpm for zpphp
 
-<code>yum -y install bzip2-devel gmp-devel apr-util-ldap</code>
+<code>sudo yum -y install bzip2-devel gmp-devel apr-util-ldap</code>
 
 <code>cd $HOME/rpmbuild/SOURCES</code>
 
@@ -28,12 +28,12 @@
 
 #Install
 
-<code>sed -i 's/enabled=1/enabled=0/g' "/etc/yum.repos.d/CentOS-Media.repo"</code>
+<code>sudo sed -i 's/enabled=1/enabled=0/g' "/etc/yum.repos.d/CentOS-Media.repo"</code>
 
-<code>yum -y update</code>
+<code>sudo yum -y update</code>
 
-<code>sed -i 's/enabled=0/enabled=1/g' "/etc/yum.repos.d/CentOS-Media.repo"</code>
+<code>sudo sed -i 's/enabled=0/enabled=1/g' "/etc/yum.repos.d/CentOS-Media.repo"</code>
 
-<code>yum -y update</code>
+<code>sudo yum -y update</code>
 
-<code>yum -y install zpphp</code>
+<code>sudo yum -y install zpphp</code>
