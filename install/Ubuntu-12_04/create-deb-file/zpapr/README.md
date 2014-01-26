@@ -63,6 +63,8 @@ minimal required Main Restricted Universe Multiverse partner + all source activa
 
 <code>-O zpapr/DEBIAN/control</code>
 
+<code>chmod -R 755 zpapr/*</code>
+
 <code>dpkg-deb --build zpapr</code>
 
 <code>rm -rf zpapr/</code>
