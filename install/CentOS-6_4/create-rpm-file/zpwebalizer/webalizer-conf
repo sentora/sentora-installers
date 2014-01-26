@@ -1,0 +1,14 @@
+#
+# This configuration file maps the webalizer log analysis
+# results (generated daily) into the URL space.  By default
+# these results are only accessible from the local host.
+# 
+Alias /usage /var/www/usage
+
+<Location /usage>
+    Order deny,allow
+    Deny from all
+    Allow from 127.0.0.1
+    Allow from ::1
+    # Allow from .example.com
+</Location>
