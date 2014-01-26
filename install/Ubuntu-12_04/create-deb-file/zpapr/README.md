@@ -6,7 +6,7 @@
 
 <code>sudo nano /etc/apt/sources.list</code>
 
-edit yur depot list doc.ubuntu-fr.org/depots_precise
+edit your depot list http://doc.ubuntu-fr.org/depots_precise
 
 minimal required Main Restricted Universe Multiverse partner + all source activate
 
