@@ -30,6 +30,8 @@ rm -f configure
 make
 %install
 make install DESTDIR=$RPM_BUILD_ROOT
+mkdir -p $RPM_BUILD_ROOT/etc/init.d/
+wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/create-rpm-file/zphttpd/zphttpd-init -O $RPM_BUILD_ROOT/etc/init.d/zphttpd
 
 %post
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
@@ -37,7 +39,6 @@ setenforce 0
 sed -i 's/#LoadModule/LoadModule/g' %{installdir}/conf/httpd.conf
 sed -i 's/ServerAdmin you@example.com/ServerAdmin postmaster@$(hostname)/g' %{installdir}/conf/httpd.conf
 sed -i 's/#ServerName www.example.com/ServerName $(hostname)/g' %{installdir}/conf/httpd.conf
-wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/zphttpd/zphttpd-init -q -O /etc/init.d/zphttpd
 chmod +x /etc/init.d/zphttpd
 chkconfig --add zphttpd
 chkconfig zphttpd on
@@ -58,3 +59,4 @@ rm -rf %{installdir}
 %files
 %defattr(777,root,root)
 /%{installdir}/*
+/etc/init.d/zphttpd
