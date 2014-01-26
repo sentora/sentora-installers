@@ -1,8 +1,8 @@
 #create deb file for zpapr
 
-<code>mkdir src</code>
+<code>mkdir $HOME/src</code>
 
-<code>mkdir deb</code>
+<code>mkdir $HOME/deb</code>
 
 <code>sudo nano /etc/apt/sources.list</code>
 
@@ -48,3 +48,11 @@ minimal required Main Restricted Universe Multiverse partner + all source activa
 <code>make</code>
 
 <code>sudo make install</code>
+
+<code>cd $HOME/deb</code>
+
+<code>mkdir -p zpapr/etc/zpanel/bin/apr</code>
+
+<code>cp -R /etc/zpanel/bin/apr/* zpapr/etc/zpanel/bin/apr</code>
+
+<code>sudo rm -rf /etc/zpanel/bin/apr</code>
