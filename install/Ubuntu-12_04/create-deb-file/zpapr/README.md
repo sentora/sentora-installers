@@ -16,7 +16,6 @@ you can change depending on your country
 eg for france fr.archive.ubuntu.com
 
 <code>
-# main restricted
 deb http://archive.ubuntu.com/ubuntu/ precise main restricted
 deb http://security.ubuntu.com/ubuntu precise-security main restricted
 deb http://archive.ubuntu.com/ubuntu/ precise-updates main restricted
@@ -26,20 +25,16 @@ deb-src http://archive.ubuntu.com/ubuntu/ precise main restricted
 deb-src http://security.ubuntu.com/ubuntu precise-security main restricted
 deb-src http://archive.ubuntu.com/ubuntu/ precise-updates main restricted
 
-# universe multiverse
 deb http://archive.ubuntu.com/ubuntu/ precise universe multiverse
 deb http://security.ubuntu.com/ubuntu precise-security universe multiverse
 deb http://archive.ubuntu.com/ubuntu/ precise-updates universe multiverse
 
-# Dépôts of sources of universe multiverse
 deb-src http://archive.ubuntu.com/ubuntu/ precise universe multiverse
 deb-src http://security.ubuntu.com/ubuntu precise-security universe multiverse
 deb-src http://archive.ubuntu.com/ubuntu/ precise-updates universe multiverse
 
-# Commercial Partner
 deb http://archive.canonical.com/ubuntu precise partner
 
-# Dépôts of Sources of Commercial Partner
 deb-src http://archive.canonical.com/ubuntu precise partner</code>
 
 
