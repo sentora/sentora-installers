@@ -62,3 +62,7 @@ minimal required Main Restricted Universe Multiverse partner + all source activa
 <code>wget https://github.com/zpanel/installers/raw/master/install/Ubuntu-12_04/create-deb-file/zpapr/control-$(uname -m) \ </code>
 
 <code>-O zpapr/DEBIAN/control</code>
+
+<code>dpkg-deb --build zpapr</code>
+
+<code>rm -rf zpapr/</code>
