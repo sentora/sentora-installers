@@ -24,7 +24,7 @@ Create rpm for zpapr-util (internal apr-util for zpanel)
 
 <code>yum -y install openldap-devel nss-devel unixODBC-devel</code>
 
-<code>wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/compile/zpapr-util/zpapr-util.spec \ </code>
+<code>wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/create-rpm-file/zpapr-util/zpapr-util.spec \ </code>
 
 <code>-P $HOME/rpmbuild/SPECS</code>
 
