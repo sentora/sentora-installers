@@ -1,4 +1,4 @@
-ZPanel Installers Compile all Dependencie and Config init file
+ZPanel Installers Create rpm
 =================
 
 command for compile all dependencie and config init file
