@@ -2,13 +2,13 @@
 
 <code>mkdir -p $HOME/rpmbuild/{SOURCES,SPECS,BUILD,RPMS/$(uname -m),SRPMS}</code>
 
-<code>yum -y update</code>
+<code>sudo yum -y update</code>
 
-<code>yum -y install wget openssl-devel zlib-devel perl-devel</code>
+<code>sudo yum -y install wget openssl-devel zlib-devel perl-devel nano</code>
 
-<code>yum -y groupinstall "Development Tools"</code>
+<code>sudo yum -y groupinstall "Development Tools"</code>
 
-<code>yum -y install curl-devel expat-devel xmlto asciidoc</code>
+<code>sudo yum -y install curl-devel expat-devel xmlto asciidoc</code>
 
 <code>wget https://github.com/git/git/archive/v1.9-rc0.tar.gz -O $HOME/rpmbuild/SOURCES/git-1.9-rc0.tar.gz</code>
 
@@ -20,13 +20,13 @@
 
 #Create repo
 
-<code>yum -y install createrepo</code>
+<code>sudo yum -y install createrepo</code>
 
 <code>createrepo $HOME/rpmbuild/RPMS/$(uname -m)</code>
 
 change CentOS-Media.repo
 
-<code>vi /etc/yum.repos.d/CentOS-Media.repo</code>
+<code>sudo nano /etc/yum.repos.d/CentOS-Media.repo</code>
 
 replace
 
@@ -70,11 +70,11 @@ esc
 
 :wq
 
-<code>yum -y install yum-plugin-priorities</code>
+<code>sudo yum -y install yum-plugin-priorities</code>
 
 #Install (just update lol)
 
-<code>yum -y update</code>
+<code>sudo yum -y update</code>
 
 #Result
 
