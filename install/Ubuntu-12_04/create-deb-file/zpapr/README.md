@@ -41,6 +41,8 @@ minimal required Main Restricted Universe Multiverse partner + all source activa
 
 <code>./buildconf</code>
 
+<code>mkdir include/private/</code>
+
 <code>./configure --prefix=/etc/zpanel/bin/apr</code>
 
 <code>make</code>
