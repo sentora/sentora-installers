@@ -6,36 +6,9 @@
 
 <code>sudo nano /etc/apt/sources.list</code>
 
-and enter the following contained
+edit yur depot list doc.ubuntu-fr.org/depots_precise
 
-careful here I put archive.ubuntu.com
-
-
-you can change depending on your country
-
-eg for france fr.archive.ubuntu.com
-
-<code>
-deb http://archive.ubuntu.com/ubuntu/ precise main restricted
-deb http://security.ubuntu.com/ubuntu precise-security main restricted
-deb http://archive.ubuntu.com/ubuntu/ precise-updates main restricted
-
-Dépôts of sources of main restricted
-deb-src http://archive.ubuntu.com/ubuntu/ precise main restricted
-deb-src http://security.ubuntu.com/ubuntu precise-security main restricted
-deb-src http://archive.ubuntu.com/ubuntu/ precise-updates main restricted
-
-deb http://archive.ubuntu.com/ubuntu/ precise universe multiverse
-deb http://security.ubuntu.com/ubuntu precise-security universe multiverse
-deb http://archive.ubuntu.com/ubuntu/ precise-updates universe multiverse
-
-deb-src http://archive.ubuntu.com/ubuntu/ precise universe multiverse
-deb-src http://security.ubuntu.com/ubuntu precise-security universe multiverse
-deb-src http://archive.ubuntu.com/ubuntu/ precise-updates universe multiverse
-
-deb http://archive.canonical.com/ubuntu precise partner
-
-deb-src http://archive.canonical.com/ubuntu precise partner</code>
+minimal required Main Restricted Universe Multiverse partner + all source activate
 
 
 <code>sudo apt-get update</code>
