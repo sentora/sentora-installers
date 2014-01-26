@@ -1,6 +1,0 @@
-#! /bin/bash
-# update access statistics for the web site
-
-if [ -s /var/log/httpd/access_log ]; then
-   exec /usr/bin/webalizer -Q
-fi
