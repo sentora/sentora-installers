@@ -1,5 +1,3 @@
-dot not use
-
 #Create rpm for mysql
 
 <code>sudo yum -y install gperf ncurses-devel time cmake libaio-devel</code>
@@ -57,7 +55,7 @@ test mysql connexion
 sudo chkconfig mysql on</code>
 
 <code>
-[root@vps1 ~]# mysql -u root -phVvjKVuI
+[root@vps1 ~]# mysql -u root
 
 
 Warning: Using a password on the command line interface can be insecure.
