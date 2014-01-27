@@ -16,10 +16,6 @@
 
 <code>mv webalizer-2.21-02 zpwebalizer-2.21-02</code>
 
-<code>mv webalizer.conf webalizer-httpd.conf webalizer.cron webalizer-2.01_10-confuser.patch \ </code>
-
-<code>webalizer-2.01-10-groupvisit.patch webalizer-2.21-02-underrun.patch zpwebalizer-2.21-02/ </code>
-
 <code>tar -cvf zpwebalizer-2.21-02.tar.bz2 zpwebalizer-2.21-02</code>
 
 <code>rm -rf zpwebalizer-2.21-02/ </code>
