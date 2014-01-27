@@ -42,7 +42,7 @@ warning not using root user thank you
 
 <code>sudo yum -y install zpwebalizer</code>
 
-warning pacquet removed cronie crontabs cronie-anacron postfix
+warning pacquet removed postfix
 
 we will create package later this program is
 
