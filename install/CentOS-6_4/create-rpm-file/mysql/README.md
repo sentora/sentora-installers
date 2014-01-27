@@ -26,19 +26,21 @@ warning not using root user thank you
 
 #Install
 
-<code>sed -i 's/enabled=1/enabled=0/g' "/etc/yum.repos.d/CentOS-Media.repo"</code>
+<code>sudo sed -i 's/enabled=1/enabled=0/g' "/etc/yum.repos.d/CentOS-Media.repo"</code>
 
-<code>yum -y update</code>
+<code>sudo yum -y update</code>
 
-<code>sed -i 's/enabled=0/enabled=1/g' "/etc/yum.repos.d/CentOS-Media.repo"</code>
+<code>sudo sed -i 's/enabled=0/enabled=1/g' "/etc/yum.repos.d/CentOS-Media.repo"</code>
 
 <code>cd</code>
 
-<code>yum -y remove mysql mysql-libs</code>
+<code>sudo yum -y remove mysql mysql-libs</code>
 
-<code>yum -y update</code>
+<code>sudo yum -y update</code>
 
-<code>yum -y install MySQL-server MySQL-client</code>
+<code>sudo yum -y install MySQL-server MySQL-client</code>
+
+<code>sudo yum -y install zpwebalizer</code>
 
 warning pacquet removed cronie crontabs cronie-anacron postfix
 
@@ -50,14 +52,11 @@ mysql  Ver 14.14 Distrib 5.6.15, for Linux (x86_64) using  EditLine wrapper
 
 test mysql connexion
 
-<code>service mysql start
+<code>sudo service mysql start
 
-chkconfig mysql on
+sudo chkconfig mysql on</code>
 
-cat /root/.mysql_secret</code>
-
-<code># The random password set for the root user at Sat Jan 25 02:56:23 2014 (local time): hVvjKVuI
-
+<code>
 [root@vps1 ~]# mysql -u root -phVvjKVuI
 
 
