@@ -58,7 +58,7 @@ install -p -m 755 $RPM_SOURCE_DIR/webalizer.cron \
          $RPM_BUILD_ROOT%{_sysconfdir}/cron.daily/00webalizer
 mkdir -p $RPM_BUILD_ROOT%/etc/zpanel/bin/httpd/conf.d
 install -p -m 644 $RPM_SOURCE_DIR/webalizer-httpd.conf \
-        $RPM_BUILD_ROOT/etc/zpanel/bin/conf.d/webalizer.conf
+        $RPM_BUILD_ROOT/etc/zpanel/bin/httpd/conf.d/webalizer.conf
 
 rm -f $RPM_BUILD_ROOT%{_sysconfdir}/webalizer.conf.sample
 
