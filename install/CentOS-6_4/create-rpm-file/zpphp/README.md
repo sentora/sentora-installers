@@ -1,5 +1,7 @@
 #Create rpm for zpphp
 
+note recompile some extent seems missing
+
 <code>sudo yum -y install bzip2-devel gmp-devel apr-util-ldap</code>
 
 <code>cd $HOME/rpmbuild/SOURCES</code>
