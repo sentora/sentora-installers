@@ -28,4 +28,4 @@
 
 <code>-P $HOME/rpmbuild/SPECS</code>
 
-<code>rpmbuild -ba -P $HOME/rpmbuild/SPECS/zpwebalizer.spec</code>
+<code>rpmbuild -ba $HOME/rpmbuild/SPECS/zpwebalizer.spec</code>
