@@ -27,3 +27,9 @@ kernel 2.6 apache 2.3 and php or superior apache version equal blank page
 
 part 6 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/create-rpm-file/zpphp" target="_black">zpphp</a> internal php 5.4.24 for zpanel (latest version compatible with suhosin)
 
+part 7 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/create-rpm-file/zpphp-suhosin" target="_black">zpphp-suhosin</a> internal suhosin 09.34-dev for zpanel
+
+part 8 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/create-rpm-file/zpwebalizer" target="_black">zpwebalizer</a> webalizer 2.21
+
+part 9 <a href="https://github.com/zpanel/installers/tree/master/install/CentOS-6_4/create-rpm-file/mysql" target="_black">mysql</a> mysql 5.6.15
+
