@@ -25,3 +25,7 @@
 <code>rm -rf zpwebalizer-2.21-02/ </code>
 
 <code>wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/create-rpm-file/zpwebalizer/zpwebalizer.spec \ </code>
+
+<code>-P $HOME/rpmbuild/SPECS</code>
+
+<code>rpmbuild -ba -P $HOME/rpmbuild/SPECS/zpwebalizer.spec</code>
