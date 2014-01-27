@@ -22,7 +22,7 @@ note recompile some extent seems missing
 
 <code>-P $HOME/rpmbuild/SPECS</code>
 
-<code>rpmbuild -ba $HOME/rpmbuild/SPECS/php-$(uname -m).spec</code>
+<code>rpmbuild -ba $HOME/rpmbuild/SPECS/zpphp.spec</code>
 
 #Regenerate repo
 
