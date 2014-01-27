@@ -3,14 +3,14 @@
 
 %define _default_patch_fuzz 2
 
-Name: webalizer
+Name: zpwebalizer
 Summary: A flexible Web server log file analysis program
 Group: Applications/Internet
 Version: 2.21_02
 Release: 3.3%{?dist}
 URL: http://www.mrunix.net/webalizer/
 License: GPLv2+
-Source0: ftp://ftp.mrunix.net/pub/webalizer/%{name}-%{ver}-%{patchlevel}-src.tar.bz2
+Source0: zpwebalizer-2.21-02.tar.bz2
 Source1: webalizer.conf
 Source2: webalizer.cron
 Source3: webalizer-httpd.conf
@@ -30,7 +30,7 @@ professional looking graphs which make analyzing when and where your
 Web traffic is coming from easy.
 
 %prep
-%setup -q -n %{name}-%{ver}-%{patchlevel}
+%setup -n zpwebalizer-2.21-02
 %patch4 -p1 -b .underrun
 %patch6 -p1 -b .confuser
 %patch9 -p1 -b .groupvisit
