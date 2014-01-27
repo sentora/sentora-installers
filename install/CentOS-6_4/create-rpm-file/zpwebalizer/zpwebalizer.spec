@@ -20,7 +20,7 @@ Patch9: webalizer-2.01-10-groupvisit.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: gd-devel, db4-devel, bzip2-devel
 Requires(pre): /usr/sbin/useradd
-Requires: zphttpd, crontabs
+Requires: zphttpd, zpphp, zpphp-suhosin crontabs
 
 %description
 The Webalizer is a Web server log analysis program. It is designed to
