@@ -18,7 +18,7 @@ note recompile some extent seems missing
 
 <code>rm -rf zpphp-5.4.24</code>
 
-<code>wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/create-rpm-file/zpphp/php-$(uname -m).spec \ </code>
+<code>wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/create-rpm-file/zpphp/zpphp.spec \ </code>
 
 <code>-P $HOME/rpmbuild/SPECS</code>
 
