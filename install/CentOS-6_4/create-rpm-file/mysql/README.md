@@ -2,15 +2,23 @@ dot not use
 
 #Create rpm for mysql
 
-<code>yum -y install gperf ncurses-devel time cmake libaio-devel</code>
+<code>sudo yum -y install gperf ncurses-devel time cmake libaio-devel</code>
 
 warning not using root user thank you
 
-<code>wget http://cdn.mysql.com/Downloads/MySQL-5.6/MySQL-5.6.15-1.el6.src.rpm \ </code>
+<code>cd $HOME/rpmbuild/SOURCES</code>
 
-<code>-P $HOME/rpmbuild/SRPMS/</code>
+<code>wget http://cdn.mysql.com/Downloads/MySQL-5.6/MySQL-5.6.15-1.el6.src.rpm</code>
 
-<code>rpmbuild --rebuild $HOME/rpmbuild/SRPMS/MySQL-5.6.15-1.el6.src.rpm</code>
+<code>rpm2cpio MySQL-5.6.15-1.el6.src.rpm | cpio -ivd</code>
+
+<code>rm -f MySQL-5.6.15-1.el6.src.rpm</code>
+
+<code>sed -i 's/--random-passwords//g' mysql.spec</code>
+
+<code>mv mysql.spec $HOME/rpmbuild/SPECS</code>
+
+<code>rpmbuild -ba $HOME/rpmbuild/SPECS/mysql.spec</code>
 
 #Regenerate repo
 
