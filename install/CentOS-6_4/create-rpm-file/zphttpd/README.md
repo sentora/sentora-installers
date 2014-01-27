@@ -1,7 +1,5 @@
 #Create rpm for zphttpd
 
-note recompile some extent seems missing
-
 <code>sudo yum -y install pcre-devel lua-devel libxml2-devel</code>
 
 <code>wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/create-rpm-file/zphttpd/zphttpd.spec \ </code>
