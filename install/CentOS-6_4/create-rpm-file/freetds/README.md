@@ -1,6 +1,6 @@
 #Create rpm for freetds
 
-<code>http://dl.fedoraproject.org/pub/epel/6/SRPMS/freetds-0.91-2.el6.src.rpm -P $HOME/rpmbuild/SRPMS</code>
+<code>wget http://dl.fedoraproject.org/pub/epel/6/SRPMS/freetds-0.91-2.el6.src.rpm -P $HOME/rpmbuild/SRPMS</code>
 
 <code>rpmbuild --rebuild $HOME/rpmbuild/SRPMS/freetds-0.91-2.el6.src.rpm</code>
 
