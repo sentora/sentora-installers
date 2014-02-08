@@ -80,7 +80,7 @@ esc
 
 [root@vps1 ~]# git --version
 
-git version 1.9-rc0
+git version 1.9-rc1
 
 [root@vps1 ~]#
 
