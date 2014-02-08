@@ -1,13 +1,13 @@
 # Pass --without docs to rpmbuild if you don't want the documentation
 
 Name: 		git
-Version: 	1.9.rc.0
+Version: 	1.9.rc.1
 Release: 	1%{?dist}
 Summary:  	Core git tools
 License: 	GPL
 Group: 		Development/Tools
 URL: 		http://kernel.org/pub/software/scm/git/
-Source: 	http://kernel.org/pub/software/scm/git/%{name}-1.9-rc0.tar.gz
+Source: 	http://kernel.org/pub/software/scm/git/%{name}-1.9-rc1.tar.gz
 BuildRequires:	zlib-devel >= 1.2, openssl-devel, curl-devel, expat-devel, gettext  %{!?_without_docs:, xmlto, asciidoc > 6.0.3}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -110,7 +110,7 @@ Perl interface to Git
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
 %prep
-%setup -n git-1.9-rc0
+%setup -n git-1.9-rc1
 
 %build
 make %{_smp_mflags} CFLAGS="$RPM_OPT_FLAGS" \
