@@ -10,7 +10,7 @@
 
 <code>sudo yum -y install curl-devel expat-devel xmlto asciidoc</code>
 
-<code>wget https://github.com/git/git/archive/v1.9-rc0.tar.gz -O $HOME/rpmbuild/SOURCES/git-1.9-rc0.tar.gz</code>
+<code>wget https://github.com/git/git/archive/v1.9-rc1.tar.gz -O $HOME/rpmbuild/SOURCES/git-1.9-rc1.tar.gz</code>
 
 <code>wget https://github.com/zpanel/installers/raw/master/install/CentOS-6_4/create-rpm-file/git/git.spec \ </code>
 
