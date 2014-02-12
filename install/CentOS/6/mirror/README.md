@@ -1,3 +1,6 @@
-will soon set up a mirror if you want to create your own a mirror will suffice to make a rsync of zpanel-mirror.org
+copy zpanel mirror access ftp
+
+http://forums.zpanelcp.com/Thread-10-1-1-mirror-ftp-access
+
 
 and send a pull request to add your mirror to our list
