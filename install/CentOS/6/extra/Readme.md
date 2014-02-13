@@ -1,8 +1,19 @@
 Zpanelx install repo extra
 
+there seems to be a bug with yum excut sudo yum clean all before each yum update
+
+<code>sudo yum clean all</code>
+
+<code>sudo yum -y update</code>
+
+
 sudo yum -y install zpanel-extra-release
 
-sudo yum -y update
+there seems to be a bug with yum excut sudo yum clean all before each yum update
+
+<code>sudo yum clean all</code>
+
+<code>sudo yum -y update</code>
 
 
 the extra deposit and provided to add additional packages
