@@ -8,3 +8,5 @@ sudo yum -y update
 the extra deposit and provided to add additional packages
 
 do not hesitate to make your request pacquets here http://forums.zpanelcp.com/User-andykimpe
+
+depot source http://zpanel-mirror.org/centos/6/extra/SRPMS/
