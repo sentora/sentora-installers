@@ -9,7 +9,7 @@ The new installers and upgrade scripts enable you to install/upgrade  ZPanel dir
 
 > The following commands are published on the official ZPanel download page.
 
-Installation for CentOS 6.x install or update zpanelx 10.1.1 using repository
+CentOS 6.x install or update zpanelx 10.1.1 using repository
 
 Documentation https://github.com/zpanel/installers/tree/master/install/CentOS/6
 
