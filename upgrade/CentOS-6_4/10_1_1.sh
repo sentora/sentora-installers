@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+echo "please dot not use"
+echo "for update zpanelx 10.1.0 to 10.1.1 on centos 6.x using repository"
+echo "documentation https://github.com/zpanel/installers/tree/master/install/CentOS/6"
+exit
 
 # OS VERSION: CentOS 6.4+ Minimal
 # ARCH: x32_64
