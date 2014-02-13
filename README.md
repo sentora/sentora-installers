@@ -9,16 +9,11 @@ The new installers and upgrade scripts enable you to install/upgrade  ZPanel dir
 
 > The following commands are published on the official ZPanel download page.
 
-Installation for CentOS 6.4 is now as simple as running the following command from the terminal:-
+Installation for CentOS 6.x install or update zpanelx 10.1.1 using repository
 
-```shell
-bash <(curl -Ss https://raw.github.com/zpanel/installers/master/install/CentOS-6_4/10_1_1.sh)
-```
+Documentation https://github.com/zpanel/installers/tree/master/install/CentOS/6
 
-...and to upgrade your server (for example from ZPanel 10.1.0 to 10.1.1):-
 
-```shall
-bash <(curl -Ss https://raw.github.com/zpanel/installers/master/upgrade/CentOS-6_4/10_1_1.sh)
 ```
 Installation for Ubuntu 12.04 LTS is just as simple too...-
 
