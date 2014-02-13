@@ -29,7 +29,8 @@ or configure the as hostname during the installation of CentOS
 
 for check your version use <code>setso --show dbversion</code>
 
-<code>sudo yum -y remove rpmforge-release epel-release rpmfusion-release rpmfusion-free-release rpmfusion-non-free-release remi-release atomic-release elrepo-release latest webtatic-release</code>
+<code>sudo yum -y remove rpmforge-release epel-release rpmfusion-release rpmfusion-free-release \ </code>
+<code>rpmfusion-non-free-release remi-release atomic-release elrepo-release latest webtatic-release</code>
 <code>sudo mv /etc/php.ini /etc/php.ini.zpanel-update</code>
 <code>sudo yum -y remove php*</code>
 <code>sudo yum -y install http://zpanel-mirror.org/centos/6/RPMS/$(uname -m)/zpanel-release-1.0.0-1.$(uname -m).rpm</code>
