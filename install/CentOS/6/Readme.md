@@ -26,6 +26,14 @@ or configure the as hostname during the installation of CentOS
 
 <code>sudo yum -y install zpanelx</code>
 
+Info zpanelx default using php 5.3 for install php5.4 read documentation 
+
+https://github.com/zpanel/installers/tree/master/install/CentOS/6/php54
+
+Info zpanelx install extra repo read documentation 
+
+https://github.com/zpanel/installers/tree/master/install/CentOS/6/extra
+
 
 
 
@@ -49,3 +57,12 @@ for check your version use <code>setso --show dbversion</code>
 <code>sudo yum -y install zpanelx</code>
 
 source file http://zpanel-mirror.org/centos/6/SRPMS/
+
+Info zpanelx default using php 5.3 for install php5.4 read documentation 
+
+https://github.com/zpanel/installers/tree/master/install/CentOS/6/php54
+
+
+Info zpanelx install extra repo read documentation 
+
+https://github.com/zpanel/installers/tree/master/install/CentOS/6/extra
