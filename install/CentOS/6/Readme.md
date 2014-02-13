@@ -25,7 +25,7 @@ or configure the as hostname during the installation of CentOS
 
 
 
-#Udating zpanelx 10.1.0 to 10.1.1 online for centos 6.x
+#Updating zpanelx 10.1.0 to 10.1.1 online for centos 6.x
 
 for check your version use <code>setso --show dbversion</code>
 
