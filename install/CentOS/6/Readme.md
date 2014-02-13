@@ -7,6 +7,7 @@
 configure your time zone
 
 <code>sudo su -c 'echo "echo \$TZ > /etc/timezone" >> /usr/bin/tzselect'</code>
+
 <code>sudo tzselect</code>
 
 or write your time zone in file /etc/timezone
