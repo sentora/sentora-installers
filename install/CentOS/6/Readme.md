@@ -1,5 +1,7 @@
 #Installing zpanelx 10.1.1 for centos 6.x
 
+<code>sudo yum -y remove qpid-cpp-client</code>
+
 <code>sudo yum -y update</code>
 
 configure your time zone
