@@ -7,7 +7,7 @@ there seems to be a bug with yum excut sudo yum clean all before each yum update
 <code>sudo yum -y update</code>
 
 
-sudo yum -y install zpanel-extra-release
+<code>sudo yum -y install zpanel-extra-release</code>
 
 there seems to be a bug with yum excut sudo yum clean all before each yum update
 
