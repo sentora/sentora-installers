@@ -24,7 +24,7 @@ configure your zpanel domain
 or configure the as hostname during the installation of CentOS
 
 
-<code>sudo yum -y install http://zpanel-mirror.org/centos/6/RPMS/$(uname -m)/zpanel-release-1.0.0-1.$(uname -m).rpm</code>
+<code>sudo yum -y install http://zpanel-mirror.org/centos/6/RPMS/$(uname -m)/zpanel-release-1.0.0-2.$(uname -m).rpm</code>
 
 there seems to be a bug with yum excut sudo yum clean all before each yum update
 
