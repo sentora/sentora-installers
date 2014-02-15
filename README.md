@@ -14,8 +14,8 @@ CentOS 6.x install or update zpanelx 10.1.1 using repository
 Documentation https://github.com/zpanel/installers/tree/master/install/CentOS/6
 
 
-```
-Installation for Ubuntu 12.04 LTS is just as simple too...-
+
+Installation for Ubuntu 12.04 LTS is just as simple too...
 
 ```bash <(curl -Ss https://raw.github.com/zpanel/installers/master/install/Ubuntu-12_04/10_1_1.sh)```
 
