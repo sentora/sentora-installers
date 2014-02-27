@@ -113,7 +113,10 @@ while true; do
 	echo -e "Find your timezone from : http://php.net/manual/en/timezones.php e.g Europe/London"
 	tzselect
 	tz=`cat /etc/timezone`
-	read -e -p "Enter the FQDN of the server (example: zpanel.yourdomain.com): " -i $fqdn fqdn
+	echo -e "Enter the FQDN you will use to access ZPanel on your server."
+	echo -e "- It MUST be a sub-domain of you main domain, it MUST NOT be your main domain only. Example: panel.yourdomain.com"
+	echo -e "- Remember that the sub-domain ('panel' in the example) MUST be setup in your DNS nameserver."
+	read -e -p "FQDN for zpanel: " -i $fqdn fqdn
 	read -e -p "Enter the public (external) server IP: " -i $publicip publicip
 	read -e -p "ZPanel is now ready to install, do you wish to continue (y/n)" yn
 	case $yn in
