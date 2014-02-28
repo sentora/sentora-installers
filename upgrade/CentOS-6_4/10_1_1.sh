@@ -84,9 +84,14 @@ read -e -p "Would you like to continue with the upgrade now (y/n)? " yn
 	esac
 done
 
+# get mysql root password, check it works or ask it
+mysqlpassword=$(cat /etc/zpanel/panel/cnf/db.php | grep "pass =" | sed -s "s|.*pass \= '\(.*\)';.*|\1|")
+while ! mysql -u root -p$mysqlpassword -e ";" ; do
+ read -p "Can't connect to mysql, please give root password or press ctrl-C to abort: " mysqlpassword
+done
+echo -e "Connection mysql ok"
+
 # Now we'll ask upgrade specific questions...
-echo -e "Please provide your current MySQL root password (this can found in /etc/zpanel/panel/cnf/db.php)"
-read -esp "MySQL root password: " -i "" mysqlpassword
 echo -e ""
 while true; do
 	read -e -p "ZPanel will now update, are you sure (y/n)? " yn
