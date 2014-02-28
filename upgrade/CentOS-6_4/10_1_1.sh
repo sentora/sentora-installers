@@ -91,16 +91,6 @@ while ! mysql -u root -p$mysqlpassword -e ";" ; do
 done
 echo -e "Connection mysql ok"
 
-# Now we'll ask upgrade specific questions...
-echo -e ""
-while true; do
-	read -e -p "ZPanel will now update, are you sure (y/n)? " yn
-	case $yn in
-		 [Yy]* ) break;;
-		 [Nn]* ) exit;
-	esac
-done
-
 # Now we'll ask upgrade specific automatic detection...
 if [ "$ZPX_VERSION_ACTUAL" = "10.0.0" ] ; then
 upgradeto=10-0-1
@@ -121,6 +111,16 @@ if [ "$ZPX_VERSION_ACTUAL" = "10.1.0" ] ; then
 upgradeto=10-1-1
 ZPX_VERSIONGIT=10.1.1
 fi
+
+# Now we'll ask upgrade specific questions...
+echo -e ""
+while true; do
+	read -e -p "ZPanel will now update from $ZPX_VERSION_ACTUAL to $ZPX_VERSIONGIT, are you sure (y/n)? " yn
+	case $yn in
+		 [Yy]* ) break;;
+		 [Nn]* ) exit;
+	esac
+done
 
 # We now clone the latest ZPX software from GitHub
 echo "Downloading ZPanel, Please wait, this may take several minutes, the installer will continue after this is complete!"
