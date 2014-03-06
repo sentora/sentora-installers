@@ -375,6 +375,7 @@ touch /etc/cron.d/www-data
 crontab -u www-data /var/spool/cron/crontabs/www-data
 cp /etc/zpanel/configs/cron/zdaemon /etc/cron.d/zdaemon
 chmod -R 644 /var/spool/cron/crontabs/
+chmod 744 /var/spool/cron/crontabs
 chmod -R 644 /etc/cron.d/
 chown -R www-data:www-data /var/spool/cron/crontabs/
 
