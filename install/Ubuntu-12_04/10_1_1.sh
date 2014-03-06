@@ -241,11 +241,12 @@ sudo chown root /etc/zpanel/panel/bin/zsudo
 chmod +s /etc/zpanel/panel/bin/zsudo
 
 # MySQL specific installation tasks...
-service mysqld start
+service mysql start
 mysqladmin -u root password "$password"
 until mysql -u root -p$password -e ";" > /dev/null 2>&1 ; do
 read -s -p "enter your root mysql password : " password
 done
+sed -i "s|YOUR_ROOT_MYSQL_PASSWORD|$password|" /etc/zpanel/panel/cnf/db.php
 mysql -u root -p$password -e "DROP DATABASE test";
 mysql -u root -p$password -e "DELETE FROM mysql.user WHERE User='root' AND Host != 'localhost'";
 mysql -u root -p$password -e "DELETE FROM mysql.user WHERE User=''";
