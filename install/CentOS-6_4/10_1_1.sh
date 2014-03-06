@@ -362,6 +362,8 @@ usermod -a -G ftpgroup apache
 
 # BIND specific installation tasks...
 chmod -R 777 /etc/zpanel/configs/bind/zones/
+chmod 751 /var/named
+chmod 771 /var/named/data
 rm -rf /etc/named.conf /etc/rndc.conf /etc/rndc.key
 rndc-confgen -a
 ln -s /etc/zpanel/configs/bind/named.conf /etc/named.conf
@@ -376,7 +378,8 @@ touch /var/spool/cron/apache
 touch /etc/cron.d/apache
 crontab -u apache /var/spool/cron/apache
 cp /etc/zpanel/configs/cron/zdaemon /etc/cron.d/zdaemon
-chmod -R 644 /var/spool/cron/
+chmod 744 /var/spool/cron
+chmod 644 /var/spool/cron/apache
 chmod -R 644 /etc/cron.d/
 chown -R apache:apache /var/spool/cron/
 
@@ -441,6 +444,7 @@ echo -e "##############################################################" &>/dev/
 echo -e "" &>/dev/tty
 
 # We now request that the user restarts their server...
+while true; do
 read -e -p "Restart your server now to complete the install (y/n)? " rsn
 	case $rsn in
 		[Yy]* ) break;;
