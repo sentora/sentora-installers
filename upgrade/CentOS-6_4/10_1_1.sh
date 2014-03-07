@@ -140,6 +140,16 @@ cc -o /etc/zpanel/panel/bin/zsudo /etc/zpanel/configs/bin/zsudo.c
 chown root /etc/zpanel/panel/bin/zsudo
 chmod +s /etc/zpanel/panel/bin/zsudo
 
+
+# BIND specific upgrade tasks...
+chmod 751 /var/named
+chmod 771 /var/named/data
+
+# CRON specific upgrade tasks...
+chmod 744 /var/spool/cron
+chmod 644 /var/spool/cron/apache
+
+
 # Lets execute MySQL data upgrade scripts
 cat /etc/zpanel/panel/etc/build/config_packs/centos_6_3/zpanelx-update/$upgradeto/sql/*.sql | mysql -u root -p$mysqlpassword
 updatemessage=""
