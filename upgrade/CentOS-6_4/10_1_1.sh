@@ -39,7 +39,7 @@ else
   VER=$(uname -r)
 fi
 echo "Detected : $OS  $VER  $BITS"
-if [ "$OS" = "CentOs" ] && [ "$VER" = "6" ] || [ "$VER" = "6.1" ] || [ "$VER" = "6.2" ] || [ "$VER" = "6.3" ] || [ "$VER" = "6.4" ] || [ "$VER" = "6.5" ] ||[ "$VER" = "6.6" ] ; then
+if [ "$OS" = "CentOs" ] && [ "$VER" = "6.0" ] || [ "$VER" = "6.1" ] || [ "$VER" = "6.2" ] || [ "$VER" = "6.3" ] || [ "$VER" = "6.4" ] || [ "$VER" = "6.5" ] ||[ "$VER" = "6.6" ] ; then
   echo "Ok."
 else
   echo "Sorry, this upgrade script only supports ZPanel on CentOS 6.x."
