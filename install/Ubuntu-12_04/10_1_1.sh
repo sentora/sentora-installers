@@ -37,6 +37,17 @@ if [ -e /usr/local/cpanel ] || [ -e /usr/local/directadmin ] || [ -e /usr/local/
     exit
 fi
 
+if dpkg -s php apache mysql bind postfix dovecot; 
+then
+echo "You appear to have a server with apache/mysql/bind/postfix already installed; "
+echo "This installer is designed to install and configure ZPanel on a clean OS "
+echo "installation only!"
+echo ""
+echo "Please re-install your OS before attempting to install using this script."
+exit
+exit 
+fi
+
 # Ensure the installer is launched and can only be launched on Ubuntu 12.04
 BITS=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
 if [ -f /etc/lsb-release ]; then
