@@ -38,6 +38,7 @@ if [ -e /usr/local/cpanel ] || [ -e /usr/local/directadmin ] || [ -e /usr/local/
 fi
 
 # Lets check for some common packages that we know will affect the installation/operating of ZPanel.
+# We expect a clean OS so no apache/mySQL/bind/postfix/php!
 if dpkg -s php apache mysql bind postfix dovecot; then
     echo "You appear to have a server with apache/mysql/bind/postfix already installed; "
     echo "This installer is designed to install and configure ZPanel on a clean OS "
