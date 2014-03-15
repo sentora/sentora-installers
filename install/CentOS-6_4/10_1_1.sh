@@ -305,7 +305,7 @@ postmap /etc/postfix/transport
 chown -R vacation:vacation /var/spool/vacation
 if ! grep -q "127.0.0.1 autoreply.$fqdn" /etc/hosts; then echo "127.0.0.1 autoreply.$fqdn" >> /etc/hosts; fi
 sed -i "s|myhostname = control.yourdomain.com|myhostname = $fqdn|" /etc/zpanel/configs/postfix/main.cf
-sed -i "s|mydomain   = control.yourdomain.com|mydomain   = $fqdn|" /etc/zpanel/configs/postfix/main.cf
+sed -i "s|mydomain = control.yourdomain.com|mydomain = $fqdn|" /etc/zpanel/configs/postfix/main.cf
 rm -rf /etc/postfix/main.cf /etc/postfix/master.cf
 ln -s /etc/zpanel/configs/postfix/master.cf /etc/postfix/master.cf
 ln -s /etc/zpanel/configs/postfix/main.cf /etc/postfix/main.cf
@@ -349,10 +349,14 @@ if ! grep -q "127.0.0.1 "$fqdn /etc/hosts; then echo "127.0.0.1 "$fqdn >> /etc/h
 if ! grep -q "apache ALL=NOPASSWD: /etc/zpanel/panel/bin/zsudo" /etc/sudoers; then echo "apache ALL=NOPASSWD: /etc/zpanel/panel/bin/zsudo" >> /etc/sudoers; fi
 sed -i 's|DocumentRoot "/var/www/html"|DocumentRoot "/etc/zpanel/panel"|' /etc/httpd/conf/httpd.conf
 chown -R apache:apache /var/zpanel/temp/
+#Set keepalive on (default is off)
+sed -i "s|KeepAlive Off|KeepAlive On|" /etc/httpd/conf/httpd.conf
 
 # PHP specific installation tasks...
 sed -i "s|;date.timezone =|date.timezone = $tz|" /etc/php.ini
 sed -i "s|;upload_tmp_dir =|upload_tmp_dir = /var/zpanel/temp/|" /etc/php.ini
+#Disable php signature in headers to hide it from hackers
+sed -i "s|expose_php = On|expose_php = Off|" /etc/php.ini
 
 # Permissions fix for Apache and ProFTPD (to enable them to play nicely together!)
 if ! grep -q "umask 002" /etc/sysconfig/httpd; then echo "umask 002" >> /etc/sysconfig/httpd; fi
