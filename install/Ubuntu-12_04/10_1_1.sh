@@ -347,6 +347,7 @@ sed -i "s|;date.timezone =|date.timezone = $tz|" /etc/php5/cli/php.ini
 sed -i "s|;date.timezone =|date.timezone = $tz|" /etc/php5/apache2/php.ini
 sed -i "s|;upload_tmp_dir =|upload_tmp_dir = /var/zpanel/temp/|" /etc/php5/cli/php.ini
 sed -i "s|;upload_tmp_dir =|upload_tmp_dir = /var/zpanel/temp/|" /etc/php5/apache2/php.ini
+sed -i "s|expose_php = On|expose_php = Off|" /etc/php5/apache2/php.ini
 
 # Permissions fix for Apache and ProFTPD (to enable them to play nicely together!)
 if ! grep -q "umask 002" /etc/apache2/envvars; then echo "umask 002" >> /etc/apache2/envvars; fi
