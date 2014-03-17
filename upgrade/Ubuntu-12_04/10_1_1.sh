@@ -143,6 +143,8 @@ updatemessage=""
 for each in /etc/zpanel/panel/etc/build/config_packs/ubuntu_12_04/zpanelx-update/$upgradeto/shell/*.sh ; do
     updatemessage="$updatemessage\n"$(bash $each)  ;
 done
+# Disable PHP banner in apache server header
+sed -i "s|expose_php = On|expose_php = Off|" /etc/php5/apache2/php.ini
 
 # We ensure that the daemons are registered for automatic startup and are restarted for changes to take effect
 service apache2 start

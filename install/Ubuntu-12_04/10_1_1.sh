@@ -37,6 +37,17 @@ if [ -e /usr/local/cpanel ] || [ -e /usr/local/directadmin ] || [ -e /usr/local/
     exit
 fi
 
+# Lets check for some common packages that we know will affect the installation/operating of ZPanel.
+# We expect a clean OS so no apache/mySQL/bind/postfix/php!
+if dpkg -s php apache mysql bind postfix dovecot; then
+    echo "You appear to have a server with apache/mysql/bind/postfix already installed; "
+    echo "This installer is designed to install and configure ZPanel on a clean OS "
+    echo "installation only!"
+    echo ""
+    echo "Please re-install your OS before attempting to install using this script."
+    exit
+fi
+
 # Ensure the installer is launched and can only be launched on Ubuntu 12.04
 BITS=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
 if [ -f /etc/lsb-release ]; then
@@ -337,6 +348,7 @@ sed -i "s|;date.timezone =|date.timezone = $tz|" /etc/php5/cli/php.ini
 sed -i "s|;date.timezone =|date.timezone = $tz|" /etc/php5/apache2/php.ini
 sed -i "s|;upload_tmp_dir =|upload_tmp_dir = /var/zpanel/temp/|" /etc/php5/cli/php.ini
 sed -i "s|;upload_tmp_dir =|upload_tmp_dir = /var/zpanel/temp/|" /etc/php5/apache2/php.ini
+sed -i "s|expose_php = On|expose_php = Off|" /etc/php5/apache2/php.ini
 
 # Permissions fix for Apache and ProFTPD (to enable them to play nicely together!)
 if ! grep -q "umask 002" /etc/apache2/envvars; then echo "umask 002" >> /etc/apache2/envvars; fi
