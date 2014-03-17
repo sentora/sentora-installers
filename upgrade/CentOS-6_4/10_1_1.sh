@@ -157,6 +157,9 @@ for each in /etc/zpanel/panel/etc/build/config_packs/centos_6_3/zpanelx-update/$
     updatemessage="$updatemessage\n"$(bash $each)  ;
 done
 
+#Disable php signature in headers
+sed -i "s|expose_php = On|expose_php = Off|" /etc/php.ini
+
 # We ensure that the daemons are registered for automatic startup and are restarted for changes to take effect
 chkconfig httpd on
 chkconfig postfix on
