@@ -74,7 +74,7 @@ exec 2>&1
 # * Common installer functions          *
 # ***************************************
 
-# Generates random passwords fro the 'zadmin' account as well as Postfix and MySQL root account.
+# Generates random passwords for the 'zadmin' account as well as Postfix and MySQL root account.
 passwordgen() {
     	 l=$1
            [ "$l" == "" ] && l=16
@@ -169,8 +169,8 @@ echo -ne "\nUpdating Aptitude Repos: " >/dev/tty
 #    echo "deb-src http://archive.ubuntu.com/ubuntu precise-updates universe" >> /etc/apt/sources.list
 #fi
 #to avoid compatibility problems have ppa and removes deposits in the outcry over
- mkdir -p "/ect/apt/sources.list.d.save"
-        cp -R "/etc/apt/sources.list.d/*" "/ect/apt/sources.list.d.save" &> /dev/null
+ mkdir -p "/etc/apt/sources.list.d.save"
+        cp -R "/etc/apt/sources.list.d/*" "/etc/apt/sources.list.d.save" &> /dev/null
         rm -rf "/etc/apt/sources.list/*"
         cp "/etc/apt/sources.list" "/etc/apt/sources.list.save"
 cat > /etc/apt/sources.list <<EOF
