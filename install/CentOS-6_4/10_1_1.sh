@@ -68,7 +68,8 @@ fi
 
 # Set custom logging methods so we create a log file in the current working directory.
 logfile=$$.log
-exec >>(tee $logfile)
+touch $$.log
+exec > >(tee $logfile)
 exec 2>&1
 
 # ***************************************
