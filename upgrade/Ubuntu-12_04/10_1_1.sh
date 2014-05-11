@@ -114,7 +114,6 @@ while true; do
 done
 
 
-
 # We now clone the latest ZPX software from GitHub
 echo "Downloading ZPanel, Please wait, this may take several minutes, the installer will continue after this is complete!"
 git clone https://github.com/zpanel/zpanelx.git
@@ -124,6 +123,7 @@ mkdir ../zp_install_cache/
 git checkout-index -a -f --prefix=../zp_install_cache/
 cd ../zp_install_cache/
 rm -rf cnf/
+
 
 # Lets run OS software updates
 apt-get update -yqq
@@ -136,6 +136,7 @@ chmod 644 /etc/zpanel/panel/etc/apps/phpmyadmin/config.inc.php
 cc -o /etc/zpanel/panel/bin/zsudo /etc/zpanel/configs/bin/zsudo.c
 sudo chown root /etc/zpanel/panel/bin/zsudo
 chmod +s /etc/zpanel/panel/bin/zsudo
+sed -i "/symbolic-links=/a \secure-file-priv=/var/tmp" /etc/my.cnf
 
 # Lets execute MySQL data upgrade scripts
 cat /etc/zpanel/panel/etc/build/config_packs/ubuntu_12_04/zpanelx-update/$upgradeto/sql/*.sql | mysql -u root -p$mysqlpassword
