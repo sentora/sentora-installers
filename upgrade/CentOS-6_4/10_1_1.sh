@@ -139,7 +139,7 @@ chmod 644 /etc/zpanel/panel/etc/apps/phpmyadmin/config.inc.php
 cc -o /etc/zpanel/panel/bin/zsudo /etc/zpanel/configs/bin/zsudo.c
 chown root /etc/zpanel/panel/bin/zsudo
 chmod +s /etc/zpanel/panel/bin/zsudo
-
+sed -i "/symbolic-links=/a \secure-file-priv=/var/tmp" /etc/my.cnf
 
 # BIND specific upgrade tasks...
 chmod 751 /var/named
