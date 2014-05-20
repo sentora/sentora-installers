@@ -197,7 +197,7 @@ apt-get update
 
 
 # Install some standard utility packages required by the installer and/or ZPX.
-apt-get -y install sudo wget vim make zip unzip git debconf-utils
+apt-get -y install sudo wget vim make zip unzip git debconf-utils at
 
 # We now clone the ZPX software from GitHub
 echo "Downloading ZPanel, Please wait, this may take several minutes, the installer will continue after this is complete!"
