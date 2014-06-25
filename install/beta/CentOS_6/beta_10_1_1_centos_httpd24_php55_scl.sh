@@ -276,7 +276,7 @@ chmod +s /etc/zpanel/panel/bin/zsudo
 
 # MySQL specific installation tasks...
 service mysql55-mysqld start
-mysqladmin -u root password "$password"
+scl enable mysql55 'mysqladmin -u root password "$password"'
 until mysql -u root -p$password -e ";" > /dev/null 2>&1 ; do
 read -s -p "enter your root mysql password : " password
 done
