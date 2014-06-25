@@ -229,6 +229,7 @@ rpm --import https://fedoraproject.org/static/0608B895.txt
 cp etc/build/config_packs/centos_6_3/yum.repos.d/epel.repo /etc/yum.repos.d/epel.repo
 
 # add lamp scl depot
+wget https://github.com/zpanel/installers/raw/master/install/beta/CentOS_6/lamp_scl.repo -P /etc/yum.repos.d
 
 # problem upgrade centos 6.2 with 6.5 pacquet deteted as repo qpid-cpp-client
 yum -y remove qpid-cpp-client
