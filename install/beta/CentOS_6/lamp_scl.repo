@@ -1,0 +1,6 @@
+[scl-lamp]
+name=Copr repo for lamp owned by rhscl
+baseurl=http://ftp.belnet.be/puias.princeton.edu/SCL/6/$basearch/
+skip_if_unavailable=True
+gpgcheck=0
+enabled=1
