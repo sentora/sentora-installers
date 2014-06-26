@@ -217,9 +217,8 @@ yum -y install sudo wget vim make zip unzip git chkconfig
 
 # We now clone the ZPX software from GitHub
 echo "Downloading ZPanel, Please wait, this may take several minutes, the installer will continue after this is complete!"
-git clone https://github.com/zpanel/zpanelx.git
+git clone --branch 10.1.1 https://github.com/zpanel/zpanelx.git
 cd zpanelx/
-git checkout $ZPX_VERSION
 mkdir ../zp_install_cache/
 git checkout-index -a -f --prefix=../zp_install_cache/
 cd ../zp_install_cache/
