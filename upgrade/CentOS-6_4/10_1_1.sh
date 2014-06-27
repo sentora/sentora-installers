@@ -3,10 +3,10 @@
 # OS VERSION: CentOS 6.4+ Minimal
 # ARCH: x32_64
 
-ZPX_VERSION=10.1.1
-ZPX_VERSION_ACTUAL=$(setso --show dbversion)
+SEN_VERSION=10.1.1
+SEN_VERSION_ACTUAL=$(setso --show dbversion)
 
-# Official ZPanel Automated Upgrade Script
+# Official Sentora Automated Upgrade Script
 # =============================================
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -42,7 +42,7 @@ echo "Detected : $OS  $VER  $BITS"
 if [ "$OS" = "CentOs" ] && [ "$VER" = "6.0" ] || [ "$VER" = "6.1" ] || [ "$VER" = "6.2" ] || [ "$VER" = "6.3" ] || [ "$VER" = "6.4" ] || [ "$VER" = "6.5" ] ||[ "$VER" = "6.6" ] ; then
   echo "Ok."
 else
-  echo "Sorry, this upgrade script only supports ZPanel on CentOS 6.x."
+  echo "Sorry, this upgrade script only supports Sentora on CentOS 6.x."
   exit 1;
 fi
 
@@ -50,8 +50,8 @@ fi
 
 #check zpanel version
 
-if [ "$ZPX_VERSION" = "$ZPX_VERSION_ACTUAL" ] ; then
-echo "your version of ZPanel already updated"
+if [ "$SEN_VERSION" = "$SEN_VERSION_ACTUAL" ] ; then
+echo "your version of Sentora already updated"
 fi
 
 
@@ -60,16 +60,16 @@ logfile=$$.log
 exec > >(tee $logfile)
 exec 2>&1
 
-# Check that ZPanel has been detected on the server if not, we'll exit!
+# Check that Sentora has been detected on the server if not, we'll exit!
 if [ ! -d /etc/zpanel ]; then
-    echo "ZPanel has not been detected on this server, the upgrade script can therefore not continue!"
+    echo "Sentora has not been detected on this server, the upgrade script can therefore not continue!"
     exit 1;
 fi
 
 # Lets check that the user wants to continue first and recommend they have a backup!
 echo ""
-echo "The ZPanel Upgrade script is now ready to start, we recommend that before"
-echo "continuing that you first backup your ZPanel server to enable a restore"
+echo "The Sentora Upgrade script is now ready to start, we recommend that before"
+echo "continuing that you first backup your Sentora server to enable a restore"
 echo "in the event that something goes wrong during the upgrade process!"
 echo ""
 while true; do
@@ -88,41 +88,41 @@ done
 echo -e "Connection mysql ok"
 
 # Now we'll ask upgrade specific automatic detection...
-if [ "$ZPX_VERSION_ACTUAL" = "10.0.0" ] ; then
+if [ "$SEN_VERSION_ACTUAL" = "10.0.0" ] ; then
 upgradeto=10-0-1
-ZPX_VERSIONGIT=10.0.1
+SEN_VERSIONGIT=10.0.1
 fi
 
-if [ "$ZPX_VERSION_ACTUAL" = "10.0.1" ] ; then
+if [ "$SEN_VERSION_ACTUAL" = "10.0.1" ] ; then
 upgradeto=10-0-2
-ZPX_VERSIONGIT=10.0.2
+SEN_VERSIONGIT=10.0.2
 fi
 
-if [ "$ZPX_VERSION_ACTUAL" = "10.0.2" ] ; then
+if [ "$SEN_VERSION_ACTUAL" = "10.0.2" ] ; then
 upgradeto=10-1-0
-ZPX_VERSIONGIT=10.1.0
+SEN_VERSIONGIT=10.1.0
 fi
 
-if [ "$ZPX_VERSION_ACTUAL" = "10.1.0" ] ; then
+if [ "$SEN_VERSION_ACTUAL" = "10.1.0" ] ; then
 upgradeto=10-1-1
-ZPX_VERSIONGIT=10.1.1
+SEN_VERSIONGIT=10.1.1
 fi
 
 # Now we'll ask upgrade specific questions...
 echo -e ""
 while true; do
-	read -e -p "ZPanel will now update from $ZPX_VERSION_ACTUAL to $ZPX_VERSIONGIT, are you sure (y/n)? " yn
+	read -e -p "Sentora will now update from $SEN_VERSION_ACTUAL to $SEN_VERSIONGIT, are you sure (y/n)? " yn
 	case $yn in
 		 [Yy]* ) break;;
 		 [Nn]* ) exit;
 	esac
 done
 
-# We now clone the latest ZPX software from GitHub
-echo "Downloading ZPanel, Please wait, this may take several minutes, the installer will continue after this is complete!"
-git clone https://github.com/zpanel/zpanelx.git
+# We now clone the latest Sentora software from GitHub
+echo "Downloading Sentora, Please wait, this may take several minutes, the installer will continue after this is complete!"
+git clone https://github.com/sentora/sentora.git
 cd zpanelx/
-git checkout $ZPX_VERSIONGIT
+git checkout $SEN_VERSIONGIT
 mkdir ../zp_install_cache/
 git checkout-index -a -f --prefix=../zp_install_cache/
 cd ../zp_install_cache/
@@ -132,7 +132,7 @@ rm -rf cnf/
 yum -y update
 yum -y upgrade
 
-# Now we make ZPanel application/file specific updates
+# Now we make Sentora application/file specific updates
 cp -R . /etc/zpanel/panel/
 chmod -R 777 /etc/zpanel/
 chmod 644 /etc/zpanel/panel/etc/apps/phpmyadmin/config.inc.php

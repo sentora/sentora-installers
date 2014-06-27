@@ -3,9 +3,9 @@
 # OS VERSION: Ubuntu Server 12.04.x LTS
 # ARCH: x32_64
 
-ZPX_VERSION=10.1.1
+Sentora_VERSION=10.1.1
 
-# Official ZPanel Automated Installation Script
+# Official Sentora Automated Installation Script
 # =============================================
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -28,20 +28,20 @@ if [ $UID -ne 0 ]; then
     exit 1
 fi
 
-# Lets check for some common control panels that we know will affect the installation/operating of ZPanel.
+# Lets check for some common control panels that we know will affect the installation/operating of Sentora.
 if [ -e /usr/local/cpanel ] || [ -e /usr/local/directadmin ] || [ -e /usr/local/solusvm/www ] || [ -e /usr/local/home/admispconfig ] || [ -e /usr/local/lxlabs/kloxo ] ; then
     echo "You appear to have a control panel already installed on your server; This installer"
-    echo "is designed to install and configure ZPanel on a clean OS installation only!"
+    echo "is designed to install and configure Sentora on a clean OS installation only!"
     echo ""
     echo "Please re-install your OS before attempting to install using this script."
     exit
 fi
 
-# Lets check for some common packages that we know will affect the installation/operating of ZPanel.
+# Lets check for some common packages that we know will affect the installation/operating of Sentora.
 # We expect a clean OS so no apache/mySQL/bind/postfix/php!
 if dpkg -s php apache mysql bind postfix dovecot; then
     echo "You appear to have a server with apache/mysql/bind/postfix already installed; "
-    echo "This installer is designed to install and configure ZPanel on a clean OS "
+    echo "This installer is designed to install and configure Sentora on a clean OS "
     echo "installation only!"
     echo ""
     echo "Please re-install your OS before attempting to install using this script."
@@ -61,7 +61,7 @@ echo "Detected : $OS  $VER  $BITS"
 if [ "$OS" = "Ubuntu" ] && [ "$VER" = "12.04" ]; then
   echo "Ok."
 else
-  echo "Sorry, this installer only supports the installation of ZPanel on Ubuntu 12.04."
+  echo "Sorry, this installer only supports the installation of Sentora on Ubuntu 12.04."
   exit 1;
 fi
 
@@ -85,11 +85,11 @@ passwordgen() {
 # Display the 'welcome' splash/user warning info..
 echo -e ""
 echo -e "##############################################################"
-echo -e "# Welcome to the Official ZPanelX Installer for Ubuntu       #"
+echo -e "# Welcome to the Official Sentora Installer for Ubuntu       #"
 echo -e "# Server 12.04.x LTS                                         #"
 echo -e "#                                                            #"
 echo -e "# Please make sure your VPS provider hasn't pre-installed    #"
-echo -e "# any packages required by ZPanelX.                          #"
+echo -e "# any packages required by Sentora.                          #"
 echo -e "#                                                            #"
 echo -e "# If you are installing on a physical machine where the OS   #"
 echo -e "# has been installed by yourself please make sure you only   #"
@@ -138,12 +138,12 @@ while true; do
 	#read -e -p "Enter your timezone: " -i "Europe/London" tz
 	dpkg-reconfigure tzdata
 	tz=`cat /etc/timezone`
-	echo -e "Enter the FQDN you will use to access ZPanel on your server."
+	echo -e "Enter the FQDN you will use to access Sentora on your server."
 	echo -e "- It MUST be a sub-domain of you main domain, it MUST NOT be your main domain only. Example: panel.yourdomain.com"
 	echo -e "- Remember that the sub-domain ('panel' in the example) MUST be setup in your DNS nameserver."
 	read -e -p "FQDN for zpanel: " -i $fqdn fqdn
 	read -e -p "Enter the public (external) server IP: " -i $publicip publicip
-    read -e -p "ZPanel is now ready to install, do you wish to continue (y/n)" yn
+    read -e -p "Sentora is now ready to install, do you wish to continue (y/n)" yn
     case $yn in
         [Yy]* ) break;;
         [Nn]* ) exit;
@@ -196,14 +196,14 @@ EOF
 apt-get update
 
 
-# Install some standard utility packages required by the installer and/or ZPX.
+# Install some standard utility packages required by the installer and/or Sentora.
 apt-get -y install sudo wget vim make zip unzip git debconf-utils at
 
-# We now clone the ZPX software from GitHub
-echo "Downloading ZPanel, Please wait, this may take several minutes, the installer will continue after this is complete!"
-git clone https://github.com/zpanel/zpanelx.git
+# We now clone the Sentora software from GitHub
+echo "Downloading Sentora, Please wait, this may take several minutes, the installer will continue after this is complete!"
+git clone https://github.com/sentora/sentora.git
 cd zpanelx/
-git checkout $ZPX_VERSION
+git checkout $Sentora_VERSION
 mkdir ../zp_install_cache/
 git checkout-index -a -f --prefix=../zp_install_cache/
 cd ../zp_install_cache/
@@ -212,7 +212,7 @@ cd ../zp_install_cache/
 apt-get update -yqq
 apt-get upgrade -yqq
 
-# Install required software and dependencies required by ZPanel.
+# Install required software and dependencies required by Sentora.
 # We disable the DPKG prompts before we run the software install to enable fully automated install.
 export DEBIAN_FRONTEND=noninteractive
 apt-get install -qqy mysql-server mysql-server apache2 libapache2-mod-php5 libapache2-mod-bw php5-common php5-suhosin php5-cli php5-mysql php5-gd php5-mcrypt php5-curl php-pear php5-imap php5-xmlrpc php5-xsl db4.7-util zip webalizer build-essential bash-completion dovecot-mysql dovecot-imapd dovecot-pop3d dovecot-common dovecot-managesieved dovecot-lmtpd postfix postfix-mysql libsasl2-modules-sql libsasl2-modules proftpd-mod-mysql bind9 bind9utils
@@ -222,7 +222,7 @@ password=`passwordgen`;
 postfixpassword=`passwordgen`;
 zadminNewPass=`passwordgen`;
 
-# Set-up ZPanel directories and configure directory permissions as required.
+# Set-up Sentora directories and configure directory permissions as required.
 mkdir /etc/zpanel
 mkdir /etc/zpanel/configs
 mkdir /etc/zpanel/panel
@@ -269,7 +269,7 @@ mysql -u root -p$password -e "UPDATE mysql.user SET Password=PASSWORD('$postfixp
 mysql -u root -p$password -e "FLUSH PRIVILEGES";
 sed -i "/ssl-key=/a \secure-file-priv = /var/tmp" /etc/mysql/my.cnf
 
-# Set some ZPanel custom configuration settings (using. setso and setzadmin)
+# Set some Sentora custom configuration settings (using. setso and setzadmin)
 setzadmin --set "$zadminNewPass";
 /etc/zpanel/panel/bin/setso --set zpanel_domain $fqdn
 /etc/zpanel/panel/bin/setso --set server_ip $publicip
@@ -418,19 +418,19 @@ php /etc/zpanel/panel/bin/daemon.php
 cd ../
 rm -rf zp_install_cache/ zpanelx/
 
-# Advise the user that ZPanel is now installed and accessible.
+# Advise the user that Sentora is now installed and accessible.
 echo -e "##############################################################" &>/dev/tty
-echo -e "# Congratulations ZpanelX has now been installed on your     #" &>/dev/tty
+echo -e "# Congratulations Sentora has now been installed on your     #" &>/dev/tty
 echo -e "# server. Please review the log file left in /root/ for      #" &>/dev/tty
 echo -e "# any errors encountered during installation.                #" &>/dev/tty
 echo -e "#                                                            #" &>/dev/tty
 echo -e "# Save the following information somewhere safe:             #" &>/dev/tty
 echo -e "# MySQL Root Password    : $password" &>/dev/tty
 echo -e "# MySQL Postfix Password : $postfixpassword" &>/dev/tty
-echo -e "# ZPanelX Username       : zadmin                            #" &>/dev/tty
-echo -e "# ZPanelX Password       : $zadminNewPass" &>/dev/tty
+echo -e "# Sentora Username       : zadmin                            #" &>/dev/tty
+echo -e "# Sentora Password       : $zadminNewPass" &>/dev/tty
 echo -e "#                                                            #" &>/dev/tty
-echo -e "# ZPanelX Web login can be accessed using your server IP     #" &>/dev/tty
+echo -e "# Sentora Web login can be accessed using your server IP     #" &>/dev/tty
 echo -e "# inside your web browser.                                   #" &>/dev/tty
 echo -e "#                                                            #" &>/dev/tty
 echo -e "##############################################################" &>/dev/tty
