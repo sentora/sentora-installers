@@ -241,6 +241,7 @@ yum -y install ld-linux.so.2 libbz2.so.1 libdb-4.7.so libgd.so.2 httpd php php-s
 password=`passwordgen`;
 postfixpassword=`passwordgen`;
 zadminNewPass=`passwordgen`;
+phpmyadminsecret=`passwordgen`;
 
 # Set-up Sentora directories and configure directory permissions as required.
 mkdir /etc/zpanel
@@ -260,7 +261,6 @@ chmod -R 777 /etc/zpanel/
 chmod -R 777 /var/zpanel/
 chmod -R 770 /var/zpanel/hostdata/
 chown -R apache:apache /var/zpanel/hostdata/
-chmod 644 /etc/zpanel/panel/etc/apps/phpmyadmin/config.inc.php
 ln -s /etc/zpanel/panel/bin/zppy /usr/bin/zppy
 ln -s /etc/zpanel/panel/bin/setso /usr/bin/setso
 ln -s /etc/zpanel/panel/bin/setzadmin /usr/bin/setzadmin
@@ -271,6 +271,11 @@ cp -R /etc/zpanel/panel/etc/build/config_packs/centos_6_3/. /etc/zpanel/configs/
 cc -o /etc/zpanel/panel/bin/zsudo /etc/zpanel/configs/bin/zsudo.c
 sudo chown root /etc/zpanel/panel/bin/zsudo
 chmod +s /etc/zpanel/panel/bin/zsudo
+
+# phpMyAdmin specific installation tasks...
+chmod 644 /etc/zpanel/configs/phpmyadmin/config.inc.php
+sed -i "s|\$cfg\['blowfish_secret'\] \= 'SENTORA';|\$cfg\['blowfish_secret'\] \= '$phpmyadminsecret';|" /etc/zpanel/configs/phpmyadmin/config.inc.php
+ln -s /etc/zpanel/configs/phpmyadmin/config.inc.php /etc/zpanel/panel/etc/apps/phpmyadmin/config.inc.php
 
 # MySQL specific installation tasks...
 service mysqld start
