@@ -34,8 +34,10 @@ As a relatively small team of guys and due to the time required to keep installa
 
 > By officially supported we refer to the fact that we ensure that prior to any release of Sentora that the official Sentora team have released and fully tested installer scripts and upgrade scripts for the OS versions listed above.
 
-## Vagrant installer/upgrader development & testing ##
-### Available OS's ###
+### Vagrant installer/upgrader development & testing ###
+
+### Available OS's ####
+
 - Ubuntu 12.04 32bit : $ vagrant up sentora_12.04ubuntu32 / $ vagrant ssh sentora_12.04ubuntu32
 - Ubuntu 12.04 64bit : $ vagrant up sentora_12.04ubuntu64 / $ vagrant ssh sentora_12.04ubuntu64
 -
