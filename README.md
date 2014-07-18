@@ -48,6 +48,7 @@ As a relatively small team of guys and due to the time required to keep installa
 Folders mounted to /root/sentora/{install,uninstall,upgrade}
 
 vagrant docs : [Vagrant Docs](https://docs.vagrantup.com/v2/ "Vagrant docs")
+
 Common vagrant commands
 ```bash
 $ vagrant up <defined vm name> # start the VM
