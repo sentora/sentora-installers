@@ -34,6 +34,28 @@ As a relatively small team of guys and due to the time required to keep installa
 
 > By officially supported we refer to the fact that we ensure that prior to any release of Sentora that the official Sentora team have released and fully tested installer scripts and upgrade scripts for the OS versions listed above.
 
+## Vagrant installer/upgrader development & testing ##
+### Available OS's ###
+- Ubuntu 12.04 32bit : $ vagrant up sentora_12.04ubuntu32 / $ vagrant ssh sentora_12.04ubuntu32
+- Ubuntu 12.04 64bit : $ vagrant up sentora_12.04ubuntu64 / $ vagrant ssh sentora_12.04ubuntu64
+-
+- Centos 6.4 32bit   : $ vagrant up sentora_6.4centos32   / $ vagrant ssh sentora_6.4centos32
+- Centos 6.4 64bit   : $ vagrant up sentora_6.4centos64   / $ vagrant ssh sentora_6.4centos64
+-
+- Ubuntu 12.10 32bit : $ vagrant up sentora_12.10ubuntu32 / $ vagrant ssh sentora_12.10ubuntu32
+-
+- Ubuntu 14.04 64bit : $ vagrant up sentora_14.04ubuntu64 / $ vagrant ssh sentora_14.04ubuntu64
+
+Folders mounted to /root/sentora/{install,uninstall,upgrade}
+vagrant docs : [Vagrant Docs](https://docs.vagrantup.com/v2/ "Vagrant docs")
+Common vagrant commands
+```bash
+$ vagrant up <defined vm name> # start the VM
+$ vagrant suspend <defined vm name> # Pause | suspend the VM
+$ vagrant halt <defined vm name> #  Stop the VM
+$ vagrant destroy <defined vm name> # Delete the VM
+```
+
 ## Official maintainers ##
 
 The officially supported operating system installer and upgrade scripts are maintained internally by members of the official Sentora team.
