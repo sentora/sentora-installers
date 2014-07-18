@@ -56,6 +56,9 @@ $ vagrant suspend <defined vm name> # Pause | suspend the VM
 $ vagrant resume <defined vm name> # resume a previously paused VM
 $ vagrant halt <defined vm name> #  Stop the VM
 $ vagrant destroy <defined vm name> # Delete the VM
+## example to launch ubuntu 14.04 64bit env @ ip 192.168.33.15
+vagrant up sentora_14.04ubuntu64 &&
+vagrant ssh sentora_14.04ubuntu64
 ```
 
 ## Official maintainers ##
