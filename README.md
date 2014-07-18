@@ -38,12 +38,12 @@ As a relatively small team of guys and due to the time required to keep installa
 
 #### Available OS's ####
 
-- sentora_12.04ubuntu32
-- sentora_12.04ubuntu64
-- sentora_6.4centos32
-- sentora_6.4centos64
-- sentora_12.10ubuntu32
-- sentora_14.04ubuntu64
+- sentora_12.04ubuntu32 @ 192.168.33.10
+- sentora_12.04ubuntu64 @ 192.168.33.11
+- sentora_6.4centos32 @ 192.168.33.12
+- sentora_6.4centos64 @ 192.168.33.13
+- sentora_12.10ubuntu32 @ 192.168.33.14
+- sentora_14.04ubuntu64 @ 192.168.33.15
 
 Folders mounted to /root/sentora/{install,uninstall,upgrade}
 
