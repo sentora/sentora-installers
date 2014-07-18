@@ -46,6 +46,7 @@ As a relatively small team of guys and due to the time required to keep installa
 - sentora_14.04ubuntu64
 
 Folders mounted to /root/sentora/{install,uninstall,upgrade}
+
 vagrant docs : [Vagrant Docs](https://docs.vagrantup.com/v2/ "Vagrant docs")
 Common vagrant commands
 ```bash
