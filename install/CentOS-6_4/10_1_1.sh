@@ -76,7 +76,7 @@ exec 2>&1
 # * Common installer functions          *
 # ***************************************
 
-# Generates random passwords fro the 'zadmin' account as well as Postfix and MySQL root account.
+# Generates random passwords
 passwordgen() {
          l=$1
            [ "$l" == "" ] && l=16
@@ -85,7 +85,7 @@ passwordgen() {
 
 # Display the 'welcome' splash/user warning info..
 echo -e "##############################################################"
-echo -e "# Welcome to the Official Sentora Installer for CentOS 6.4   #"
+echo -e "# Welcome to the Official Sentora Installer for CentOS 6     #"
 echo -e "#                                                            #"
 echo -e "# Please make sure your VPS provider hasn't pre-installed    #"
 echo -e "# any packages required by Sentora.                          #"
@@ -112,7 +112,7 @@ read -e -p "Would you like to continue (y/n)? " yn
 	esac
 done
 
-#a selection list for the time zone is not better now?
+# Install package to allow auto selection of php timezone
 yum -y -q install tzdata &>/dev/null
 echo "echo \$TZ > /etc/timezone" >> /usr/bin/tzselect
 
@@ -194,7 +194,8 @@ done
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 setenforce 0
 
-# We now stop IPTables to ensure a fully automated and pain free installation.
+# Stop conflicting services and iptables to ensure all services will work
+service sendmail stop
 service iptables save
 service iptables stop
 chkconfig sendmail off
@@ -207,29 +208,25 @@ uname -a
 echo -e ""
 rpm -qa
 
-# Removal of conflicting packages and services prior to Sentora installation.
-service sendmail stop
-yum -y remove bind-chroot
+# Removal of conflicting packages prior to Sentora installation.
+yum -y remove bind-chroot qpid-cpp-client
 
 # Install some standard utility packages required by the installer and/or Sentora.
 yum -y install sudo wget vim make zip unzip git chkconfig
 
-
-# We now clone the Sentora software from GitHub
+# Cloning Sentora from GitHub
 echo "Downloading Sentora, Please wait, this may take several minutes, the installer will continue after this is complete!"
 git clone https://github.com/sentora/sentora.git
-cd zpanelx/
+cd sentora/
 git checkout $SEN_VERSION
 mkdir ../zp_install_cache/
 git checkout-index -a -f --prefix=../zp_install_cache/
 cd ../zp_install_cache/
 
-# Lets pull in all the required updates etc.
+# Installing epel repo for extra packages php-suhosin php-mcrypt bash-completion proftpd proftpd-mysql 
 rpm --import https://fedoraproject.org/static/0608B895.txt
 cp etc/build/config_packs/centos_6_3/yum.repos.d/epel.repo /etc/yum.repos.d/epel.repo
 
-# problem upgrade centos 6.2 with 6.5 pacquet deteted as repo qpid-cpp-client
-yum -y remove qpid-cpp-client
 # We now update the server software packages.
 yum -y update
 yum -y upgrade
