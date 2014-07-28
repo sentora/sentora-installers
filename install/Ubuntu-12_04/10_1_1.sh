@@ -202,7 +202,7 @@ apt-get -y install sudo wget vim make zip unzip git debconf-utils at
 # We now clone the Sentora software from GitHub
 echo "Downloading Sentora, Please wait, this may take several minutes, the installer will continue after this is complete!"
 git clone https://github.com/sentora/sentora.git
-cd zpanelx/
+cd sentora/
 git checkout $Sentora_VERSION
 mkdir ../zp_install_cache/
 git checkout-index -a -f --prefix=../zp_install_cache/
@@ -421,7 +421,7 @@ php /etc/zpanel/panel/bin/daemon.php
 
 # We'll now remove the temporary install cache.
 cd ../
-rm -rf zp_install_cache/ zpanelx/
+rm -rf zp_install_cache/ sentora/
 
 # Advise the user that Sentora is now installed and accessible.
 echo -e "##############################################################" &>/dev/tty

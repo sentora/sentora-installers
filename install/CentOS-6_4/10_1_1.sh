@@ -441,7 +441,7 @@ service atd restart
 
 # We'll now remove the temporary install cache.
 cd ../
-rm -rf zp_install_cache/ zpanelx/
+rm -rf zp_install_cache/ sentora/
 
 # Advise the user that Sentora is now installed and accessible.
 echo -e "##############################################################" &>/dev/tty
