@@ -3,7 +3,7 @@
 # OS VERSION: CentOS 6.4+ Minimal
 # ARCH: 32bit + 64bit
 
-SEN_VERSION=10.1.1
+SEN_VERSION=master
 
 # Official Sentora Automated Installation Script
 # =============================================
@@ -225,7 +225,7 @@ cd ../zp_install_cache/
 
 # Installing epel repo for extra packages php-suhosin php-mcrypt bash-completion proftpd proftpd-mysql 
 rpm --import https://fedoraproject.org/static/0608B895.txt
-cp etc/build/config_packs/centos_6_3/yum.repos.d/epel.repo /etc/yum.repos.d/epel.repo
+cp etc/build/config_packs/centos_6/yum.repos.d/epel.repo /etc/yum.repos.d/epel.repo
 
 # We now update the server software packages.
 yum -y update
@@ -263,7 +263,7 @@ ln -s /etc/zpanel/panel/bin/setso /usr/bin/setso
 ln -s /etc/zpanel/panel/bin/setzadmin /usr/bin/setzadmin
 chmod +x /etc/zpanel/panel/bin/zppy
 chmod +x /etc/zpanel/panel/bin/setso
-cp -R /etc/zpanel/panel/etc/build/config_packs/centos_6_3/. /etc/zpanel/configs/
+cp -R /etc/zpanel/panel/etc/build/config_packs/centos_6/. /etc/zpanel/configs/
 # set password after test connexion
 cc -o /etc/zpanel/panel/bin/zsudo /etc/zpanel/configs/bin/zsudo.c
 sudo chown root /etc/zpanel/panel/bin/zsudo
