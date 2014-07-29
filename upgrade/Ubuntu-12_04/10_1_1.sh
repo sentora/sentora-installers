@@ -147,6 +147,9 @@ done
 # Disable PHP banner in apache server header
 sed -i "s|expose_php = On|expose_php = Off|" /etc/php5/apache2/php.ini
 
+# Remove phpMyAdmin's setup folder in case it was left behind
+rm -rf /etc/zpanel/panel/etc/apps/phpmyadmin/setup
+
 # We ensure that the daemons are registered for automatic startup and are restarted for changes to take effect
 service apache2 start
 service postfix restart
