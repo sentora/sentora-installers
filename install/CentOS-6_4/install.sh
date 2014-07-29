@@ -239,6 +239,7 @@ password=`passwordgen`;
 postfixpassword=`passwordgen`;
 zadminNewPass=`passwordgen`;
 phpmyadminsecret=`passwordgen`;
+roundcube_des_key=`passwordgen 24`;
 
 # Set-up Sentora directories and configure directory permissions as required.
 mkdir /etc/zpanel
@@ -409,6 +410,7 @@ rm -rf /etc/webalizer.conf
 # Roundcube specific installation tasks...
 sed -i "s|YOUR_MYSQL_ROOT_PASSWORD|$password|" /etc/zpanel/configs/roundcube/db.inc.php
 sed -i "s|#||" /etc/zpanel/configs/roundcube/db.inc.php
+sed -i "s|rcmail-!24ByteDESkey\*Str|$roundcube_des_key|" /etc/zpanel/configs/roundcube/main.inc.php
 rm -rf /etc/zpanel/panel/etc/apps/webmail/config/main.inc.php
 ln -s /etc/zpanel/configs/roundcube/main.inc.php /etc/zpanel/panel/etc/apps/webmail/config/main.inc.php
 ln -s /etc/zpanel/configs/roundcube/config.inc.php /etc/zpanel/panel/etc/apps/webmail/plugins/managesieve/config.inc.php
