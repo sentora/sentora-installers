@@ -145,6 +145,9 @@ done
 #Disable php signature in headers
 sed -i "s|expose_php = On|expose_php = Off|" /etc/php.ini
 
+# Remove phpMyAdmin's setup folder in case it was left behind
+rm -rf /etc/zpanel/panel/etc/apps/phpmyadmin/setup
+
 # We ensure that the daemons are registered for automatic startup and are restarted for changes to take effect
 chkconfig httpd on
 chkconfig postfix on

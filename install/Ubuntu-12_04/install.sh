@@ -256,6 +256,8 @@ chmod +s /etc/zpanel/panel/bin/zsudo
 chmod 644 /etc/zpanel/configs/phpmyadmin/config.inc.php
 sed -i "s|\$cfg\['blowfish_secret'\] \= 'SENTORA';|\$cfg\['blowfish_secret'\] \= '$phpmyadminsecret';|" /etc/zpanel/configs/phpmyadmin/config.inc.php
 ln -s /etc/zpanel/configs/phpmyadmin/config.inc.php /etc/zpanel/panel/etc/apps/phpmyadmin/config.inc.php
+# Remove phpMyAdmin's setup folder in case it was left behind
+rm -rf /etc/zpanel/panel/etc/apps/phpmyadmin/setup
 
 # MySQL specific installation tasks...
 service mysql start
