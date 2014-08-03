@@ -80,18 +80,6 @@ Vagrant.configure("2") do |config|
 	end # end define
 ###################################################################
 ## virtual os environments for installer on beta os's
-	# ubuntu 12.10 32bit virtual machine : 192.168.33.14
-	config.vm.define 'sentora_12.10ubuntu32' do |config|
-		config.vm.box = "ubuntu12_10-32"
-		config.vm.network :private_network, ip: "192.168.33.14"
-		config.vm.box_url = "http://cloud-images.ubuntu.com/vagrant/quantal/current/quantal-server-cloudimg-i386-vagrant-disk1.box"
-		config.vm.provider :virtualbox do |vb|
-			# custom virtual machine setup
-			vb.hostname = "sentora-32-ubuntu"
-	    end
-	end # end config
-
-########################################
 # ubuntu 14.04 64bit # IP : 192.168.33.15
     config.vm.define 'sentora_14.04ubuntu64' do |config|
         config.vm.box = "ubuntu14_04-64"
