@@ -2,12 +2,14 @@
 .idea/
 .vagrant/
 
-Dev/**/*
+Dev/Etc/apache2/*
+Dev/Etc/dovecot/*
+Dev/Etc/proftpd/*
+Dev/Etc/zpanel/*
+Dev/Etc/sentora/*
 
 !Dev/Etc/apache2/git.index
 !Dev/Etc/dovecot/git.index
 !Dev/Etc/proftpd/git.index
 !Dev/Etc/zpanel/git.index
-
-!Dev/Var/zpanel/git.index
-!Dev/Var/www/git.index
+!Dev/Etc/sentora/git.index

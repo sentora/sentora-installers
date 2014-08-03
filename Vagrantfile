@@ -1,7 +1,7 @@
 # Learn vagrant http://www.vagrantup.com/
+PANEL_NAME = "zpanel"
 
 Vagrant.configure("2") do |config|
-    config.vm.boot_timeout = 500
 
 	# mount install scripts
 	config.vm.synced_folder "./install/", "/root/sentora/install/",
@@ -13,6 +13,20 @@ Vagrant.configure("2") do |config|
 	config.vm.synced_folder "./upgrade/", "/root/sentora/upgrade/",
         	:owner =>"root", :group => "root", :mount_options => ['dmode=777,fmode=777']
 	
+
+    # Mount Development Folders
+    #ETC apache
+    config.vm.synced_folder "./Dev/Etc/apache2/", "/etc/apache2/",
+            	:owner =>"root", :group => "root", :mount_options => ['dmode=777,fmode=777']
+    #ETC dovecot
+    config.vm.synced_folder "./Dev/Etc/dovecot/", "/etc/dovecot/",
+               	:owner =>"root", :group => "root", :mount_options => ['dmode=777,fmode=777']
+    #ETC proftpd
+    config.vm.synced_folder "./Dev/Etc/proftpd/", "/etc/proftpd/",
+                :owner =>"root", :group => "root", :mount_options => ['dmode=777,fmode=777']
+    #ETC panel
+    config.vm.synced_folder "./Dev/Etc/#{PANEL_NAME}/", "/etc/#{PANEL_NAME}/",
+                :owner =>"root", :group => "root", :mount_options => ['dmode=777,fmode=777']
 
 	config.vm.provider :virtualbox do |box|
   		box.gui = false
@@ -29,6 +43,7 @@ Vagrant.configure("2") do |config|
 		config.vm.provider :virtualbox do |vb|
 			# custom virtual machine setup
         		vb.hostname = "sentora-32-ubuntu"
+        		config.vm.boot_timeout = 800
     		end
 	end # end define
 
