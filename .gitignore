@@ -1,3 +1,13 @@
 /nbproject
 .idea/
 .vagrant/
+
+Dev/**/*
+
+!Dev/Etc/apache2/git.index
+!Dev/Etc/dovecot/git.index
+!Dev/Etc/proftpd/git.index
+!Dev/Etc/zpanel/git.index
+
+!Dev/Var/zpanel/git.index
+!Dev/Var/www/git.index
