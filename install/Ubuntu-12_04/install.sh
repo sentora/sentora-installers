@@ -28,26 +28,6 @@ if [ $UID -ne 0 ]; then
     exit 1
 fi
 
-# Lets check for some common control panels that we know will affect the installation/operating of Sentora.
-if [ -e /usr/local/cpanel ] || [ -e /usr/local/directadmin ] || [ -e /usr/local/solusvm/www ] || [ -e /usr/local/home/admispconfig ] || [ -e /usr/local/lxlabs/kloxo ] ; then
-    echo "You appear to have a control panel already installed on your server; This installer"
-    echo "is designed to install and configure Sentora on a clean OS installation only!"
-    echo ""
-    echo "Please re-install your OS before attempting to install using this script."
-    exit
-fi
-
-# Lets check for some common packages that we know will affect the installation/operating of Sentora.
-# We expect a clean OS so no apache/mySQL/bind/postfix/php!
-if dpkg -s php apache mysql bind postfix dovecot; then
-    echo "You appear to have a server with apache/mysql/bind/postfix already installed; "
-    echo "This installer is designed to install and configure Sentora on a clean OS "
-    echo "installation only!"
-    echo ""
-    echo "Please re-install your OS before attempting to install using this script."
-    exit
-fi
-
 # Ensure the installer is launched and can only be launched on Ubuntu 12.04
 BITS=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
 if [ -f /etc/lsb-release ]; then
@@ -59,10 +39,29 @@ else
 fi
 echo "Detected : $OS  $VER  $BITS"
 if [ "$OS" = "Ubuntu" ] && [ "$VER" = "12.04" ]; then
-  echo "Ok."
+    echo "Ok."
 else
-  echo "Sorry, this installer only supports the installation of Sentora on Ubuntu 12.04."
-  exit 1;
+    echo "Sorry, this installer only supports the installation of Sentora on Ubuntu 12.04."
+    exit 1;
+fi
+
+# Lets check for some common control panels that we know will affect the installation/operating of Sentora.
+if [ -e /usr/local/cpanel ] || [ -e /usr/local/directadmin ] || [ -e /usr/local/solusvm/www ] || [ -e /usr/local/home/admispconfig ] || [ -e /usr/local/lxlabs/kloxo ] ; then
+    echo "It appears that there is a control panel already installed on your server; This installer "
+    echo "is designed to install and configure Sentora on a clean OS installation only!"
+    echo ""
+    echo "Please re-install your OS before attempting to install using this script."
+    exit 1;
+fi
+
+# Lets check for some common packages that we know will affect the installation/operating of Sentora.
+# We expect a clean OS so no apache/mySQL/bind/postfix/php!
+if dpkg -s php apache mysql bind postfix dovecot; then
+    echo "It appears that there is apache/mysql/bind/postfix already installed; This installer "
+    echo "is designed to install and configure Sentora on a clean OS installation only!"
+    echo ""
+    echo "Please re-install your OS before attempting to install using this script."
+    exit 1;
 fi
 
 # Set custom logging methods so we create a log file in the current working directory.
