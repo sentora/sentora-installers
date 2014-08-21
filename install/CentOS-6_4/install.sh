@@ -99,10 +99,6 @@ echo -e "# install please consider reinstalling without them.         #"
 echo -e "#                                                            #"
 echo -e "##############################################################"
 
-# Set some installation defaults/auto assignments
-fqdn=`/bin/hostname`
-publicip=`wget -qO- http://api.sentora.io/ip.txt`
-
 # Lets check that the user wants to continue first...
 while true; do
 read -e -p "Would you like to continue (y/n)? " yn
@@ -112,8 +108,13 @@ read -e -p "Would you like to continue (y/n)? " yn
 	esac
 done
 
-# Install package to allow auto selection of php timezone
-yum -y -q install tzdata &>/dev/null
+# Install package to allow auto selection of php timezone and public ip
+yum -y -q install tzdata wget &>/dev/null
+
+# Set some installation defaults/auto assignments
+fqdn=`/bin/hostname`
+publicip=`wget -qO- http://api.sentora.io/ip.txt`
+
 echo "echo \$TZ > /etc/timezone" >> /usr/bin/tzselect
 
 # Installer options
