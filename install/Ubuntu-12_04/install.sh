@@ -3,7 +3,7 @@
 # OS VERSION: Ubuntu Server 12.04.x LTS
 # ARCH: x32_64
 
-Sentora_VERSION=10.0.0
+Sentora_VERSION=1.0.0
 
 # Official Sentora Automated Installation Script
 # =============================================
