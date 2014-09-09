@@ -102,7 +102,7 @@ echo -e ""
 
 # Set some installation defaults/auto assignments
 fqdn=`/bin/hostname`
-publicip=`wget -qO- http://api.sentora.io/ip.txt`
+publicip=`wget -qO- http://api.sentora.org/ip.txt`
 
 # Lets check that the user wants to continue first as obviously otherwise we'll be removing AppArmor for no reason.
 while true; do
