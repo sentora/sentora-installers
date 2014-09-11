@@ -8,13 +8,13 @@ Welcome to the Sentora installation script Git repository, this provides a centr
 The new installers and upgrade scripts enable you to install/upgrade Sentora directly from the command line with a single command, you no longer need to manually download the file, *CHMOD* it and then execute it etc.
 They check OS and version and will not allow you to install if requirements are not met.
 
-=== Installation for CentOS 6.4 ===
+#### Installation for CentOS 6.4 ####
 
 ```bash <(curl -Ss https://raw.githubusercontent.com/sentora/sentora-installers/master/sentora_install_centos.sh)```
 
 - This installer have not yet been officially validated. A new installer is at work.
 
-=== Installation for Ubuntu 12.04 or 14.04 LTS ===
+#### Installation for Ubuntu 12.04 or 14.04 LTS ####
 
 ```bash <(curl -Ss https://raw.githubusercontent.com/sentora/sentora-installers/master/sentora_install_ubuntu.sh)```
 
@@ -27,22 +27,21 @@ They check OS and version and will not allow you to install if requirements are 
 
 - the file sentora_install_ubuntu12.04.sh is obsolete and would not be used. It remains only for reference.
 
-=== More informations to install and run Sentora ===
+#### More informations to install and run Sentora ####
 
 Please refer to sentora documentation at [Sentora documentation](http://docs.sentora.org/?node=7).
 
 In case of problem, please use [Sentora forums](http://forums.sentora.org).
 
-=== Upgraders and removers ===
+#### Upgraders and removers ####
 
 Upgraders are still here only for later use or reference. They must NOT be used.
 
 Removers *may* work but their use is not recommended. They remove most of the packages but they are NOT leaving your OS in his initial state.
 
-=== 
 
 
-### Vagrant installer/upgrader development & testing ###
+## Vagrant installer/upgrader development & testing ##
 
 #### Available OS's ####
 
