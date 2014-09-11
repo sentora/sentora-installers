@@ -1,38 +1,46 @@
 Sentora Installers
-=================
+==================
 
-Welcome to the Sentora installation and upgrade script Git repository, this provides a central place to store, version and distribute Sentora installers and upgrade scripts from.
+Welcome to the Sentora installation script Git repository, this provides a central place to store, version and distribute Sentora installers and upgrade scripts from.
 
-## How to install/upgrade Sentora ##
+## How to install Sentora ##
 
-The new installers and upgrade scripts enable you to install/upgrade  Sentora directly from the command line with a single command, you no longer need to manually download the file, *CHMOD* it and then execute it etc.
+The new installers and upgrade scripts enable you to install/upgrade Sentora directly from the command line with a single command, you no longer need to manually download the file, *CHMOD* it and then execute it etc.
+They check OS and version and will not allow you to install if requirements are not met.
 
-> The following commands are published on the official Sentora download page.
+=== Installation for CentOS 6.4 ===
 
-Installation for CentOS 6.3+ is as simple as...
+```bash <(curl -Ss https://raw.githubusercontent.com/sentora/sentora-installers/master/sentora_install_centos.sh)```
 
-```bash <(curl -Ss https://raw.githubusercontent.com/sentora/sentora-installers/master/install/CentOS-6_4/10_1_1.sh)```
+- This installer have not yet been officially validated. A new installer is at work.
 
-...and to upgrade your server (for example from Sentora 10.1.0 to 10.1.1):-
+=== Installation for Ubuntu 12.04 or 14.04 LTS ===
 
-```bash <(curl -Ss https://raw.githubusercontent.com/sentora/sentora-installers/master/upgrade/CentOS-6_4/10_1_1.sh)```
+```bash <(curl -Ss https://raw.githubusercontent.com/sentora/sentora-installers/master/sentora_install_ubuntu.sh)```
 
-Installation for Ubuntu 12.04 LTS is just as simple too...
+- This installer is designed to install public server, with more checks about dns setup to ensure it will work.
+  It is (currently) not designed for local server install
 
-```bash <(curl -Ss https://raw.githubusercontent.com/sentora/sentora-installers/master/install/Ubuntu-12_04/10_1_1.sh)```
+- The subdomain DNS for the panel MUST have bee setup prior to installation.
 
-...and to upgrade your server (for example from Sentora 10.1.0 to 10.1.1):-
+- It installs sentora in directory structure compatible with zpanel 10.1.1 addons.
 
-```bash <(curl -Ss https://raw.githubusercontent.com/sentora/sentora-installers/master/upgrade/Ubuntu-12_04/10_1_1.sh)```
+- the file sentora_install_ubuntu12.04.sh is obsolete and would not be used. It remains only for reference.
 
-## Officially supported Operating Systems ##
+=== More informations to install and run Sentora ===
 
-As a relatively small team of guys and due to the time required to keep installation packages updated and tested we have officially decided to support and maintain the following operating systems/distributions.
+Please refer to sentora documentation at [Sentora documentation](http://docs.sentora.org/?node=7).
 
-- Latest Ubuntu Server LTS release (currently 12.04 LTS)
-- Latest CentOS (minimal) release (currently 6.4)
+In case of problem, please use [Sentora forums](http://forums.sentora.org).
 
-> By officially supported we refer to the fact that we ensure that prior to any release of Sentora that the official Sentora team have released and fully tested installer scripts and upgrade scripts for the OS versions listed above.
+=== Upgraders and removers ===
+
+Upgraders are still here only for later use or reference. They must NOT be used.
+
+Removers *may* work but their use is not recommended. They remove most of the packages but they are NOT leaving your OS in his initial state.
+
+=== 
+
 
 ### Vagrant installer/upgrader development & testing ###
 

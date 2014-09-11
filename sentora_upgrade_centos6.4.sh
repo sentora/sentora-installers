@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-# OS VERSION: Ubuntu Server 12.04.x LTS
+# OS VERSION: CentOS 6.4+ Minimal
 # ARCH: x32_64
 
-SEN_VERSION=10.1.1
+SEN_VERSION=1.0.0
 SEN_VERSION_ACTUAL=$(setso --show dbversion)
 
 # Official Sentora Automated Upgrade Script
@@ -29,26 +29,31 @@ if [ $UID -ne 0 ]; then
     exit 1;
 fi
 
-# Ensure the installer is launched and can only be launched on Ubuntu 12.04
+# Ensure the upgrade script is launched and can only be launched on CentOs 6.4
 BITS=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
-if [ -f /etc/lsb-release ]; then
-  OS=$(cat /etc/lsb-release | grep DISTRIB_ID | sed 's/^.*=//')
-  VER=$(cat /etc/lsb-release | grep DISTRIB_RELEASE | sed 's/^.*=//')
+if [ -f /etc/centos-release ]; then
+  OS="CentOs"
+  VER=$(cat /etc/centos-release | sed 's/^.*release //;s/ (Fin.*$//')
 else
   OS=$(uname -s)
   VER=$(uname -r)
 fi
 echo "Detected : $OS  $VER  $BITS"
-if [ "$OS" = "Ubuntu" ] && [ "$VER" = "12.04" ]; then
+if [ "$OS" = "CentOs" ] && [ "$VER" = "6.0" ] || [ "$VER" = "6.1" ] || [ "$VER" = "6.2" ] || [ "$VER" = "6.3" ] || [ "$VER" = "6.4" ] || [ "$VER" = "6.5" ] ||[ "$VER" = "6.6" ] ; then
   echo "Ok."
 else
-  echo "Sorry, this upgrade script only supports the upgrade of Sentora on Ubuntu 12.04."
+  echo "Sorry, this upgrade script only supports Sentora on CentOS 6.x."
   exit 1;
 fi
+
+
+
+#check zpanel version
 
 if [ "$SEN_VERSION" = "$SEN_VERSION_ACTUAL" ] ; then
 echo "your version of Sentora already updated"
 fi
+
 
 # Set custom logging methods so we create a log file in the current working directory.
 logfile=$$.log
@@ -75,7 +80,7 @@ read -e -p "Would you like to continue with the upgrade now (y/n)? " yn
 	esac
 done
 
-# Get mysql root password, check it works or ask it
+# get mysql root password, check it works or ask it
 mysqlpassword=$(cat /etc/zpanel/panel/cnf/db.php | grep "pass =" | sed -s "s|.*pass \= '\(.*\)';.*|\1|")
 while ! mysql -u root -p$mysqlpassword -e ";" ; do
  read -p "Can't connect to mysql, please give root password or press ctrl-C to abort: " mysqlpassword
@@ -83,24 +88,9 @@ done
 echo -e "Connection mysql ok"
 
 # Now we'll ask upgrade specific automatic detection...
-if [ "$SEN_VERSION_ACTUAL" = "10.0.0" ] ; then
-upgradeto=10-0-1
-SEN_VERSIONGIT=10.0.1
-fi
-
-if [ "$SEN_VERSION_ACTUAL" = "10.0.1" ] ; then
-upgradeto=10-0-2
-SEN_VERSIONGIT=10.0.2
-fi
-
-if [ "$SEN_VERSION_ACTUAL" = "10.0.2" ] ; then
-upgradeto=10-1-0
-SEN_VERSIONGIT=10.1.0
-fi
-
-if [ "$SEN_VERSION_ACTUAL" = "10.1.0" ] ; then
-upgradeto=10-1-1
-SEN_VERSIONGIT=10.1.1
+if [ "$SEN_VERSION_ACTUAL" = "10.1.1" ] ; then
+upgradeto=1-0-0
+SEN_VERSIONGIT=1.0.0
 fi
 
 # Now we'll ask upgrade specific questions...
@@ -113,7 +103,6 @@ while true; do
 	esac
 done
 
-
 # We now clone the latest Sentora software from GitHub
 echo "Downloading Sentora, Please wait, this may take several minutes, the installer will continue after this is complete!"
 git clone https://github.com/sentora/sentora.git
@@ -124,41 +113,57 @@ git checkout-index -a -f --prefix=../zp_install_cache/
 cd ../zp_install_cache/
 rm -rf cnf/
 
-
 # Lets run OS software updates
-apt-get update -yqq
-apt-get upgrade -yqq
+yum -y update
+yum -y upgrade
 
 # Now we make Sentora application/file specific updates
 cp -R . /etc/zpanel/panel/
 chmod -R 777 /etc/zpanel/
 chmod 644 /etc/zpanel/panel/etc/apps/phpmyadmin/config.inc.php
 cc -o /etc/zpanel/panel/bin/zsudo /etc/zpanel/configs/bin/zsudo.c
-sudo chown root /etc/zpanel/panel/bin/zsudo
+chown root /etc/zpanel/panel/bin/zsudo
 chmod +s /etc/zpanel/panel/bin/zsudo
 sed -i "/symbolic-links=/a \secure-file-priv=/var/tmp" /etc/my.cnf
 
+# BIND specific upgrade tasks...
+chmod 751 /var/named
+chmod 771 /var/named/data
+
+# CRON specific upgrade tasks...
+chmod 744 /var/spool/cron
+chmod 644 /var/spool/cron/apache
+
+
 # Lets execute MySQL data upgrade scripts
-cat /etc/zpanel/panel/etc/build/config_packs/ubuntu_12_04/zpanelx-update/$upgradeto/sql/*.sql | mysql -u root -p$mysqlpassword
+cat /etc/zpanel/panel/etc/build/config_packs/centos_6_3/sentora-update/$upgradeto/sql/*.sql | mysql -u root -p$mysqlpassword
 updatemessage=""
-for each in /etc/zpanel/panel/etc/build/config_packs/ubuntu_12_04/zpanelx-update/$upgradeto/shell/*.sh ; do
+for each in /etc/zpanel/panel/etc/build/config_packs/centos_6_3/sentora-update/$upgradeto/shell/*.sh ; do
     updatemessage="$updatemessage\n"$(bash $each)  ;
 done
-# Disable PHP banner in apache server header
-sed -i "s|expose_php = On|expose_php = Off|" /etc/php5/apache2/php.ini
+
+#Disable php signature in headers
+sed -i "s|expose_php = On|expose_php = Off|" /etc/php.ini
 
 # Remove phpMyAdmin's setup folder in case it was left behind
 rm -rf /etc/zpanel/panel/etc/apps/phpmyadmin/setup
 
 # We ensure that the daemons are registered for automatic startup and are restarted for changes to take effect
-service apache2 start
+chkconfig httpd on
+chkconfig postfix on
+chkconfig dovecot on
+chkconfig crond on
+chkconfig mysqld on
+chkconfig named on
+chkconfig proftpd on
+service httpd restart
 service postfix restart
-service dovecot start
-service cron reload
-service mysql start
-service bind9 start
-service proftpd start
-service atd start
+service dovecot restart
+service crond restart
+service mysqld restart
+service named restart
+service proftpd restart
+service atd restart
 php /etc/zpanel/panel/bin/daemon.php
 
 # We'll now remove the temporary install cache.
