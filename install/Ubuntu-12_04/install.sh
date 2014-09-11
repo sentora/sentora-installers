@@ -403,13 +403,10 @@ chown -R www-data:www-data /var/spool/cron/crontabs/
 rm -rf /etc/webalizer/webalizer.conf
 
 # Roundcube specific installation tasks...
-sed -i "s|YOUR_MYSQL_ROOT_PASSWORD|$password|" /etc/zpanel/configs/roundcube/db.inc.php
-sed -i "s|#||" /etc/zpanel/configs/roundcube/db.inc.php
+sed -i "s|YOUR_MYSQL_ROOT_PASSWORD|$password|" /etc/zpanel/configs/roundcube/config.inc.php
 sed -i "s|rcmail-!24ByteDESkey\*Str|$roundcube_des_key|" /etc/zpanel/configs/roundcube/main.inc.php
-rm -rf /etc/zpanel/panel/etc/apps/webmail/config/main.inc.php
-ln -s /etc/zpanel/configs/roundcube/main.inc.php /etc/zpanel/panel/etc/apps/webmail/config/main.inc.php
-ln -s /etc/zpanel/configs/roundcube/config.inc.php /etc/zpanel/panel/etc/apps/webmail/plugins/managesieve/config.inc.php
-ln -s /etc/zpanel/configs/roundcube/db.inc.php /etc/zpanel/panel/etc/apps/webmail/config/db.inc.php
+ln -s /etc/zpanel/configs/roundcube/config.inc.php /etc/zpanel/panel/etc/apps/webmail/config/config.inc.php
+ln -s /etc/zpanel/configs/roundcube/managesieve/config.inc.php /etc/zpanel/panel/etc/apps/webmail/plugins/managesieve/config.inc.php
 
 # Enable system services and start/restart them as required.
 service apache2 start
