@@ -77,7 +77,7 @@ fi
 # Prepare or query informations required to install
 echo "Preparing to select timezone, please wait a few seconds..."
 fqdn=`/bin/hostname`
-publicip=`wget -qO- http://api.sentora.io/ip.txt`
+publicip=`wget -qO- http://api.sentora.org/ip.txt`
 
 # Propose selection list for the time zone
 apt-get -yqq update &>/dev/null
