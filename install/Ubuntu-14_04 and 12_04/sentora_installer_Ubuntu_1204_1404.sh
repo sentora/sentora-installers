@@ -75,21 +75,19 @@ fi
 
 # ***************************************
 # Prepare or query informations required to install
-echo "Preparing to select timezone, please wait a few seconds..."
-fqdn=`/bin/hostname`
-publicip=`wget -qO- http://api.sentora.org/ip.txt`
 
 # Propose selection list for the time zone
+echo "Preparing to select timezone, please wait a few seconds..."
 apt-get -yqq update &>/dev/null
 apt-get -yqq install tzdata &>/dev/null
-
-# Installer options
 dpkg-reconfigure tzdata
 tz=`cat /etc/timezone`
 
+# Installer options
 echo "You will be asked for the FQDN that will be used to access Sentora on your server"
 echo "- It MUST be a sub-domain of you main domain, it must NOT be your main domain only. Example: panel.yourdomain.com"
-echo "- It MUST be alredy setup in your DNS nameserver (and propagated)."
+echo "- It MUST be already setup in your DNS nameserver (and propagated)."
+fqdn=`/bin/hostname`
 while true; do
     read -e -p "FQDN for Sentora: " -i $fqdn fqdn
     sub=$(echo $fqdn | sed -n 's|\(.*\)\..*\..*|\1|p')
@@ -108,11 +106,12 @@ while true; do
 	        break
             else	
                 echo "WARNING : the IP of your server is not the same than reported by the dns for domain $fqdn"
-		read -e -p "Are you really SURE that you want to setup Sentora with these parameters? (y/n)" yn
+                echo "Are you really SURE that you want to setup Sentora with these parameters?"
+                read -e -p "(y):accept, (n):change fqdn or ip retry, (ctrl+c):quit installer" yn
                 case $yn in
                    [Yy]* ) break;;
                 esac
-	    fi
+	          fi
         fi
     fi
 done
@@ -194,12 +193,6 @@ deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main restricted universe
 deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc)-security main restricted universe multiverse
 deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc)-updates main restricted universe multiverse
 EOF
-apt-get -y install software-properties-common
-echo "--- Adding apache2 and php5 ppa"
-add-apt-repository -y ppa:ondrej/php5 &> /dev/null
-sleep 10
-apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 3B4FE6ACC0B21F32
-apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 4F4EA0AAE5267A6C
 fi
 
 # Ensure all packages are uptodate
@@ -496,8 +489,10 @@ setzadmin --set "$zadminpassword";
 /etc/zpanel/panel/bin/setso --set zpanel_domain $fqdn
 /etc/zpanel/panel/bin/setso --set server_ip $publicip
 /etc/zpanel/panel/bin/setso --set apache_changed "true"
-# small touch until github files become ok
+# small touch until github files become ok in new tag
 /etc/zpanel/panel/bin/setso --set latestzpversion $Sentora_GitHubVersion
+/etc/zpanel/panel/bin/setso --set news_url http://api.sentora.org/latestnews.json
+/etc/zpanel/panel/bin/setso --set update_url http://api.sentora.org/latestversion.json
 
 # Enable system services and start/restart them as required.
 echo -e "\n# Starting/restarting services"
