@@ -99,6 +99,9 @@ while true; do
             echo "The subdomain $fqdn have no IP assigned in DNS"
 	    echo "You must add a A record in the DNS manager for this subdomain"
 	    echo "  and then wait until propagation is done."
+	    echo "For more information, install documentation is at"
+	    echo " - http://docs.sentora.org/index.php?node=22 (Install for Ubuntu)"
+	    echo " - http://docs.sentora.org/index.php?node=51 (Installer questions)"
         else
             publicip=$(wget -qO- http://api.sentora.org/ip.txt)
             read -e -p "Enter the public (external) server IP: " -i $publicip publicip
