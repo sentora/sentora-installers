@@ -38,8 +38,8 @@ fi
 # Ensure the OS is compatible with the launcher
 BITS=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
 if [ -f /etc/lsb-release ]; then
-  OS=$(cat /etc/lsb-release | grep DISTRIB_ID | sed 's/^.*=//')
-  VER=$(cat /etc/lsb-release | grep DISTRIB_RELEASE | sed 's/^.*=//')
+  OS=$(grep DISTRIB_ID /etc/lsb-release | sed 's/^.*=//')
+  VER=$(grep DISTRIB_RELEASE /etc/lsb-release | sed 's/^.*=//')
 else
   OS=$(uname -s)
   VER=$(uname -r)
@@ -81,20 +81,21 @@ echo "Preparing to select timezone, please wait a few seconds..."
 apt-get -yqq update &>/dev/null
 apt-get -yqq install tzdata &>/dev/null
 dpkg-reconfigure tzdata
-tz=`cat /etc/timezone`
+tz=$(cat /etc/timezone)
 
 # Installer options
+apt-get -yqq install dnsutils
 echo "You will be asked for the FQDN that will be used to access Sentora on your server"
 echo "- It MUST be a sub-domain of you main domain, it must NOT be your main domain only. Example: panel.yourdomain.com"
 echo "- It MUST be already setup in your DNS nameserver (and propagated)."
-fqdn=`/bin/hostname`
+fqdn=$(/bin/hostname)
 while true; do
-    read -e -p "FQDN for Sentora: " -i $fqdn fqdn
-    sub=$(echo $fqdn | sed -n 's|\(.*\)\..*\..*|\1|p')
+    read -e -p "FQDN for Sentora: " -i "$fqdn" fqdn
+    sub=$(echo "$fqdn" | sed -n 's|\(.*\)\..*\..*|\1|p')
     if [[ "$sub" == "" ]]; then
         echo "The FQDN must be a subdomain."
     else
-        dnsip=$(host $fqdn|grep address|cut -d" " -f4)
+        dnsip=$(host "$fqdn"|grep address|cut -d" " -f4)
         if [[ "$dnsip" == "" ]]; then
             echo "The subdomain $fqdn have no IP assigned in DNS"
 	    echo "You must add a A record in the DNS manager for this subdomain"
@@ -104,13 +105,13 @@ while true; do
 	    echo " - http://docs.sentora.org/index.php?node=51 (Installer questions)"
         else
             publicip=$(wget -qO- http://api.sentora.org/ip.txt)
-            read -e -p "Enter the public (external) server IP: " -i $publicip publicip
-            if [[ $publicip == $dnsip ]]; then
+            read -e -p "Enter the public (external) server IP: " -i "$publicip" publicip
+            if [[ "$publicip" == "$dnsip" ]]; then
 	        break
             else	
                 echo "WARNING : the IP of your server is not the same than reported by the dns for domain $fqdn"
                 echo "Are you really SURE that you want to setup Sentora with these parameters?"
-                read -e -p "(y):accept, (n):change fqdn or ip retry, (ctrl+c):quit installer" yn
+                read -e -p "(y):accept, (n):change fqdn or ip retry, (ctrl+c):quit installer? " yn
                 case $yn in
                    [Yy]* ) break;;
                 esac
@@ -120,7 +121,7 @@ while true; do
 done
 echo ""
 while true; do
-    read -e -p "Sentora is now ready to install, do you wish to continue (y/n)" yn
+    read -e -p "Sentora is now ready to install, do you wish to continue (y/n)? " yn
     case $yn in
         [Yy]* ) break;;
         [Nn]* ) exit;
@@ -199,10 +200,12 @@ EOF
 fi
 
 # Ensure all packages are uptodate
+echo -e "\nUpdating+upgrading system, it may take some time..."
 apt-get update -yqq
 apt-get upgrade -yqq
 
 # Install some standard utility packages required by the installer and/or Sentora.
+echo -e "\nDownloading and installing required tools..."
 apt-get -y install sudo wget vim make zip unzip git debconf-utils at build-essential bash-completion
 
 # Clone Sentora from GitHub
@@ -274,31 +277,32 @@ export DEBIAN_FRONTEND=noninteractive
 
 #--- MySQL
 echo -e "\n# Installing MySQL"
-mysqlpassword=`passwordgen`;
-apt-get install -qqy mysql-server libsasl2-modules-sql libsasl2-modules
+mysqlpassword=$(passwordgen);
+apt-get -yqq install bsdutils
+apt-get -yqq install mysql-server libsasl2-modules-sql libsasl2-modules
 if [ "$VER" = "12.04" ]; then
   apt-get install -qqy db4.7-util
 fi
 
 service mysql start
 mysqladmin -u root password "$mysqlpassword"
-until mysql -u root -p$mysqlpassword -e ";" > /dev/null 2>&1 ; do
+until mysql -u root -p"$mysqlpassword" -e ";" > /dev/null 2>&1 ; do
     read -s -p "enter your root mysql password : " mysqlpassword
 done
 
 sed -i "s|YOUR_ROOT_MYSQL_PASSWORD|$mysqlpassword|" /etc/zpanel/panel/cnf/db.php
-mysql -u root -p$mysqlpassword -e "DROP DATABASE IF EXISTS test";
-mysql -u root -p$mysqlpassword -e "DELETE FROM mysql.user WHERE User='root' AND Host != 'localhost'";
-mysql -u root -p$mysqlpassword -e "DELETE FROM mysql.user WHERE User=''";
-mysql -u root -p$mysqlpassword -e "FLUSH PRIVILEGES";
-mysql -u root -p$mysqlpassword -e "CREATE SCHEMA zpanel_roundcube";
-cat /etc/zpanel/configs/sentora-install/sql/*.sql | mysql -u root -p$mysqlpassword
-mysql -u root -p$mysqlpassword -e "FLUSH PRIVILEGES";
+mysql -u root -p"$mysqlpassword" -e "DROP DATABASE IF EXISTS test";
+mysql -u root -p"$mysqlpassword" -e "DELETE FROM mysql.user WHERE User='root' AND Host != 'localhost'";
+mysql -u root -p"$mysqlpassword" -e "DELETE FROM mysql.user WHERE User=''";
+mysql -u root -p"$mysqlpassword" -e "FLUSH PRIVILEGES";
+mysql -u root -p"$mysqlpassword" -e "CREATE SCHEMA zpanel_roundcube";
+cat /etc/zpanel/configs/sentora-install/sql/*.sql | mysql -u root -p"$mysqlpassword"
+mysql -u root -p"$mysqlpassword" -e "FLUSH PRIVILEGES";
 sed -i "/ssl-key=/a \secure-file-priv = /var/tmp" /etc/mysql/my.cnf
 
 #--- phpMyAdmin
 echo -e "\n# Installing phpMyAdmin"
-phpmyadminsecret=`passwordgen`;
+phpmyadminsecret=$(passwordgen);
 chmod 644 /etc/zpanel/configs/phpmyadmin/config.inc.php
 sed -i "s|\$cfg\['blowfish_secret'\] \= 'SENTORA';|\$cfg\['blowfish_secret'\] \= '$phpmyadminsecret';|" /etc/zpanel/configs/phpmyadmin/config.inc.php
 ln -s /etc/zpanel/configs/phpmyadmin/config.inc.php /etc/zpanel/panel/etc/apps/phpmyadmin/config.inc.php
@@ -307,8 +311,8 @@ rm -rf /etc/zpanel/panel/etc/apps/phpmyadmin/setup
 
 #--- Postfix
 echo -e "\n# Installing Postfix"
-postfixpassword=`passwordgen`;
-mysql -u root -p$mysqlpassword -e "UPDATE mysql.user SET Password=PASSWORD('$postfixpassword') WHERE User='postfix' AND Host='localhost';";
+postfixpassword=$(passwordgen);
+mysql -u root -p"$mysqlpassword" -e "UPDATE mysql.user SET Password=PASSWORD('$postfixpassword') WHERE User='postfix' AND Host='localhost';";
 apt-get -qqy install postfix postfix-mysql 
 mkdir /var/zpanel/vmail
 chmod -R 770 /var/zpanel/vmail
@@ -367,7 +371,7 @@ if ! grep -q "include /etc/zpanel/configs/proftpd/proftpd-mysql.conf" /etc/proft
     echo "include /etc/zpanel/configs/proftpd/proftpd-mysql.conf" >> /etc/proftpd/proftpd.conf; 
 fi
 chmod -R 644 /var/zpanel/logs/proftpd
-serverhost=`hostname`
+serverhost=$(hostname)
 
 #--- Apache HTTPD
 echo -e "\n# Installing Apache"
@@ -378,8 +382,8 @@ fi
 sed -i 's|DocumentRoot /var/www/html|DocumentRoot /etc/zpanel/panel|' /etc/apache2/sites-enabled/000-default.conf
 sed -i 's|<Directory /var/www/>|<Directory /etc/zpanel/panel>|' /etc/apache2/apache2.conf
 chown -R www-data:www-data /var/zpanel/temp/
-if ! grep -q "127.0.0.1 "$fqdn /etc/hosts; then
-    echo "127.0.0.1 "$fqdn >> /etc/hosts; 
+if ! grep -q "127.0.0.1 $fqdn" /etc/hosts; then
+    echo "127.0.0.1 $fqdn" >> /etc/hosts; 
 fi
 if ! grep -q "apache ALL=NOPASSWD: /etc/zpanel/panel/bin/zsudo" /etc/sudoers; then
     echo "apache ALL=NOPASSWD: /etc/zpanel/panel/bin/zsudo" >> /etc/sudoers; 
@@ -444,13 +448,17 @@ rndc-confgen -a -r /dev/urandom
 date +"%H:%M:%S"
 ln -s /etc/zpanel/configs/bind/named.conf /etc/bind/named.conf
 ln -s /etc/zpanel/configs/bind/rndc.conf /etc/bind/rndc.conf
-if ! grep -q "include \"/etc/zpanel/configs/bind/etc/log.conf\";" /etc/bind/named.conf; then echo "include \"/etc/zpanel/configs/bind/etc/log.conf\";" >> /etc/bind/named.conf; fi
+if ! grep -q "include \"/etc/zpanel/configs/bind/etc/log.conf\";" /etc/bind/named.conf; then 
+  echo "include \"/etc/zpanel/configs/bind/etc/log.conf\";" >> /etc/bind/named.conf; 
+fi
 ln -s /usr/sbin/named-checkconf /usr/bin/named-checkconf
 ln -s /usr/sbin/named-checkzone /usr/bin/named-checkzone
 ln -s /usr/sbin/named-compilezone /usr/bin/named-compilezone
-cat /etc/bind/rndc.key | cat - /etc/bind/named.conf > /etc/bind/named.conf.new && mv /etc/bind/named.conf.new /etc/bind/named.conf
-cat /etc/bind/rndc.key | cat - /etc/bind/rndc.conf > /etc/bind/rndc.conf.new && mv /etc/bind/rndc.conf.new /etc/bind/rndc.conf
-rm -rf /etc/bind/rndc.key
+cat /etc/bind/rndc.key /etc/bind/named.conf > /etc/bind/named.conf.new 
+mv /etc/bind/named.conf.new /etc/bind/named.conf
+cat /etc/bind/rndc.key /etc/bind/rndc.conf > /etc/bind/rndc.conf.new 
+mv /etc/bind/rndc.conf.new /etc/bind/rndc.conf
+rm -f /etc/bind/rndc.key
 date +"%H:%M:%S"
 
 #--- CRON specific installation tasks...
@@ -476,7 +484,7 @@ rm -rf /etc/webalizer/webalizer.conf
 
 #--- Roundcube specific installation tasks...
 echo -e "\n# Configuring Roundcube"
-roundcube_des_key=`passwordgen 24`;
+roundcube_des_key=$(passwordgen 24);
 sed -i "s|YOUR_MYSQL_ROOT_PASSWORD|$mysqlpassword|" /etc/zpanel/configs/roundcube/db.inc.php
 sed -i "s|#||" /etc/zpanel/configs/roundcube/db.inc.php
 sed -i "s|rcmail-!24ByteDESkey\*Str|$roundcube_des_key|" /etc/zpanel/configs/roundcube/main.inc.php
@@ -487,10 +495,10 @@ ln -s /etc/zpanel/configs/roundcube/db.inc.php /etc/zpanel/panel/etc/apps/webmai
 
 # Set some Sentora database entries using. setso and setzadmin
 echo -e "\n# Configuring Sentora"
-zadminpassword=`passwordgen`;
+zadminpassword=$(passwordgen);
 setzadmin --set "$zadminpassword";
-/etc/zpanel/panel/bin/setso --set zpanel_domain $fqdn
-/etc/zpanel/panel/bin/setso --set server_ip $publicip
+/etc/zpanel/panel/bin/setso --set zpanel_domain "$fqdn"
+/etc/zpanel/panel/bin/setso --set server_ip "$publicip"
 /etc/zpanel/panel/bin/setso --set apache_changed "true"
 # small touch until github files become ok in new tag
 /etc/zpanel/panel/bin/setso --set latestzpversion $Sentora_GitHubVersion
@@ -513,12 +521,13 @@ cd ../
 rm -rf zp_install_cache/ sentora/
 
 # Store the passwords for user reference
-touch /root/passwords.txt
-echo "zadmin Password       : $zadminpassword" >> /root/passwords.txt
-echo "MySQL Root Password   : $mysqlpassword" >> /root/passwords.txt
-echo "MySQL Postfix Password: $postfixpassword" >> /root/passwords.txt
-echo "IP Address: $publicip" >> /root/passwords.txt
-echo "Panel Domain: $fqdn" >> /root/passwords.txt
+{
+    echo "zadmin Password       : $zadminpassword"
+    echo "MySQL Root Password   : $mysqlpassword"
+    echo "MySQL Postfix Password: $postfixpassword"
+    echo "IP Address: $publicip"
+    echo "Panel Domain: $fqdn"
+} >> /root/passwords.txt
 
 # Advise the user that Sentora is now installed and accessible.
 echo "#########################################################" &>/dev/tty
