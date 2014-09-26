@@ -43,8 +43,8 @@ if [ -f /etc/lsb-release ]; then
 elif [ -f /etc/centos-release ]; then
     OS="CentOs"
     VERFULL=$(sed 's/^.*release //;s/ (Fin.*$//' /etc/centos-release)
-    VER=${VERFULL:0:1} # retunr 6 or 7
-    VERMINOR=${VERFULL:0:3} # return 6.x or 7.x
+    VER=${VERFULL:0:1} # return 6 or 7
+#   VERMINOR=${VERFULL:0:3} # return 6.x or 7.x  not used
 else
     OS=$(uname -s)
     VER=$(uname -r)
@@ -141,7 +141,7 @@ fi
 
 # Installer options
 if [[ "$OS" = "CentOs" ]]; then
-    $PACKAGE_INSTALLER wget
+    $PACKAGE_INSTALLER bind-utils
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER dnsutils
 fi    
@@ -560,7 +560,7 @@ mysql -u root -p"$mysqlpassword" < $PANEL_PATH/configs/sentora-install/sql/sento
 mysql -u root -p"$mysqlpassword" -e "ALTER TABLE zpanel_proftpd.ftpuser ALTER COLUMN uid SET DEFAULT $FTP_USER_ID"
 mysql -u root -p"$mysqlpassword" -e "ALTER TABLE zpanel_proftpd.ftpuser ALTER COLUMN gid SET DEFAULT $FTP_USER_ID"
 sed -i "s|!SQL_PASSWORD!|$mysqlpassword|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
-sed -i "s|!SQL_MIN_ID!|$FTP_USER_ID" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
+sed -i "s|!SQL_MIN_ID!|$FTP_USER_ID|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
 rm -f "$FTP_CONF_PATH"
 touch "$FTP_CONF_PATH"
 if ! grep -q "include $PANEL_PATH/configs/proftpd/proftpd-mysql.conf" "$FTP_CONF_PATH"; then
