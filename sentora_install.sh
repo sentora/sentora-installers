@@ -634,8 +634,8 @@ sed -i 's| \$customPort = array|$customPorts = array|' /etc/zpanel/panel/modules
 #adjustement for apache 2.4
 # Order allow,deny / Allow from all  ->  Require all granted
 # Order deny,allow / Deny from all   ->  Require all denied
-if [[ "$OS" = "CentOs" && "$VER" = "7" ) || 
-      "$OS" = "Ubuntu" && "$VER" = "14.04" ) ]] ; then 
+if [[ ("$OS" = "CentOs" && "$VER" = "7") || 
+      ("$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then 
     sed -i 's|Order deny,allow|Require all denied|I'  $PANEL_PATH/configs/apache/httpd.conf
     sed -i '/Deny from all/d' $PANEL_PATH/configs/apache/httpd.conf
 
