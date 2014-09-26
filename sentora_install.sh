@@ -353,7 +353,7 @@ chown -R root:root $PANEL_PATH
 unzip -oq sentora_installer.zip -d $PANEL_PATH
 mv "$PANEL_PATH/sentora-core-$SENTORA_GITHUB_VERSION" "$PANEL_PATH/panel"
 rm sentora_installer.zip
-rm "$PANEL_PATH/panel/*.md" "$PANEL_PATH/panel/.gitignore"
+rm "$PANEL_PATH/panel/LICENSE.md" "$PANEL_PATH/panel/README.md" "$PANEL_PATH/panel/.gitignore"
 rm -rf "$PANEL_PATH/_delete_me"
 
 # Set-up Sentora directories and configure permissions
@@ -445,7 +445,7 @@ mysql -u root -p"$mysqlpassword" -e "FLUSH PRIVILEGES";
 mysql -u root -p"$mysqlpassword" -e "DROP DATABASE IF EXISTS test";
 
 # secure SELECT "hacker-code" INTO OUTFILE 
-sed -i "/[mysqld]/&\nsecure-file-priv = /var/tmp" $MY_CNF_PATH
+sed -i "s|\[mysqld\]|&\nsecure-file-priv = /var/tmp|" $MY_CNF_PATH
 
 # setup sentora access and core database
 sed -i "s|YOUR_ROOT_MYSQL_PASSWORD|$mysqlpassword|" $PANEL_PATH/panel/cnf/db.php
@@ -560,7 +560,7 @@ mysql -u root -p"$mysqlpassword" < $PANEL_PATH/configs/sentora-install/sql/sento
 mysql -u root -p"$mysqlpassword" -e "ALTER TABLE zpanel_proftpd.ftpuser ALTER COLUMN uid SET DEFAULT $FTP_USER_ID"
 mysql -u root -p"$mysqlpassword" -e "ALTER TABLE zpanel_proftpd.ftpuser ALTER COLUMN gid SET DEFAULT $FTP_USER_ID"
 sed -i "s|!SQL_PASSWORD!|$mysqlpassword|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
-sed -i "s|!SQL_MIN_ID!|$FTP_USER_ID" proftpd-mysql.conf
+sed -i "s|!SQL_MIN_ID!|$FTP_USER_ID" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
 rm -f "$FTP_CONF_PATH"
 touch "$FTP_CONF_PATH"
 if ! grep -q "include $PANEL_PATH/configs/proftpd/proftpd-mysql.conf" "$FTP_CONF_PATH"; then
@@ -581,6 +581,7 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     HTTP_CONF_PATH="/etc/apache2/apache2.conf"
     HTTP_VARS_PATH="/etc/apache2/envvars"
     HTTP_SERVICE="apache2"
+    a2enmod rewrite
 fi
 
 if ! grep -q "Include $PANEL_PATH/configs/apache/httpd.conf" "$HTTP_CONF_PATH"; then
@@ -629,8 +630,21 @@ usermod -a -G ftpgroup $HTTP_USER
 
 # small touch until core file is updated
 sed -i 's| \$customPort = array|$customPorts = array|' /etc/zpanel/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
-sed -i 's|Order allow,deny|Require all granted|I'  $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
-sed -i '/Allow from all/d' $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
+
+#adjustement for apache 2.4
+# Order allow,deny / Allow from all  ->  Require all granted
+# Order deny,allow / Deny from all   ->  Require all denied
+if [[ "$OS" = "CentOs" && "$VER" = "7" ) || 
+      "$OS" = "Ubuntu" && "$VER" = "14.04" ) ]] ; then 
+    sed -i 's|Order deny,allow|Require all denied|I'  $PANEL_PATH/configs/apache/httpd.conf
+    sed -i '/Deny from all/d' $PANEL_PATH/configs/apache/httpd.conf
+
+    sed -i 's|Order allow,deny|Require all granted|I' $PANEL_PATH/configs/apache/httpd-vhost.conf
+    sed -i '/Allow from all/d' $PANEL_PATH/configs/apache/httpd-vhost.conf
+
+    sed -i 's|Order allow,deny|Require all granted|I'  $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
+    sed -i '/Allow from all/d' $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
+fi
 
 # - remove NameVirtualHost that is now without effect and generate warning
 sed -i '/    \$line \.= \"NameVirtualHost/ {N;N;N;N;d}' /etc/zpanel/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
