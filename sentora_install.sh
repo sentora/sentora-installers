@@ -639,8 +639,8 @@ if [[ ("$OS" = "CentOs" && "$VER" = "7") ||
     sed -i 's|Order deny,allow|Require all denied|I'  $PANEL_PATH/configs/apache/httpd.conf
     sed -i '/Deny from all/d' $PANEL_PATH/configs/apache/httpd.conf
 
-    sed -i 's|Order allow,deny|Require all granted|I' $PANEL_PATH/configs/apache/httpd-vhost.conf
-    sed -i '/Allow from all/d' $PANEL_PATH/configs/apache/httpd-vhost.conf
+    sed -i 's|Order allow,deny|Require all granted|I' $PANEL_PATH/configs/apache/httpd-vhosts.conf
+    sed -i '/Allow from all/d' $PANEL_PATH/configs/apache/httpd-vhosts.conf
 
     sed -i 's|Order allow,deny|Require all granted|I'  $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
     sed -i '/Allow from all/d' $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
