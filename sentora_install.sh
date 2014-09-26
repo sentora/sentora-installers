@@ -444,7 +444,7 @@ mysql -u root -p"$mysqlpassword" -e "FLUSH PRIVILEGES";
 # remove test table that is no longer used
 mysql -u root -p"$mysqlpassword" -e "DROP DATABASE IF EXISTS test";
 
-# secure SELECT "hacker code" INTO OUTFILE 
+# secure SELECT "hacker-code" INTO OUTFILE 
 sed -i "/[mysqld]/&\nsecure-file-priv = /var/tmp" $MY_CNF_PATH
 
 # setup sentora access and core database
@@ -602,9 +602,9 @@ if [[ "$OS" = "CentOs" ]]; then
 elif [[ "$OS" = "Ubuntu" ]]; then
     # disable completely sites-enabled/000-default.conf
     if [[ "$VER" = "12.04" ]]; then 
-        sed "s|Include sites-enabled|#&|" "$HTTP_CONF_PATH"
+        sed -i "s|Include sites-enabled|#&|" "$HTTP_CONF_PATH"
     else
-        sed "s|IncludeOptional sites-enabled|#&|" "$HTTP_CONF_PATH"
+        sed -i "s|IncludeOptional sites-enabled|#&|" "$HTTP_CONF_PATH"
     fi
 fi
 
