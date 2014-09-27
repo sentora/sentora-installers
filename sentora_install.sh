@@ -59,6 +59,7 @@ else
 fi
 
 if [[ "$OS" = "CentOs" ]] ; then
+	EPEL_BASE_URL="http://dl.fedoraproject.org/pub/epel/";
     PACKAGE_INSTALLER="yum -y -q install"
     PACKAGE_REMOVER="yum -y -q remove"
     USR_LIB_PATH="/usr/libexec"
@@ -69,11 +70,19 @@ if [[ "$OS" = "CentOs" ]] ; then
 
     if  [[ "$VER" = "7" ]]; then
         DB_SERVER="mariadb" &&  echo "DB server will be mariaDB"
-        FIREWALL_SERVICE="firewalld"
+        DB_SERVICE="mariadb"
+		FIREWALL_SERVICE="firewalld"
+		
+		## EPEL Repo get right rpm to install ##
+		EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL$VER/$ARCH/e/" | grep -oP '(?<=href=")epel.*(?=">)')
+		wget "$EPEL_BASE_URL$VER/$ARCH/e/$EPEL_FILE"
     else 
         DB_SERVER="mysql" && echo "DB server will be mySQL"
         DB_SERVICE="mysqld"
         FIREWALL_SERVICE="iptables"
+		EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL$VER/$ARCH/" | grep -oP '(?<=href=")epel.*(?=">)')
+		wget "$EPEL_BASE_URL$VER/$ARCH/$EPEL_FILE"
+		
     fi
 elif [[ "$OS" = "Ubuntu" ]]; then
     PACKAGE_INSTALLER="apt-get -yqq install"
@@ -236,15 +245,12 @@ if [[ "$OS" = "Ubuntu" ]]; then
     fi
 fi
 
-#--- Adapat packages sources
+#--- Adapt repos
 if [[ "$OS" = "CentOs" ]]; then
-     if [ "$VER" = "7" ]; then
-         wget http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-1.noarch.rpm
-         $PACKAGE_INSTALLER epel-release-7-1.noarch.rpm
-     fi
+	 ## EPEL Repo Install ##
+     $PACKAGE_INSTALLER -y install epel-release*.rpm
 
-     #to remedy some problems of compatibility use of mirror centos.org to all users
-
+     #to fix some problems of compatibility use of mirror centos.org to all users
      #Replace all mirrors by base repos to avoid any problems.
      sed -i 's|mirrorlist=http://mirrorlist.centos.org|#mirrorlist=http://mirrorlist.centos.org|' "/etc/yum.repos.d/CentOS-Base.repo"
      sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://mirror.centos.org|' "/etc/yum.repos.d/CentOS-Base.repo"
@@ -324,7 +330,7 @@ EOF
     fi
 fi
 
-#--- Ensure all packages are uptodate
+#--- Ensure all packages are updated
 echo -e "\nUpdating+upgrading system, it may take some time..."
 if [[ "$OS" = "CentOs" ]]; then
     yum -y update
@@ -333,6 +339,12 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     apt-get -yqq update
     apt-get -yqq upgrade
 fi    
+# Install all softwares and dependencies required by Sentora.
+
+if [[ "$OS" = "Ubuntu" ]]; then
+    # Disable the DPKG prompts before we run the software install to enable fully automated install.
+    export DEBIAN_FRONTEND=noninteractive
+fi
 
 #--- Install some standard utility packages required by the installer and/or Sentora.
 echo -e "\nDownloading and installing required tools..."
@@ -392,23 +404,19 @@ passwordgen() {
 }
 
 #-----------------------------------------------------------
-# Install all softwares and dependencies required by Sentora.
-
-if [[ "$OS" = "Ubuntu" ]]; then
-    # Disable the DPKG prompts before we run the software install to enable fully automated install.
-    export DEBIAN_FRONTEND=noninteractive
-fi
 
 
 #--- MySQL
 echo -e "\n# Installing MySQL"
 mysqlpassword=$(passwordgen);
 if [[ "$OS" = "CentOs" ]]; then
-    $PACKAGE_INSTALLER "$DB_SERVER" "$DB_SERVER-devel" "$DB_SERVER-server"
+    echo "install mysql now"
+	$PACKAGE_INSTALLER "$DB_SERVER" "$DB_SERVER-devel" 
+	$PACKAGE_INSTALLER "$DB_SERVER-server"
     MY_CNF_PATH="/etc/my.cnf"
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER bsdutils
-    $PACKAGE_INSTALLER mysql-server libsasl2-modules-sql libsasl2-modules
+    $PACKAGE_INSTALLER "$DB_SERVER-server" libsasl2-modules-sql libsasl2-modules
     if [ "$VER" = "12.04" ]; then
         $PACKAGE_INSTALLER db4.7-util
     fi
