@@ -347,7 +347,7 @@ fi
 #--- Clone Sentora from GitHub
 echo -e "\nDownloading Sentora, Please wait, this may take several minutes, the installer will continue after this is complete!"
 # Get latest sentora
-wget -O sentora_installer.zip https://github.com/sentora/sentora-core/archive/$SENTORA_GITHUB_VERSION.zip
+wget -nv -O sentora_installer.zip https://github.com/sentora/sentora-core/archive/$SENTORA_GITHUB_VERSION.zip
 mkdir -p $PANEL_PATH
 chown -R root:root $PANEL_PATH
 unzip -oq sentora_installer.zip -d $PANEL_PATH
@@ -362,17 +362,6 @@ mkdir -p $PANEL_PATH/docs
 mkdir -p $PANEL_DATA/hostdata/zadmin/public_html
 mkdir -p $PANEL_DATA/logs/proftpd
 mkdir -p $PANEL_DATA/backups
-
-# php upload dir
-mkdir -p $PANEL_DATA/temp
-chmod 1777 $PANEL_DATA/temp/
-chown -R $HTTP_USER:$HTTP_GROUP $PANEL_DATA/temp/
-
-# php session save directory
-mkdir "$PANEL_DATA/sessions"
-chown $HTTP_USER:$HTTP_GROUP "$PANEL_DATA/sessions"
-chmod 733 "$PANEL_DATA/sessions"
-chmod +t "$PANEL_DATA/sessions"
 
 chmod -R 777 $PANEL_PATH/ $PANEL_DATA/
 chmod -R 770 $PANEL_DATA/hostdata/
@@ -452,40 +441,26 @@ sed -i "s|YOUR_ROOT_MYSQL_PASSWORD|$mysqlpassword|" $PANEL_PATH/panel/cnf/db.php
 mysql -u root -p"$mysqlpassword" < $PANEL_PATH/configs/sentora-install/sql/sentora_core.sql
 
 
-#--- phpMyAdmin
-echo -e "\n# Installing phpMyAdmin"
-phpmyadminsecret=$(passwordgen);
-chmod 644 $PANEL_PATH/configs/phpmyadmin/config.inc.php
-sed -i "s|\$cfg\['blowfish_secret'\] \= 'SENTORA';|\$cfg\['blowfish_secret'\] \= '$phpmyadminsecret';|" $PANEL_PATH/configs/phpmyadmin/config.inc.php
-ln -s $PANEL_PATH/configs/phpmyadmin/config.inc.php $PANEL_PATH/panel/etc/apps/phpmyadmin/config.inc.php
-# Remove phpMyAdmin's setup folder in case it was left behind
-rm -rf $PANEL_PATH/panel/etc/apps/phpmyadmin/setup
-
-
 #--- Postfix
 echo -e "\n# Installing Postfix"
 postfixpassword=$(passwordgen);
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER postfix postfix-perl-scripts
-    POS_USER_UID=101
-    POS_USER_GID=12
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER postfix postfix-mysql
-    POS_USER_UID=150
-    POS_USER_GID=8
 fi
 mysql -u root -p"$mysqlpassword" < $PANEL_PATH/configs/sentora-install/sql/sentora_postfix.sql
 mysql -u root -p"$mysqlpassword" -e "UPDATE mysql.user SET Password=PASSWORD('$postfixpassword') WHERE User='postfix' AND Host='localhost';";
 
 mkdir $PANEL_DATA/vmail
-chmod -R 770 $PANEL_DATA/vmail
-useradd -r -u $POS_USER_UID -g mail -d $PANEL_DATA/vmail -s /sbin/nologin -c "Virtual maildir" vmail
+useradd -r -g mail -d $PANEL_DATA/vmail -s /sbin/nologin -c "Virtual maildir" vmail
 chown -R vmail:mail $PANEL_DATA/vmail
+chmod -R 770 $PANEL_DATA/vmail
 
 mkdir -p /var/spool/vacation
-chmod -R 770 /var/spool/vacation
 useradd -r -d /var/spool/vacation -s /sbin/nologin -c "Virtual vacation" vacation
 chown -R vacation:vacation /var/spool/vacation
+chmod -R 770 /var/spool/vacation
 
 postmap /etc/postfix/transport
 if ! grep -q "127.0.0.1 autoreply.$fqdn" /etc/hosts; then
@@ -500,10 +475,14 @@ ln -s $PANEL_PATH/configs/postfix/vacation.pl /var/spool/vacation/vacation.pl
 sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_PATH/configs/postfix/*.cf
 sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_PATH/configs/postfix/vacation.conf
 sed -i "s|!PANEL_FQDN!|$fqdn|" $PANEL_PATH/configs/postfix/main.cf
+
 sed -i "s|!USR_LIB!|$USR_LIB_PATH|" $PANEL_PATH/configs/postfix/master.cf
 sed -i "s|!USR_LIB!|$USR_LIB_PATH|" $PANEL_PATH/configs/postfix/main.cf
-sed -i "s|!POS_UID!|$POS_USER_UID|" $PANEL_PATH/configs/postfix/main.cf
-sed -i "s|!POS_GID!|$POS_USER_GID|" $PANEL_PATH/configs/postfix/main.cf
+
+VMAIL_UID=$(id -u vmail)
+MAIL_GID=$(sed -nr "s/^mail:x:([0-9]+):.*/\1/p" /etc/group)
+sed -i "s|!POS_UID!|$VMAIL_UID|" $PANEL_PATH/configs/postfix/main.cf
+sed -i "s|!POS_GID!|$MAIL_GID|" $PANEL_PATH/configs/postfix/main.cf
 
 # remove unusued directives that issue warnings
 sed -i '/virtual_mailbox_limit_maps/d' /etc/postfix/main.cf
@@ -514,14 +493,10 @@ sed -i '/smtpd_bind_address/d' /etc/postfix/master.cf
 echo -e "\n# Installing Dovecot"
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER dovecot dovecot-mysql dovecot-pigeonhole 
-    DOV_USER_UID=101
-    DOV_USER_GID=12
-    sed -i "s|#first_valid_uid = ?|first_valid_uid = 101\n#last_valid_uid = 0\n\nfirst_valid_gid = 12\n#last_valid_gid = 0|" /etc/dovecot/dovecot.conf
+    sed -i "s|#first_valid_uid = ?|first_valid_uid = $VMAIL_UID\n#last_valid_uid = $VMAIL_UID\n\nfirst_valid_gid = $MAIL_GID\n#last_valid_gid = $MAIL_GID|" $PANEL_PATH/configs/dovecot2/dovecot.conf
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER dovecot-mysql dovecot-imapd dovecot-pop3d dovecot-common dovecot-managesieved dovecot-lmtpd 
-    DOV_USER_UID=150
-    DOV_USER_GID=8
-    sed -i "s|#first_valid_uid = ?|first_valid_uid = 150\nlast_valid_uid = 150\n\nfirst_valid_gid = 8\nlast_valid_gid = 8|" /etc/dovecot/dovecot.conf
+    sed -i "s|#first_valid_uid = ?|first_valid_uid = $VMAIL_UID\nlast_valid_uid = $VMAIL_UID\n\nfirst_valid_gid = $MAIL_GID\nlast_valid_gid = $MAIL_GID|" $PANEL_PATH/configs/dovecot2/dovecot.conf
 fi
 
 mkdir -p $PANEL_DATA/sieve
@@ -534,8 +509,8 @@ ln -s $PANEL_PATH/configs/dovecot2/dovecot.conf /etc/dovecot/dovecot.conf
 sed -i "s|!POSTMASTER_EMAIL!|postmaster@$fqdn|" /etc/dovecot/dovecot.conf
 sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_PATH/configs/dovecot2/dovecot-dict-quota.conf
 sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_PATH/configs/dovecot2/dovecot-mysql.conf
-sed -i "s|!DOV_UID!|$DOV_USER_UID|" $PANEL_PATH/configs/dovecot2/dovecot-mysql.conf
-sed -i "s|!DOV_GID!|$DOV_USER_GID|" $PANEL_PATH/configs/dovecot2/dovecot-mysql.conf
+sed -i "s|!DOV_UID!|$VMAIL_UID|" $PANEL_PATH/configs/dovecot2/dovecot-mysql.conf
+sed -i "s|!DOV_GID!|$MAIL_GID|" $PANEL_PATH/configs/dovecot2/dovecot-mysql.conf
 
 touch /var/log/dovecot.log /var/log/dovecot-info.log /var/log/dovecot-debug.log
 chown vmail:mail /var/log/dovecot*
@@ -550,7 +525,7 @@ if [[ "$OS" = "CentOs" ]]; then
     FTP_CONF_PATH='/etc/proftpd.conf'
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER proftpd-mod-mysql
-    FTP_USER_ID=33
+    FTP_USER_ID=$(id -u www-data)
     FTP_CONF_PATH='/etc/proftpd/proftpd.conf'
 fi
 
@@ -666,6 +641,16 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     fi
     PHP_INI_PATH="/etc/php5/apache2/php.ini"
 fi
+# php upload dir
+mkdir -p $PANEL_DATA/temp
+chmod 1777 $PANEL_DATA/temp/
+chown -R $HTTP_USER:$HTTP_GROUP $PANEL_DATA/temp/
+
+# php session save directory
+mkdir "$PANEL_DATA/sessions"
+chown $HTTP_USER:$HTTP_GROUP "$PANEL_DATA/sessions"
+chmod 733 "$PANEL_DATA/sessions"
+chmod +t "$PANEL_DATA/sessions"
 
 sed -i "s|;date.timezone =|date.timezone = $tz|" $PHP_INI_PATH
 sed -i "s|;upload_tmp_dir =|upload_tmp_dir = $PANEL_DATA/temp/|" $PHP_INI_PATH
@@ -716,8 +701,9 @@ chmod -R 777 $PANEL_PATH/configs/bind/zones/
 
 # setup logging directory
 mkdir $PANEL_DATA/logs/bind
-touch $PANEL_DATA/logs/bind/bind.log
-chmod -R 777 $PANEL_DATA/logs/bind/bind.log
+touch $PANEL_DATA/logs/bind/bind.log $PANEL_DATA/logs/bind/debug.log
+chown bind $PANEL_DATA/logs/bind/bind.log $PANEL_DATA/logs/bind/debug.log
+chmod 660 $PANEL_DATA/logs/bind/bind.log $PANEL_DATA/logs/bind/debug.log
 
 if [[ "$OS" = "CentOs" ]]; then
     chmod 751 /var/named
@@ -790,14 +776,15 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     chown -R www-data:www-data /var/spool/cron/crontabs/
 fi
 
-#--- Webalizer specific installation tasks...
-echo -e "\n# Installing Webalizer"
-$PACKAGE_INSTALLER webalizer
-if [[ "$OS" = "CentOs" ]]; then
-    rm -rf /etc/webalizer.conf
-elif [[ "$OS" = "Ubuntu" ]]; then
-    rm -rf /etc/webalizer/webalizer.conf
-fi
+
+#--- phpMyAdmin
+echo -e "\n# Installing phpMyAdmin"
+phpmyadminsecret=$(passwordgen);
+chmod 644 $PANEL_PATH/configs/phpmyadmin/config.inc.php
+sed -i "s|\$cfg\['blowfish_secret'\] \= 'SENTORA';|\$cfg\['blowfish_secret'\] \= '$phpmyadminsecret';|" $PANEL_PATH/configs/phpmyadmin/config.inc.php
+ln -s $PANEL_PATH/configs/phpmyadmin/config.inc.php $PANEL_PATH/panel/etc/apps/phpmyadmin/config.inc.php
+# Remove phpMyAdmin's setup folder in case it was left behind
+rm -rf $PANEL_PATH/panel/etc/apps/phpmyadmin/setup
 
 
 #--- Roundcube specific installation tasks...
@@ -812,13 +799,26 @@ ln -s $PANEL_PATH/configs/roundcube/main.inc.php $PANEL_PATH/panel/etc/apps/webm
 ln -s $PANEL_PATH/configs/roundcube/config.inc.php $PANEL_PATH/panel/etc/apps/webmail/plugins/managesieve/config.inc.php
 ln -s $PANEL_PATH/configs/roundcube/db.inc.php $PANEL_PATH/panel/etc/apps/webmail/config/db.inc.php
 
-# Set some Sentora database entries using. setso and setzadmin
+#--- Webalizer specific installation tasks...
+echo -e "\n# Installing Webalizer"
+$PACKAGE_INSTALLER webalizer
+if [[ "$OS" = "CentOs" ]]; then
+    rm -rf /etc/webalizer.conf
+elif [[ "$OS" = "Ubuntu" ]]; then
+    rm -rf /etc/webalizer/webalizer.conf
+fi
+
+
+#--- Set some Sentora database entries using. setso and setzadmin
 echo -e "\n# Configuring Sentora"
 zadminpassword=$(passwordgen);
 setzadmin --set "$zadminpassword";
 $PANEL_PATH/panel/bin/setso --set zpanel_domain "$fqdn"
 $PANEL_PATH/panel/bin/setso --set server_ip "$publicip"
+
+# make the daemon to build vhosts file.
 $PANEL_PATH/panel/bin/setso --set apache_changed "true"
+php -q $PANEL_PATH/panel/bin/daemon.php
 
 
 #--- firewall
@@ -836,8 +836,6 @@ if [[ "$OS" = "CentOs" ]]; then
     chkconfig proftpd on
     service $HTTP_SERVER start
 fi    
-
-php -q $PANEL_PATH/panel/bin/daemon.php
 
 # restart all services to capture output messages
 service "$DB_SERVICE" restart
