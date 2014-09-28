@@ -748,27 +748,23 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     chown root:root $BIND_FILES/rndc.key
     chmod 755 $BIND_FILES/rndc.key
 fi
-
-# build key and conf files
-rm -rf $BIND_FILES/named.conf $BIND_FILES/rndc.conf $BIND_FILES/rndc.key
-
-rndc-confgen -a -r /dev/urandom
-ln -s $PANEL_PATH/configs/bind/named.conf /etc/bind/named.conf
-ln -s $PANEL_PATH/configs/bind/rndc.conf /etc/bind/rndc.conf
-
+#some link to enable call from path
 ln -s /usr/sbin/named-checkconf /usr/bin/named-checkconf
 ln -s /usr/sbin/named-checkzone /usr/bin/named-checkzone
 ln -s /usr/sbin/named-compilezone /usr/bin/named-compilezone
 
-cat $BIND_FILES/rndc.key $BIND_FILES/named.conf > $BIND_FILES/named.conf.new 
-cat $BIND_FILES/rndc.key $BIND_FILES/rndc.conf > $BIND_FILES/rndc.conf.new 
-mv $BIND_FILES/named.conf.new $BIND_FILES/named.conf
-mv $BIND_FILES/rndc.conf.new $BIND_FILES/rndc.conf
+# build key and conf files
+rm -rf $BIND_FILES/named.conf $BIND_FILES/rndc.conf $BIND_FILES/rndc.key
+rndc-confgen -a -r /dev/urandom
+cat $BIND_FILES/rndc.key $PANEL_PATH/configs/bind/named.conf > $BIND_FILES/named.conf
+cat $BIND_FILES/rndc.key $PANEL_PATH/configs/bind/rndc.conf > $BIND_FILES/rndc.conf
 rm -f $BIND_FILES/rndc.key
 
-#--- CRON specific installation tasks...
+#--- CRON
 echo -e "\n-- Installing and configuring cron tasks"
 if [[ "$OS" = "CentOs" ]]; then
+    #cronie & crontabs may be missing
+    $PACKAGE_INSTALLER crontabs
     CRON_FILE="/var/spool/cron/apache"
     CRON_USER="apache"
     CRON_SERVICE="crond"
