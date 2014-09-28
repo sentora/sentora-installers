@@ -876,9 +876,10 @@ service atd restart
 
 # Store the passwords for user reference
 {
-    echo "zadmin Password       : $zadminpassword"
-    echo "MySQL Root Password   : $mysqlpassword"
-    echo "MySQL Postfix Password: $postfixpassword"
+    echo "zadmin Password        : $zadminpassword"
+    echo "MySQL Root Password    : $mysqlpassword"
+    echo "MySQL Postfix Password : $postfixpassword"
+    echo "MySQL ProFTPd Password : $proftpdpassword"
     echo "IP Address: $publicip"
     echo "Panel Domain: $fqdn"
 } >> /root/passwords.txt
@@ -889,11 +890,12 @@ echo " Congratulations Sentora has now been installed on your"   &>/dev/tty
 echo " server. Please review the log file left in /root/ for "   &>/dev/tty
 echo " any errors encountered during installation."              &>/dev/tty
 echo ""                                                          &>/dev/tty
-echo " Save the following information somewhere safe:"           &>/dev/tty
-echo " MySQL Root Password    : $mysqlpassword"                  &>/dev/tty
-echo " MySQL Postfix Password : $postfixpassword"                &>/dev/tty
 echo " Sentora Username       : zadmin"                          &>/dev/tty
 echo " Sentora Password       : $zadminpassword"                 &>/dev/tty
+echo ""                                                          &>/dev/tty
+echo " MySQL Root Password    : $mysqlpassword"                  &>/dev/tty
+echo " MySQL Postfix Password : $postfixpassword"                &>/dev/tty
+echo " MySQL ProFTPd Password : $proftpdpassword"                &>/dev/tty
 echo "   (theses passwords are saved in /root/passwords.txt)"    &>/dev/tty
 echo ""                                                          &>/dev/tty
 echo " Sentora Web login can be accessed using your server IP"   &>/dev/tty
