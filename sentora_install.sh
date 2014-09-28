@@ -544,6 +544,10 @@ if [[ "$OS" = "CentOs" ]]; then
     HTTP_SERVICE="httpd"
     HTTP_USER="apache"
     HTTP_GROUP="apache"
+    if [[ "$VER" = "6" ]]; then
+        sed "s|#NameVirtualHost|NameVirtualHost|" "$HTTP_CONF_PATH"
+    fi
+    
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER apache2 libapache2-mod-bw
     HTTP_CONF_PATH="/etc/apache2/apache2.conf"
@@ -686,6 +690,9 @@ echo -e "\n-- Installing ProFTPD"
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER proftpd proftpd-mysql 
     FTP_CONF_PATH='/etc/proftpd.conf'
+    if [[ "VER" = "7" ]] ; then
+        sed "s|nogroup|nobody|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
+    fi
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER proftpd-mod-mysql
     FTP_CONF_PATH='/etc/proftpd/proftpd.conf'
@@ -777,7 +784,7 @@ if [[ "$OS" = "CentOs" ]]; then
 elif [[ "$OS" = "Ubuntu" ]]; then
     CRON_FILE="/var/spool/cron/crontabs/www-data"
     CRON_USER="www-data"
-    CRON_SERVICE="cron"    
+    CRON_SERVICE="cron"
 fi
 mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$CRON_FILE' WHERE so_name_vc='cron_file'"
 mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$CRON_FILE' WHERE so_name_vc='cron_reload_path'"
