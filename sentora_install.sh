@@ -537,6 +537,7 @@ chmod 660 /var/log/dovecot*
 
 #--- ProFTPD
 echo -e "\n-- Installing ProFTPD"
+proftppassword=$(passwordgen);
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER proftpd proftpd-mysql 
     FTP_USER_ID=48
@@ -546,13 +547,14 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     FTP_USER_ID=$(id -u www-data)
     FTP_CONF_PATH='/etc/proftpd/proftpd.conf'
 fi
-
+# Why create ftp user not user here??? check conf file USER : ROOT
 groupadd -g 2001 ftpgroup
 useradd -u 2001 -s /bin/false -d /bin/null -c "proftpd user" -g ftpgroup ftpuser
 mysql -u root -p"$mysqlpassword" < $PANEL_PATH/configs/sentora-install/sql/sentora_proftpd.sql
+mysql -u root -p"$mysqlpassword" -e "UPDATE mysql.user SET Password=PASSWORD('$proftppassword') WHERE User='proftp' AND Host='localhost';";
 mysql -u root -p"$mysqlpassword" -e "ALTER TABLE zpanel_proftpd.ftpuser ALTER COLUMN uid SET DEFAULT $FTP_USER_ID"
 mysql -u root -p"$mysqlpassword" -e "ALTER TABLE zpanel_proftpd.ftpuser ALTER COLUMN gid SET DEFAULT $FTP_USER_ID"
-sed -i "s|!SQL_PASSWORD!|$mysqlpassword|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
+sed -i "s|!SQL_PASSWORD!|$proftppassword|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
 sed -i "s|!SQL_MIN_ID!|$FTP_USER_ID|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
 rm -f "$FTP_CONF_PATH"
 touch "$FTP_CONF_PATH"
