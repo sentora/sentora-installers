@@ -44,7 +44,6 @@ elif [ -f /etc/centos-release ]; then
     OS="CentOs"
     VERFULL=$(sed 's/^.*release //;s/ (Fin.*$//' /etc/centos-release)
     VER=${VERFULL:0:1} # return 6 or 7
-#   VERMINOR=${VERFULL:0:3} # return 6.x or 7.x  not used
 else
     OS=$(uname -s)
     VER=$(uname -r)
@@ -58,43 +57,23 @@ else
     exit 1;
 fi
 
+# Select modules that will be checked before start
 if [[ "$OS" = "CentOs" ]] ; then
-	EPEL_BASE_URL="http://dl.fedoraproject.org/pub/epel/";
     PACKAGE_INSTALLER="yum -y -q install"
     PACKAGE_REMOVER="yum -y -q remove"
-    USR_LIB_PATH="/usr/libexec"
-
-    HTTP_SERVER="httpd"
-    HTTP_USER="apache"
-    HTTP_GROUP="apache"	
 
     if  [[ "$VER" = "7" ]]; then
         DB_SERVER="mariadb" &&  echo "DB server will be mariaDB"
-        DB_SERVICE="mariadb"
-		FIREWALL_SERVICE="firewalld"
-		
-		## EPEL Repo get right rpm to install ##
-		EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL$VER/$ARCH/e/" | grep -oP '(?<=href=")epel.*(?=">)')
-		wget "$EPEL_BASE_URL$VER/$ARCH/e/$EPEL_FILE"
     else 
         DB_SERVER="mysql" && echo "DB server will be mySQL"
-        DB_SERVICE="mysqld"
-        FIREWALL_SERVICE="iptables"
-		EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL$VER/$ARCH/" | grep -oP '(?<=href=")epel.*(?=">)')
-		wget "$EPEL_BASE_URL$VER/$ARCH/$EPEL_FILE"
-		
     fi
+    HTTP_SERVER="httpd"
 elif [[ "$OS" = "Ubuntu" ]]; then
     PACKAGE_INSTALLER="apt-get -yqq install"
     PACKAGE_REMOVER="apt-get -yqq remove"
-    USR_LIB_PATH="/usr/lib"
     
     DB_SERVER="mysql"
-    DB_SERVICE="mysql"
-    
     HTTP_SERVER="apache"
-    HTTP_USER="www-data"
-    HTTP_GROUP="www-data"
 fi
   
 # Check if the user is 'root' before allowing installation to commence
@@ -226,41 +205,49 @@ touch $$.log
 exec > >(tee $logfile)
 exec 2>&1
 
-echo -e "Installing Sentora $SENTORA_GITHUB_VERSION with fqdn $fqdn and ip $publicip\n"
+echo -e "Installing Sentora $SENTORA_GITHUB_VERSION with fqdn $fqdn and ip $publicip"
+echo -e "on server under: $OS  $VER  $BITS"
 uname -a
-echo ""
 
 #--- AppArmor must be disabled to avoid problems
 if [[ "$OS" = "Ubuntu" ]]; then
     [ -f /etc/init.d/apparmor ]
     if [ $? = "0" ]; then
-        echo -e "\nDisabling and removing AppArmor, please wait..."
+        echo -e "\n-- Disabling and removing AppArmor, please wait..."
         /etc/init.d/apparmor stop &> /dev/null
         update-rc.d -f apparmor remove &> /dev/null
         apt-get remove -y --purge apparmor* &> /dev/null
         mv /etc/init.d/apparmor /etc/init.d/apparmpr.removed &> /dev/null
-        echo "AppArmor has been removed."
-    #    echo "AppArmor has been removed. Please reboot your server to complete removal."
-    #    exit;
+        echo -e "AppArmor has been removed."
     fi
 fi
 
-#--- Adapt repos
+#--- Adapt repositories and packages sources
+echo -e "\n-- Updating repositories and packages sources"
 if [[ "$OS" = "CentOs" ]]; then
-	 ## EPEL Repo Install ##
-     $PACKAGE_INSTALLER -y install epel-release*.rpm
+    #EPEL Repo Install
+    EPEL_BASE_URL="http://dl.fedoraproject.org/pub/epel/$VER/$(arch)";
+    if  [[ "$VER" = "7" ]]; then
+        EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL/e/" | grep -oP '(?<=href=")epel-release.*(?=">)')
+        wget "$EPEL_BASE_URL/e/$EPEL_FILE"
+    else 
+        EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL/" | grep -oP '(?<=href=")epel-release.*(?=">)')
+        wget "$EPEL_BASE_URL/$EPEL_FILE"
+    fi
+    $PACKAGE_INSTALLER -y install epel-release*.rpm
+    rm "$EPEL_FILE"
+    
+    #To fix some problems of compatibility use of mirror centos.org to all users
+    #Replace all mirrors by base repos to avoid any problems.
+    sed -i 's|mirrorlist=http://mirrorlist.centos.org|#mirrorlist=http://mirrorlist.centos.org|' "/etc/yum.repos.d/CentOS-Base.repo"
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://mirror.centos.org|' "/etc/yum.repos.d/CentOS-Base.repo"
 
-     #to fix some problems of compatibility use of mirror centos.org to all users
-     #Replace all mirrors by base repos to avoid any problems.
-     sed -i 's|mirrorlist=http://mirrorlist.centos.org|#mirrorlist=http://mirrorlist.centos.org|' "/etc/yum.repos.d/CentOS-Base.repo"
-     sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://mirror.centos.org|' "/etc/yum.repos.d/CentOS-Base.repo"
-
-     #check if the machine and on openvz
-     if [ -f "/etc/yum.repos.d/vz.repo" ]; then
-          #vz.repo
-         sed -i 's|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/centos-6|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/6/$basearch/os/|' "/etc/yum.repos.d/vz.repo"
-         sed -i 's|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/updates-released-ce6|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/6/$basearch/updates/|' "/etc/yum.repos.d/vz.repo"
-     fi
+    #check if the machine and on openvz
+    if [ -f "/etc/yum.repos.d/vz.repo" ]; then
+        #vz.repo
+        sed -i 's|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/centos-6|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/6/$basearch/os/|' "/etc/yum.repos.d/vz.repo"
+        sed -i 's|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/updates-released-ce6|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/6/$basearch/updates/|' "/etc/yum.repos.d/vz.repo"
+    fi
 
     #disable deposits that could result in installation errors
     disablerepo() {
@@ -281,19 +268,29 @@ if [[ "$OS" = "CentOs" ]]; then
 
     # Stop conflicting services and iptables to ensure all services will work
     service sendmail stop
+    chkconfig sendmail off
+
+    # disable firewall
+    if  [[ "$VER" = "7" ]]; then
+        FIREWALL_SERVICE="firewalld"
+    else 
+        FIREWALL_SERVICE="iptables"
+    fi
     service "$FIREWALL_SERVICE" save
     service "$FIREWALL_SERVICE" stop
-    chkconfig sendmail off
     chkconfig "$FIREWALL_SERVICE" off
-    rpm -qa
 
     # Removal of conflicting packages prior to Sentora installation.
-    $PACKAGE_REMOVER remove bind-chroot qpid-cpp-client
+    if (inst bind-chroot) ; then 
+        $PACKAGE_REMOVER bind-chroot
+    fi
+    if (inst qpid-cpp-client) ; then
+        $PACKAGE_REMOVER qpid-cpp-client
+    fi
+
 elif [[ "$OS" = "Ubuntu" ]]; then 
     # Update the enabled Aptitude repositories
     echo -ne "\nUpdating Aptitude Repos: " >/dev/tty
-    # - List all packages installed 
-    dpkg --get-selections
 
     mkdir -p "/etc/apt/sources.list.d.save"
     cp -R "/etc/apt/sources.list.d/*" "/etc/apt/sources.list.d.save" &> /dev/null
@@ -330,24 +327,27 @@ EOF
     fi
 fi
 
+#--- For debug (log file required from user)
+echo -e "\n-- Listing of all packages installed:"
+if [[ "$OS" = "CentOs" ]]; then
+    rpm -qa | sort
+elif [[ "$OS" = "Ubuntu" ]]; then
+    dpkg --get-selections
+fi
+
 #--- Ensure all packages are updated
-echo -e "\nUpdating+upgrading system, it may take some time..."
+echo -e "\n-- Updating+upgrading system, it may take some time..."
 if [[ "$OS" = "CentOs" ]]; then
     yum -y update
     yum -y upgrade
 elif [[ "$OS" = "Ubuntu" ]]; then
     apt-get -yqq update
     apt-get -yqq upgrade
-fi    
-# Install all softwares and dependencies required by Sentora.
-
-if [[ "$OS" = "Ubuntu" ]]; then
-    # Disable the DPKG prompts before we run the software install to enable fully automated install.
-    export DEBIAN_FRONTEND=noninteractive
 fi
 
+
 #--- Install some standard utility packages required by the installer and/or Sentora.
-echo -e "\nDownloading and installing required tools..."
+echo -e "\n-- Downloading and installing required tools..."
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER sudo vim make zip unzip git chkconfig bash-completion
     $PACKAGE_INSTALLER ld-linux.so.2 libbz2.so.1 libdb-4.7.so libgd.so.2 
@@ -357,7 +357,7 @@ elif [[ "$OS" = "Ubuntu" ]]; then
 fi
 
 #--- Clone Sentora from GitHub
-echo -e "\nDownloading Sentora, Please wait, this may take several minutes, the installer will continue after this is complete!"
+echo -e "\n-- Downloading Sentora, Please wait, this may take several minutes, the installer will continue after this is complete!"
 # Get latest sentora
 wget -nv -O sentora_installer.zip https://github.com/sentora/sentora-core/archive/$SENTORA_GITHUB_VERSION.zip
 mkdir -p $PANEL_PATH
@@ -371,13 +371,11 @@ rm -rf "$PANEL_PATH/_delete_me"
 # Set-up Sentora directories and configure permissions
 mkdir -p $PANEL_PATH/configs
 mkdir -p $PANEL_PATH/docs
-mkdir -p $PANEL_DATA/hostdata/zadmin/public_html
+chmod -R 777 $PANEL_PATH
+
 mkdir -p $PANEL_DATA/logs/proftpd
 mkdir -p $PANEL_DATA/backups
-
-chmod -R 777 $PANEL_PATH/ $PANEL_DATA/
-chmod -R 770 $PANEL_DATA/hostdata/
-chown -R $HTTP_USER:$HTTP_GROUP $PANEL_DATA/hostdata/
+chmod -R 777 $PANEL_DATA/
 
 ln -s $PANEL_PATH/panel/bin/zppy /usr/bin/zppy
 ln -s $PANEL_PATH/panel/bin/setso /usr/bin/setso
@@ -385,7 +383,7 @@ ln -s $PANEL_PATH/panel/bin/setzadmin /usr/bin/setzadmin
 chmod +x $PANEL_PATH/panel/bin/zppy $PANEL_PATH/panel/bin/setso
 
 # install preconfig 
-wget -O sentora_preconfig.zip https://github.com/5050/sentora-installers/archive/$SENTORA_PRECONF_VERSION.zip
+wget -nv -O sentora_preconfig.zip https://github.com/5050/sentora-installers/archive/$SENTORA_PRECONF_VERSION.zip
 unzip -oq sentora_preconfig.zip
 cp -rf sentora-installers-$SENTORA_PRECONF_VERSION/preconf/* $PANEL_PATH/configs
 rm sentora_preconfig*
@@ -404,25 +402,35 @@ passwordgen() {
 }
 
 #-----------------------------------------------------------
+# Install all softwares and dependencies required by Sentora.
+
+if [[ "$OS" = "Ubuntu" ]]; then
+    # Disable the DPKG prompts before we run the software install to enable fully automated install.
+    export DEBIAN_FRONTEND=noninteractive
+fi
 
 
 #--- MySQL
-echo -e "\n# Installing MySQL"
+echo -e "\n-- Installing MySQL"
 mysqlpassword=$(passwordgen);
 if [[ "$OS" = "CentOs" ]]; then
-    echo "install mysql now"
-	$PACKAGE_INSTALLER "$DB_SERVER" "$DB_SERVER-devel" 
-	$PACKAGE_INSTALLER "$DB_SERVER-server"
+    $PACKAGE_INSTALLER "$DB_SERVER" "$DB_SERVER-devel" "$DB_SERVER-server" 
     MY_CNF_PATH="/etc/my.cnf"
+    if  [[ "$VER" = "7" ]]; then
+        DB_SERVICE="mariadb"
+    else 
+        DB_SERVICE="mysqld"
+    fi
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER bsdutils
     $PACKAGE_INSTALLER "$DB_SERVER-server" libsasl2-modules-sql libsasl2-modules
     if [ "$VER" = "12.04" ]; then
         $PACKAGE_INSTALLER db4.7-util
     fi
-    MY_CNF_PATH="/etc/mysql/my.cnf"    
+    MY_CNF_PATH="/etc/mysql/my.cnf"
+    DB_SERVICE="mysql"
 fi
-service $DB_SERVICE start 
+service $DB_SERVICE start
 
 # setup mysql root password
 mysqladmin -u root password "$mysqlpassword"
@@ -450,22 +458,19 @@ mysql -u root -p"$mysqlpassword" < $PANEL_PATH/configs/sentora-install/sql/sento
 
 
 #--- Postfix
-echo -e "\n# Installing Postfix"
+echo -e "\n-- Installing Postfix"
 postfixpassword=$(passwordgen);
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER postfix postfix-perl-scripts
-#    VMAIL_UID=101
-#    MAIL_GID=12
+    USR_LIB_PATH="/usr/libexec"
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER postfix postfix-mysql
-#    VMAIL_UID=150
-#    MAIL_GID=8
+    USR_LIB_PATH="/usr/lib"
 fi
 mysql -u root -p"$mysqlpassword" < $PANEL_PATH/configs/sentora-install/sql/sentora_postfix.sql
 mysql -u root -p"$mysqlpassword" -e "UPDATE mysql.user SET Password=PASSWORD('$postfixpassword') WHERE User='postfix' AND Host='localhost';";
 
 mkdir $PANEL_DATA/vmail
-#useradd -r -u $VMAIL_UID -g mail -d $PANEL_DATA/vmail -s /sbin/nologin -c "Virtual maildir" vmail
 useradd -r -g mail -d $PANEL_DATA/vmail -s /sbin/nologin -c "Virtual maildir" vmail
 chown -R vmail:mail $PANEL_DATA/vmail
 chmod -R 770 $PANEL_DATA/vmail
@@ -503,7 +508,7 @@ sed -i '/smtpd_bind_address/d' /etc/postfix/master.cf
 
 
 #--- Dovecot (includes Sieve)
-echo -e "\n# Installing Dovecot"
+echo -e "\n-- Installing Dovecot"
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER dovecot dovecot-mysql dovecot-pigeonhole 
     sed -i "s|#first_valid_uid = ?|first_valid_uid = $VMAIL_UID\n#last_valid_uid = $VMAIL_UID\n\nfirst_valid_gid = $MAIL_GID\n#last_valid_gid = $MAIL_GID|" /etc/dovecot/dovecot.conf
@@ -531,7 +536,7 @@ chmod 660 /var/log/dovecot*
 
 
 #--- ProFTPD
-echo -e "\n# Installing ProFTPD"
+echo -e "\n-- Installing ProFTPD"
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER proftpd proftpd-mysql 
     FTP_USER_ID=48
@@ -558,17 +563,22 @@ chmod -R 644 $PANEL_DATA/logs/proftpd
 
 
 #--- Apache server
-echo -e "\n# Installing and configuring Apache"
+echo -e "\n-- Installing and configuring Apache"
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER $HTTP_SERVER $HTTP_SERVER-devel 
     HTTP_CONF_PATH="/etc/httpd/conf/httpd.conf"
     HTTP_VARS_PATH="/etc/sysconfig/httpd"
     HTTP_SERVICE="httpd"
+    HTTP_USER="apache"
+    HTTP_GROUP="apache"
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER apache2 libapache2-mod-bw
     HTTP_CONF_PATH="/etc/apache2/apache2.conf"
     HTTP_VARS_PATH="/etc/apache2/envvars"
     HTTP_SERVICE="apache2"
+    HTTP_USER="www-data"
+    HTTP_GROUP="www-data"
+    
     a2enmod rewrite
 fi
 
@@ -586,6 +596,11 @@ if ! grep -q "apache ALL=NOPASSWD: $PANEL_PATH/panel/bin/zsudo" /etc/sudoers; th
     echo "apache ALL=NOPASSWD: $PANEL_PATH/panel/bin/zsudo" >> /etc/sudoers;
 fi
 
+#Create roots directory for HHTP docs
+mkdir -p $PANEL_DATA/hostdata/zadmin/public_html
+chown -R $HTTP_USER:$HTTP_GROUP $PANEL_DATA/hostdata/
+chmod -R 770 $PANEL_DATA/hostdata/
+
 if [[ "$OS" = "CentOs" ]]; then
     sed -i "s|DocumentRoot \"/var/www/html\"|DocumentRoot $PANEL_PATH/panel|" "$HTTP_CONF_PATH"
 elif [[ "$OS" = "Ubuntu" ]]; then
@@ -596,7 +611,6 @@ elif [[ "$OS" = "Ubuntu" ]]; then
         sed -i "s|IncludeOptional sites-enabled|#&|" "$HTTP_CONF_PATH"
     fi
 fi
-
 
 if [[ "$OS" = "CentOs" ]]; then
     mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='httpd24' WHERE so_name_vc='httpd_exe'"
@@ -641,7 +655,7 @@ sed -i 's| FollowSymLinks [-]Indexes| +FollowSymLinks -Indexes|' /etc/zpanel/pan
 
 
 #--- PHP
-echo -e "\n# Installing and configuring PHP"
+echo -e "\n-- Installing and configuring PHP"
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER php php-devel php-gd php-mbstring php-intl php-mysql php-xml php-xmlrpc
     $PACKAGE_INSTALLER php-mcrypt php-imap  #Epel packages
@@ -697,15 +711,19 @@ fi
 
 
 #--- BIND
-echo -e "\n# Installing and configuring Bind"
+echo -e "\n-- Installing and configuring Bind"
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER bind bind-utils bind-libs
     BIND_PATH="/etc/named/"
+    BIND_FILES="/etc"
     BIND_SERVICE="named"
+    BIND_USER="named"
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER bind9 bind9utils
     BIND_PATH="/etc/bind/"
-    BIND_SERVICE="bind9"    
+    BIND_FILES="/etc/bind"
+    BIND_SERVICE="bind9"
+    BIND_USER="bind"
     mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='' WHERE so_name_vc='bind_log'"
 fi
 mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$BIND_PATH' WHERE so_name_vc='bind_dir'"
@@ -715,52 +733,46 @@ chmod -R 777 $PANEL_PATH/configs/bind/zones/
 # setup logging directory
 mkdir $PANEL_DATA/logs/bind
 touch $PANEL_DATA/logs/bind/bind.log $PANEL_DATA/logs/bind/debug.log
-chown bind $PANEL_DATA/logs/bind/bind.log $PANEL_DATA/logs/bind/debug.log
+chown $BIND_USER $PANEL_DATA/logs/bind/bind.log $PANEL_DATA/logs/bind/debug.log
 chmod 660 $PANEL_DATA/logs/bind/bind.log $PANEL_DATA/logs/bind/debug.log
 
 if [[ "$OS" = "CentOs" ]]; then
     chmod 751 /var/named
     chmod 771 /var/named/data
-    rm -rf /etc/named.conf /etc/rndc.conf /etc/rndc.key
-    rndc-confgen -a
-    ln -s $PANEL_PATH/configs/bind/named.conf /etc/named.conf
-    ln -s $PANEL_PATH/configs/bind/rndc.conf /etc/rndc.conf
-    cat /etc/rndc.key /etc/named.conf > named.conf
-    cat /etc/rndc.key /etc/rndc.conf > named.conf
 elif [[ "$OS" = "Ubuntu" ]]; then
     mkdir -p /var/named/dynamic
     touch /var/named/dynamic/managed-keys.bind
-
-    chown root:root /etc/bind/rndc.key
     chown -R bind:bind /var/named/
-    chmod 755 /etc/bind/rndc.key
     chmod -R 777 $PANEL_PATH/configs/bind/etc
-    rm -rf /etc/bind/named.conf /etc/bind/rndc.conf /etc/bind/rndc.key
 
-    rndc-confgen -a -r /dev/urandom
-    ln -s $PANEL_PATH/configs/bind/named.conf /etc/bind/named.conf
-    ln -s $PANEL_PATH/configs/bind/rndc.conf /etc/bind/rndc.conf
-
-    ln -s /usr/sbin/named-checkconf /usr/bin/named-checkconf
-    ln -s /usr/sbin/named-checkzone /usr/bin/named-checkzone
-    ln -s /usr/sbin/named-compilezone /usr/bin/named-compilezone
-
-    cat /etc/bind/rndc.key /etc/bind/named.conf > /etc/bind/named.conf.new 
-    mv /etc/bind/named.conf.new /etc/bind/named.conf
-    cat /etc/bind/rndc.key /etc/bind/rndc.conf > /etc/bind/rndc.conf.new 
-    mv /etc/bind/rndc.conf.new /etc/bind/rndc.conf
-    rm -f /etc/bind/rndc.key
+    chown root:root $BIND_FILES/rndc.key
+    chmod 755 $BIND_FILES/rndc.key
 fi
 
+# build key and conf files
+rm -rf $BIND_FILES/named.conf $BIND_FILES/rndc.conf $BIND_FILES/rndc.key
+
+rndc-confgen -a -r /dev/urandom
+ln -s $PANEL_PATH/configs/bind/named.conf /etc/bind/named.conf
+ln -s $PANEL_PATH/configs/bind/rndc.conf /etc/bind/rndc.conf
+
+ln -s /usr/sbin/named-checkconf /usr/bin/named-checkconf
+ln -s /usr/sbin/named-checkzone /usr/bin/named-checkzone
+ln -s /usr/sbin/named-compilezone /usr/bin/named-compilezone
+
+cat $BIND_FILES/rndc.key $BIND_FILES/named.conf > $BIND_FILES/named.conf.new 
+cat $BIND_FILES/rndc.key $BIND_FILES/rndc.conf > $BIND_FILES/rndc.conf.new 
+mv $BIND_FILES/named.conf.new $BIND_FILES/named.conf
+mv $BIND_FILES/rndc.conf.new $BIND_FILES/rndc.conf
+rm -f $BIND_FILES/rndc.key
+
 #--- CRON specific installation tasks...
-echo -e "\n# Installing and configuring cron tasks"
+echo -e "\n-- Installing and configuring cron tasks"
 if [[ "$OS" = "CentOs" ]]; then
-    $PACKAGE_INSTALLER bind bind-utils bind-libs
     CRON_FILE="/var/spool/cron/apache"
     CRON_USER="apache"
     CRON_SERVICE="crond"
 elif [[ "$OS" = "Ubuntu" ]]; then
-    $PACKAGE_INSTALLER bind9 bind9utils
     CRON_FILE="/var/spool/cron/crontabs/www-data"
     CRON_USER="www-data"
     CRON_SERVICE="cron"    
@@ -791,7 +803,7 @@ fi
 
 
 #--- phpMyAdmin
-echo -e "\n# Installing phpMyAdmin"
+echo -e "\n-- Configuring phpMyAdmin"
 phpmyadminsecret=$(passwordgen);
 chmod 644 $PANEL_PATH/configs/phpmyadmin/config.inc.php
 sed -i "s|\$cfg\['blowfish_secret'\] \= 'SENTORA';|\$cfg\['blowfish_secret'\] \= '$phpmyadminsecret';|" $PANEL_PATH/configs/phpmyadmin/config.inc.php
@@ -801,7 +813,7 @@ rm -rf $PANEL_PATH/panel/etc/apps/phpmyadmin/setup
 
 
 #--- Roundcube specific installation tasks...
-echo -e "\n# Configuring Roundcube"
+echo -e "\n-- Configuring Roundcube"
 roundcube_des_key=$(passwordgen 24);
 mysql -u root -p"$mysqlpassword" < $PANEL_PATH/configs/sentora-install/sql/sentora_roundcube.sql
 sed -i "s|YOUR_MYSQL_ROOT_PASSWORD|$mysqlpassword|" $PANEL_PATH/configs/roundcube/db.inc.php
@@ -813,7 +825,7 @@ ln -s $PANEL_PATH/configs/roundcube/config.inc.php $PANEL_PATH/panel/etc/apps/we
 ln -s $PANEL_PATH/configs/roundcube/db.inc.php $PANEL_PATH/panel/etc/apps/webmail/config/db.inc.php
 
 #--- Webalizer specific installation tasks...
-echo -e "\n# Installing Webalizer"
+echo -e "\n-- Configuring Webalizer"
 $PACKAGE_INSTALLER webalizer
 if [[ "$OS" = "CentOs" ]]; then
     rm -rf /etc/webalizer.conf
@@ -823,7 +835,7 @@ fi
 
 
 #--- Set some Sentora database entries using. setso and setzadmin
-echo -e "\n# Configuring Sentora"
+echo -e "\n-- Configuring Sentora"
 zadminpassword=$(passwordgen);
 setzadmin --set "$zadminpassword";
 $PANEL_PATH/panel/bin/setso --set zpanel_domain "$fqdn"
@@ -838,7 +850,7 @@ php -q $PANEL_PATH/panel/bin/daemon.php
 
 
 # Enable system services and start/restart them as required.
-echo -e "\n# Starting/restarting services"
+echo -e "\n-- Starting/restarting services"
 if [[ "$OS" = "CentOs" ]]; then
     chkconfig $HTTP_SERVER on
     chkconfig postfix on
@@ -860,10 +872,6 @@ service "$BIND_SERVICE" restart
 service proftpd restart
 service atd restart
 
-# Remove temporary install directories.
-cd ../
-rm -rf zp_install_cache/ sentora/
-
 # Store the passwords for user reference
 {
     echo "zadmin Password       : $zadminpassword"
@@ -884,6 +892,7 @@ echo " MySQL Root Password    : $mysqlpassword"                  &>/dev/tty
 echo " MySQL Postfix Password : $postfixpassword"                &>/dev/tty
 echo " Sentora Username       : zadmin"                          &>/dev/tty
 echo " Sentora Password       : $zadminpassword"                 &>/dev/tty
+echo "   (theses passwords are saved in /root/passwords.txt)"    &>/dev/tty
 echo ""                                                          &>/dev/tty
 echo " Sentora Web login can be accessed using your server IP"   &>/dev/tty
 echo " inside your web browser."                                 &>/dev/tty
