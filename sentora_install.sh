@@ -741,6 +741,7 @@ chmod 660 $PANEL_DATA/logs/bind/bind.log $PANEL_DATA/logs/bind/debug.log
 if [[ "$OS" = "CentOs" ]]; then
     chmod 751 /var/named
     chmod 771 /var/named/data
+    sed -i 's|bind/zones.rfc1918|named.rfc1912.zones|' $PANEL_PATH/configs/bind/named.conf
 elif [[ "$OS" = "Ubuntu" ]]; then
     mkdir -p /var/named/dynamic
     touch /var/named/dynamic/managed-keys.bind
