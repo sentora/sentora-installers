@@ -22,7 +22,7 @@ SET time_zone = "+00:00";
 CREATE DATABASE `zpanel_proftpd`;
 USE `zpanel_proftpd`;
 CREATE USER proftpd@localhost IDENTIFIED BY 'proftpd';
-GRANT ALL PRIVILEGES ON zpanel_proftpd . * TO proftpd@localhost
+GRANT ALL PRIVILEGES ON zpanel_proftpd . * TO proftpd@localhost;
 -- --------------------------------------------------------
 
 --
