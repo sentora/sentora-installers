@@ -535,35 +535,6 @@ chown vmail:mail /var/log/dovecot*
 chmod 660 /var/log/dovecot*
 
 
-#--- ProFTPD
-echo -e "\n-- Installing ProFTPD"
-proftppassword=$(passwordgen);
-if [[ "$OS" = "CentOs" ]]; then
-    $PACKAGE_INSTALLER proftpd proftpd-mysql 
-    FTP_USER_ID=48
-    FTP_CONF_PATH='/etc/proftpd.conf'
-elif [[ "$OS" = "Ubuntu" ]]; then
-    $PACKAGE_INSTALLER proftpd-mod-mysql
-    FTP_USER_ID=$(id -u www-data)
-    FTP_CONF_PATH='/etc/proftpd/proftpd.conf'
-fi
-# Why create ftp user not user here??? check conf file USER : ROOT
-groupadd -g 2001 ftpgroup
-useradd -u 2001 -s /bin/false -d /bin/null -c "proftpd user" -g ftpgroup ftpuser
-mysql -u root -p"$mysqlpassword" < $PANEL_PATH/configs/sentora-install/sql/sentora_proftpd.sql
-mysql -u root -p"$mysqlpassword" -e "UPDATE mysql.user SET Password=PASSWORD('$proftppassword') WHERE User='proftp' AND Host='localhost';";
-mysql -u root -p"$mysqlpassword" -e "ALTER TABLE zpanel_proftpd.ftpuser ALTER COLUMN uid SET DEFAULT $FTP_USER_ID"
-mysql -u root -p"$mysqlpassword" -e "ALTER TABLE zpanel_proftpd.ftpuser ALTER COLUMN gid SET DEFAULT $FTP_USER_ID"
-sed -i "s|!SQL_PASSWORD!|$proftppassword|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
-sed -i "s|!SQL_MIN_ID!|$FTP_USER_ID|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
-rm -f "$FTP_CONF_PATH"
-touch "$FTP_CONF_PATH"
-if ! grep -q "include $PANEL_PATH/configs/proftpd/proftpd-mysql.conf" "$FTP_CONF_PATH"; then
-    echo "include $PANEL_PATH/configs/proftpd/proftpd-mysql.conf" >> "$FTP_CONF_PATH"; 
-fi
-chmod -R 644 $PANEL_DATA/logs/proftpd
-
-
 #--- Apache server
 echo -e "\n-- Installing and configuring Apache"
 if [[ "$OS" = "CentOs" ]]; then
@@ -629,8 +600,6 @@ sed -i "s|KeepAlive Off|KeepAlive On|" $HTTP_CONF_PATH
 if ! grep -q "umask 002" "$HTTP_VARS_PATH"; then
     echo "umask 002" >> "$HTTP_VARS_PATH";
 fi
-usermod -a -G $HTTP_GROUP ftpuser
-usermod -a -G ftpgroup $HTTP_USER
 
 # small touch until core file is updated
 sed -i 's| \$customPort = array|$customPorts = array|' /etc/zpanel/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
@@ -710,6 +679,40 @@ if [[ "$OS" = "CentOs" || ( "$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then
         sed -i 'N;/default extension directory./a\extension=suhosin.so' $PHP_EXT_PATH/php.ini
     fi	
 fi
+
+
+#--- ProFTPD
+echo -e "\n-- Installing ProFTPD"
+if [[ "$OS" = "CentOs" ]]; then
+    $PACKAGE_INSTALLER proftpd proftpd-mysql 
+    FTP_CONF_PATH='/etc/proftpd.conf'
+elif [[ "$OS" = "Ubuntu" ]]; then
+    $PACKAGE_INSTALLER proftpd-mod-mysql
+    FTP_CONF_PATH='/etc/proftpd/proftpd.conf'
+fi
+
+#create and init proftpd database
+mysql -u root -p"$mysqlpassword" < $PANEL_PATH/configs/sentora-install/sql/sentora_proftpd.sql
+
+#create and configure mysql password for proftpd
+proftpdpassword=$(passwordgen);
+sed -i "s|!SQL_PASSWORD!|$proftpdpassword|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
+mysql -u root -p"$mysqlpassword" -e "UPDATE mysql.user SET Password=PASSWORD('$proftpdpassword') WHERE User='proftpd' AND Host='localhost'";
+
+#assign httpd user and group to all users that will be created
+HTTP_UID=$(id -u "$HTTP_USER")
+HTTP_GID=$(sed -nr "s/^$HTTP_GROUP:x:([0-9]+):.*/\1/p" /etc/group)
+mysql -u root -p"$mysqlpassword" -e "ALTER TABLE zpanel_proftpd.ftpuser ALTER COLUMN uid SET DEFAULT $HTTP_UID"
+mysql -u root -p"$mysqlpassword" -e "ALTER TABLE zpanel_proftpd.ftpuser ALTER COLUMN gid SET DEFAULT $HTTP_GID"
+sed -i "s|!SQL_MIN_ID!|$HTTP_UID|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
+
+#setup proftpd base file to call zpanel config
+rm -f "$FTP_CONF_PATH"
+touch "$FTP_CONF_PATH"
+if ! grep -q "include $PANEL_PATH/configs/proftpd/proftpd-mysql.conf" "$FTP_CONF_PATH"; then
+    echo "include $PANEL_PATH/configs/proftpd/proftpd-mysql.conf" >> "$FTP_CONF_PATH"; 
+fi
+chmod -R 644 $PANEL_DATA/logs/proftpd
 
 
 #--- BIND
