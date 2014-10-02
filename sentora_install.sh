@@ -480,6 +480,7 @@ useradd -r -d /var/spool/vacation -s /sbin/nologin -c "Virtual vacation" vacatio
 chown -R vacation:vacation /var/spool/vacation
 chmod -R 770 /var/spool/vacation
 
+mkdir -p /etc/postfix/transport
 postmap /etc/postfix/transport
 if ! grep -q "127.0.0.1 autoreply.$fqdn" /etc/hosts; then
     echo "127.0.0.1 autoreply.$fqdn" >> /etc/hosts; 
