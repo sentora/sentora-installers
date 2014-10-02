@@ -605,9 +605,6 @@ if ! grep -q "umask 002" "$HTTP_VARS_PATH"; then
     echo "umask 002" >> "$HTTP_VARS_PATH";
 fi
 
-# small touch until core file is updated
-sed -i 's| \$customPort = array|$customPorts = array|' /etc/zpanel/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
-
 #adjustement for apache 2.4
 # Order allow,deny / Allow from all  ->  Require all granted
 # Order deny,allow / Deny from all   ->  Require all denied
