@@ -709,6 +709,9 @@ HTTP_GID=$(sed -nr "s/^$HTTP_GROUP:x:([0-9]+):.*/\1/p" /etc/group)
 mysql -u root -p"$mysqlpassword" -e "ALTER TABLE zpanel_proftpd.ftpuser ALTER COLUMN uid SET DEFAULT $HTTP_UID"
 mysql -u root -p"$mysqlpassword" -e "ALTER TABLE zpanel_proftpd.ftpuser ALTER COLUMN gid SET DEFAULT $HTTP_GID"
 sed -i "s|!SQL_MIN_ID!|$HTTP_UID|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
+if [[ "$OS" = "CentOs" ]]; then
+    sed -i "s|!nogroup!|nobody|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
+fi
 
 #setup proftpd base file to call zpanel config
 rm -f "$FTP_CONF_PATH"
