@@ -19,7 +19,7 @@
 #    OS VERSION supported: CentOS 6.4+/7.x Minimal, Ubuntu 12.04/14.04 
 #    32bit and 64bit
 
-SENTORA_GITHUB_VERSION="1.0.0-beta1"
+SENTORA_GITHUB_VERSION="1.0.0-beta2"
 SENTORA_PRECONF_VERSION="master"
 
 PANEL_PATH="/etc/zpanel"
