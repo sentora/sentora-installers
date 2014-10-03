@@ -19,8 +19,7 @@
 #    OS VERSION supported: CentOS 6.4+/7.x Minimal, Ubuntu 12.04/14.04 
 #    32bit and 64bit
 
-SENTORA_GITHUB_VERSION="1.0.0"
-
+SENTORA_GITHUB_VERSION="1.0.0-beta1"
 SENTORA_PRECONF_VERSION="master"
 
 PANEL_PATH="/etc/zpanel"
@@ -588,8 +587,8 @@ elif [[ "$OS" = "Ubuntu" ]]; then
 fi
 
 if [[ "$OS" = "CentOs" ]]; then
-    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='httpd24' WHERE so_name_vc='httpd_exe'"
-    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='httpd24-httpd' WHERE so_name_vc='apache_sn'"
+    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='httpd' WHERE so_name_vc='httpd_exe'"
+    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='httpd' WHERE so_name_vc='apache_sn'"
 elif [[ "$OS" = "Ubuntu" ]]; then
     mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='apache2' WHERE so_name_vc='httpd_exe'"
     mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='apache2' WHERE so_name_vc='apache_sn'"
@@ -616,12 +615,12 @@ if [[ ("$OS" = "CentOs" && "$VER" = "7") ||
 
     sed -i 's|Order allow,deny|Require all granted|I'  $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
     sed -i '/Allow from all/d' $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
-fi
 
-# - remove NameVirtualHost that is now without effect and generate warning
+    # - remove NameVirtualHost that is now without effect and generate warning ONLY FOR 2.4 as 2.2 REQUIRES this to work
     sed -i '/    \$line \.= \"NameVirtualHost/ {N;N;N;N;d}' /etc/zpanel/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
     # - Options must have ALL (or none) +/- prefix, disable listing directories
     sed -i 's| FollowSymLinks [-]Indexes| +FollowSymLinks -Indexes|' /etc/zpanel/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
+fi
 
 
 
