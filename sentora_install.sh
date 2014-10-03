@@ -382,7 +382,7 @@ chmod -R 777 $PANEL_DATA/
 ln -s $PANEL_PATH/panel/bin/zppy /usr/bin/zppy
 ln -s $PANEL_PATH/panel/bin/setso /usr/bin/setso
 ln -s $PANEL_PATH/panel/bin/setzadmin /usr/bin/setzadmin
-chmod +x $PANEL_PATH/panel/bin/zppy $PANEL_PATH/panel/bin/setso
+chmod +x $PANEL_PATH/panel/bin/zppy $PANEL_PATH/panel/bin/setso $PANEL_PATH/panel/bin/setzadmin
 
 # install preconfig 
 wget -nv -O sentora_preconfig.zip https://github.com/5050/sentora-installers/archive/$SENTORA_PRECONF_VERSION.zip
