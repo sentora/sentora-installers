@@ -621,9 +621,9 @@ if [[ ("$OS" = "CentOs" && "$VER" = "7") ||
 fi
 
 # - remove NameVirtualHost that is now without effect and generate warning
-sed -i '/    \$line \.= \"NameVirtualHost/ {N;N;N;N;d}' /etc/zpanel/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
-# - Options must have ALL (or none) +/- prefix, disable listing directories
-sed -i 's| FollowSymLinks [-]Indexes| +FollowSymLinks -Indexes|' /etc/zpanel/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
+    sed -i '/    \$line \.= \"NameVirtualHost/ {N;N;N;N;d}' /etc/zpanel/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
+    # - Options must have ALL (or none) +/- prefix, disable listing directories
+    sed -i 's| FollowSymLinks [-]Indexes| +FollowSymLinks -Indexes|' /etc/zpanel/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
 
 
 #--- PHP
@@ -770,7 +770,7 @@ cat $BIND_FILES/rndc.key $PANEL_PATH/configs/bind/named.conf > $BIND_FILES/named
 cat $BIND_FILES/rndc.key $PANEL_PATH/configs/bind/rndc.conf > $BIND_FILES/rndc.conf
 rm -f $BIND_FILES/rndc.key
 
-#--- CRON
+#--- Crond
 echo -e "\n-- Installing and configuring cron tasks"
 if [[ "$OS" = "CentOs" ]]; then
     #cronie & crontabs may be missing
@@ -787,26 +787,31 @@ mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_
 mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$CRON_FILE' WHERE so_name_vc='cron_reload_path'"
 mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$CRON_USER' WHERE so_name_vc='cron_reload_user'"
 
+PANEL_DAEMON_PATH="$PANEL_PATH/panel/bin/daemon.php"
+crontab -l -u $HTTP_USER > mycron
+echo "SHELL=/bin/bash" >> mycron
+echo "PATH=/sbin:/bin:/usr/sbin:/usr/bin" >> mycron
+echo "*/5 * * * * nice -2 php -q $PANEL_DAEMON_PATH >> $PANEL_PATH/daemon_last_run.log 2>&1" >> mycron
+crontab -u $HTTP_USER mycron
+rm -f mycron
+
 if [[ "$OS" = "CentOs" ]]; then
-    PANEL_DAEMON_PATH="$PANEL_PATH/panel/bin/daemon.php"
-    crontab -l -u $HTTP_USER > mycron
-    echo "*/5 * * * * nice -2 php -q $PANEL_DAEMON_PATH >> $PANEL_PATH/daemon_last_run.log 2>&1" >> mycron
-    crontab -u $HTTP_USER mycron
-    rm -f mycron
-    
+
+    chmod 744 /var/spool/cron
+    chmod 644 $CRON_FILE
+    chmod -R 644 /etc/cron.d/
+    chown -R $HTTP_USER:$HTTP_USER /var/spool/cron/
+
 elif [[ "$OS" = "Ubuntu" ]]; then
+
     mkdir -p /var/spool/cron/crontabs/
     mkdir -p /etc/cron.d/
-    touch /var/spool/cron/crontabs/www-data
-    touch /etc/cron.d/www-data
-    crontab -u www-data /var/spool/cron/crontabs/www-data
-    cp $PANEL_PATH/configs/cron/zdaemon /etc/cron.d/zdaemon
-    chmod -R 644 /var/spool/cron/crontabs/
     chmod 744 /var/spool/cron/crontabs
+    chmod 644 $CRON_FILE
     chmod -R 644 /etc/cron.d/
-    chown -R www-data:www-data /var/spool/cron/crontabs/
-fi
+    chown -R $HTTP_USER:$HTTP_USER /var/spool/crontabs/
 
+fi
 
 #--- phpMyAdmin
 echo -e "\n-- Configuring phpMyAdmin"
@@ -852,9 +857,7 @@ $PANEL_PATH/panel/bin/setso --set apache_changed "true"
 php -q $PANEL_PATH/panel/bin/daemon.php
 
 
-#--- firewall
-
-
+#--- Firewall
 # Enable system services and start/restart them as required.
 echo -e "\n-- Starting/restarting services"
 if [[ "$OS" = "CentOs" ]]; then
