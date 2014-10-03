@@ -105,8 +105,8 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     }
 fi
 
-if (inst $DB_SERVER) || (inst postfix) || (inst dovecot) || (inst $HTTP_SERVER) || (inst php) || (inst bind); then
-    echo "It appears that apache/mysql/bind/postfix is already installed; This installer "
+if (inst $DB_SERVER) || (inst dovecot) || (inst $HTTP_SERVER) || (inst php) || (inst bind); then
+    echo "It appears that apache/mysql/bind is already installed; This installer "
     echo "is designed to install and configure Sentora on a clean OS installation only!"
     echo -e "\nPlease re-install your OS before attempting to install using this script."
     exit 1;
