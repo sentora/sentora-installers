@@ -587,11 +587,11 @@ elif [[ "$OS" = "Ubuntu" ]]; then
 fi
 
 if [[ "$OS" = "CentOs" ]]; then
-    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='httpd' WHERE so_name_vc='httpd_exe'"
-    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='httpd' WHERE so_name_vc='apache_sn'"
+    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='httpd_exe'"
+    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='apache_sn'"
 elif [[ "$OS" = "Ubuntu" ]]; then
-    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='apache2' WHERE so_name_vc='httpd_exe'"
-    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='apache2' WHERE so_name_vc='apache_sn'"
+    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='httpd_exe'"
+    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='apache_sn'"
 fi
 
 #Set keepalive on (default is off)
@@ -685,9 +685,7 @@ echo -e "\n-- Installing ProFTPD"
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER proftpd proftpd-mysql 
     FTP_CONF_PATH='/etc/proftpd.conf'
-    if [[ "VER" = "7" ]] ; then
-        sed "s|nogroup|nobody|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
-    fi
+    sed -i "s|nogroup|nobody|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER proftpd-mod-mysql
     FTP_CONF_PATH='/etc/proftpd/proftpd.conf'
@@ -792,7 +790,7 @@ PANEL_DAEMON_PATH="$PANEL_PATH/panel/bin/daemon.php"
 crontab -l -u $HTTP_USER > mycron
 echo "SHELL=/bin/bash" >> mycron
 echo "PATH=/sbin:/bin:/usr/sbin:/usr/bin" >> mycron
-echo "*/5 * * * * nice -2 php -q $PANEL_DAEMON_PATH >> $PANEL_PATH/daemon_last_run.log 2>&1" >> mycron
+echo "*/5 * * * * nice -2 php -q $PANEL_DAEMON_PATH >> /var/zpanel/logs/daemon.log 2>&1" >> mycron
 crontab -u $HTTP_USER mycron
 rm -f mycron
 
