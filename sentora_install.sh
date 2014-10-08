@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 
+--- WARNING ---
+Even if I merged the "pull request #6 from zVPS/master" this evening (october 8th 0h), some bugs was localised
+in a few sections, mostly in postfix and dovecot and their correction is still not commited, some are not completed.
+
+*** DO NOT WASTE YOUR TIME TO TEST CURRENT VERSION UNITL I COMMITED THE CORRECTIONS : EMAILS WILL NOT WORK PROPERLY ***
+
+I will remove this message as soon as it will be done, very probably tomorrow 9th close to midnight.
+---------------
+
 # Official Sentora Automated Installation Script
 # =============================================
 #
