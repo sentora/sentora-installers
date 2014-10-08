@@ -1,10 +1,10 @@
 --- WARNING --- 
 
-After merge of october 9th, some bugs was localised and are still not corrected in a few sections, mostly in postfix and dovecot.
+Even if I merged the "pull request #6 from zVPS/master" this evening (october 8th 0h), some bugs was localised in a few sections, mostly in postfix and dovecot but their correction is still not commited : some are still at work.
 
-DO NOT WASTE YOUR TIME TO TEST CURRENT VERSION UNITL I COMMITED THE CORRECTIONS
+*** DO NOT WASTE YOUR TIME TO TEST CURRENT VERSION UNITL I COMMITED THE CORRECTIONS : EMAILS WILL NOT WORK PROPERLY ***
 
-I will remove this message as soon as it will be done (normally at midnight between oct. 9th and oct. 10th.
+I will remove this message as soon as it will be done, very probably tomorrow 9th close to midnight.
 
 
 
