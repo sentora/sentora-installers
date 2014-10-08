@@ -19,9 +19,7 @@
 #    OS VERSION supported: CentOS 6.4+/7.x Minimal, Ubuntu 12.04/14.04 
 #    32bit and 64bit
 
-#SENTORA_GITHUB_VERSION="master"
-SENTORA_GITHUB_VERSION="1.0.0"
-
+SENTORA_GITHUB_VERSION="1.0.0-beta3"
 SENTORA_PRECONF_VERSION="master"
 
 PANEL_PATH="/etc/zpanel"
@@ -29,13 +27,14 @@ PANEL_DATA="/var/zpanel"
 
 
 #--- Display the 'welcome' splash/user warning info..
-echo -e "\n#################################################"
-echo "#   Welcome to the Official Sentora Installer   #"
-echo "#################################################"
+echo -e "#################################################"
+echo -e "#   Welcome to the Official Sentora Installer   #"
+echo -e "#################################################"
 
 echo -e "\nChecking that minimal requirements are ok"
 
 # Ensure the OS is compatible with the launcher
+# @todo move to a function
 BITS=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
 if [ -f /etc/lsb-release ]; then
     OS=$(grep DISTRIB_ID /etc/lsb-release | sed 's/^.*=//')
@@ -48,6 +47,8 @@ else
     OS=$(uname -s)
     VER=$(uname -r)
 fi
+
+
 echo "Detected : $OS  $VER  $BITS"
 if [[ "$OS" = "CentOs" && ("$VER" = "6" || "$VER" = "7" ) || 
       "$OS" = "Ubuntu" && ("$VER" = "12.04" || "$VER" = "14.04" ) ]] ; then 
@@ -103,8 +104,8 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     }
 fi
 
-if (inst $DB_SERVER) || (inst postfix) || (inst dovecot) || (inst $HTTP_SERVER) || (inst php) || (inst bind); then
-    echo "It appears that apache/mysql/bind/postfix is already installed; This installer "
+if (inst $DB_SERVER) || (inst dovecot) || (inst $HTTP_SERVER) || (inst php) || (inst bind); then
+    echo "It appears that apache/mysql/bind is already installed; This installer "
     echo "is designed to install and configure Sentora on a clean OS installation only!"
     echo -e "\nPlease re-install your OS before attempting to install using this script."
     exit 1;
@@ -146,7 +147,7 @@ while true; do
         if [[ "$sub" == "" ]]; then
             echo -e "\e[1;31m!!! WARNING !!!"
             echo -e "The FQDN must be a subdomain.\e[0m"
-            read -e -p "Whatever, would you really want to continue (y:Yes n:change fqdn q:quit)? " yn
+            read -e -p "Continue or change the FQDN (y:Yes n:change fqdn q:quit)? " yn
             case $yn in
                 [Yy]* ) break;;
                 [Nn]* ) continue;;
@@ -164,7 +165,7 @@ while true; do
             echo " - http://docs.sentora.org/index.php?node=7 (Installing Sentora)"
             echo " - http://docs.sentora.org/index.php?node=51 (Installer questions)"
 	          echo ""
-            read -e -p "Whatever, would you really want to continue (y:Yes n:change fqdn q:quit)? " yn
+            read -e -p "If this is a production installation set the FQDN DNS up asap. Continue with installation (y:Yes n:change fqdn q:quit)? " yn
             case $yn in
                 [Yy]* ) break;;
                 [Nn]* ) continue;;
@@ -180,7 +181,7 @@ while true; do
     else	
         echo -e "\e[1;31m!!! WARNING !!!"
 	      echo -e "The IP of your server is not the same than reported by the dns for domain $fqdn\e[0m"
-        echo "Are you really SURE that you want to setup Sentora with these parameters?"
+        echo "Continue to install Sentora with these parameters?"
         read -e -p "(y):accept, (n):change fqdn or ip, (ctrl+c):quit installer? " yn
         case $yn in
             [Yy]* ) break;;
@@ -327,7 +328,7 @@ EOF
     fi
 fi
 
-#--- For debug (log file required from user)
+#--- Logging system installed packages
 echo -e "\n-- Listing of all packages installed:"
 if [[ "$OS" = "CentOs" ]]; then
     rpm -qa | sort
@@ -335,7 +336,7 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     dpkg --get-selections
 fi
 
-#--- Ensure all packages are updated
+#--- Linux system updates
 echo -e "\n-- Updating+upgrading system, it may take some time..."
 if [[ "$OS" = "CentOs" ]]; then
     yum -y update
@@ -346,7 +347,7 @@ elif [[ "$OS" = "Ubuntu" ]]; then
 fi
 
 
-#--- Install some standard utility packages required by the installer and/or Sentora.
+#--- Install linux dependancies for Sentora and Installer
 echo -e "\n-- Downloading and installing required tools..."
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER sudo vim make zip unzip git chkconfig bash-completion
@@ -356,7 +357,7 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER sudo vim make zip unzip git debconf-utils at build-essential bash-completion
 fi
 
-#--- Clone Sentora from GitHub
+#--- Sentora Package Download
 echo -e "\n-- Downloading Sentora, Please wait, this may take several minutes, the installer will continue after this is complete!"
 # Get latest sentora
 wget -nv -O sentora_installer.zip https://github.com/sentora/sentora-core/archive/$SENTORA_GITHUB_VERSION.zip
@@ -368,7 +369,7 @@ rm sentora_installer.zip
 rm "$PANEL_PATH/panel/LICENSE.md" "$PANEL_PATH/panel/README.md" "$PANEL_PATH/panel/.gitignore"
 rm -rf "$PANEL_PATH/_delete_me"
 
-# Set-up Sentora directories and configure permissions
+#--- Sentora Directory Configurations
 mkdir -p $PANEL_PATH/configs
 mkdir -p $PANEL_PATH/docs
 chmod -R 777 $PANEL_PATH
@@ -377,10 +378,11 @@ mkdir -p $PANEL_DATA/logs/proftpd
 mkdir -p $PANEL_DATA/backups
 chmod -R 777 $PANEL_DATA/
 
+#--- Sentora executables
 ln -s $PANEL_PATH/panel/bin/zppy /usr/bin/zppy
 ln -s $PANEL_PATH/panel/bin/setso /usr/bin/setso
 ln -s $PANEL_PATH/panel/bin/setzadmin /usr/bin/setzadmin
-chmod +x $PANEL_PATH/panel/bin/zppy $PANEL_PATH/panel/bin/setso
+chmod +x $PANEL_PATH/panel/bin/zppy $PANEL_PATH/panel/bin/setso $PANEL_PATH/panel/bin/setzadmin
 
 # install preconfig 
 wget -nv -O sentora_preconfig.zip https://github.com/5050/sentora-installers/archive/$SENTORA_PRECONF_VERSION.zip
@@ -389,7 +391,7 @@ cp -rf sentora-installers-$SENTORA_PRECONF_VERSION/preconf/* $PANEL_PATH/configs
 rm sentora_preconfig*
 rm -rf sentora-*
 
-# prepare zsudo
+#--- zsudo
 cc -o $PANEL_PATH/panel/bin/zsudo $PANEL_PATH/configs/bin/zsudo.c
 sudo chown root $PANEL_PATH/panel/bin/zsudo
 chmod +s $PANEL_PATH/panel/bin/zsudo
@@ -432,15 +434,9 @@ elif [[ "$OS" = "Ubuntu" ]]; then
 fi
 service $DB_SERVICE start
 
-# setup mysql root password
+
+#--- MySQL
 mysqladmin -u root password "$mysqlpassword"
-
-# check that root password works. 
-# removed : mysql is now always just installed
-#until mysql -u root -p"$mysqlpassword" -e ";" > /dev/null 2>&1 ; do
-#    read -s -p "enter your root $DB_SERVER password : " mysqlpassword
-#done
-
 # small cleaning of mysql access
 mysql -u root -p"$mysqlpassword" -e "DELETE FROM mysql.user WHERE User='root' AND Host != 'localhost'";
 mysql -u root -p"$mysqlpassword" -e "DELETE FROM mysql.user WHERE User=''";
@@ -467,6 +463,7 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER postfix postfix-mysql
     USR_LIB_PATH="/usr/lib"
 fi
+
 mysql -u root -p"$mysqlpassword" < $PANEL_PATH/configs/sentora-install/sql/sentora_postfix.sql
 mysql -u root -p"$mysqlpassword" -e "UPDATE mysql.user SET Password=PASSWORD('$postfixpassword') WHERE User='postfix' AND Host='localhost';";
 
@@ -574,7 +571,7 @@ if ! grep -q "apache ALL=NOPASSWD: $PANEL_PATH/panel/bin/zsudo" /etc/sudoers; th
     echo "apache ALL=NOPASSWD: $PANEL_PATH/panel/bin/zsudo" >> /etc/sudoers;
 fi
 
-#Create roots directory for HHTP docs
+#--- Apache root public http docs
 mkdir -p $PANEL_DATA/hostdata/zadmin/public_html
 chown -R $HTTP_USER:$HTTP_GROUP $PANEL_DATA/hostdata/
 chmod -R 770 $PANEL_DATA/hostdata/
@@ -591,11 +588,11 @@ elif [[ "$OS" = "Ubuntu" ]]; then
 fi
 
 if [[ "$OS" = "CentOs" ]]; then
-    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='httpd24' WHERE so_name_vc='httpd_exe'"
-    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='httpd24-httpd' WHERE so_name_vc='apache_sn'"
+    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='httpd_exe'"
+    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='apache_sn'"
 elif [[ "$OS" = "Ubuntu" ]]; then
-    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='apache2' WHERE so_name_vc='httpd_exe'"
-    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='apache2' WHERE so_name_vc='apache_sn'"
+    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='httpd_exe'"
+    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='apache_sn'"
 fi
 
 #Set keepalive on (default is off)
@@ -606,10 +603,7 @@ if ! grep -q "umask 002" "$HTTP_VARS_PATH"; then
     echo "umask 002" >> "$HTTP_VARS_PATH";
 fi
 
-# small touch until core file is updated
-sed -i 's| \$customPort = array|$customPorts = array|' /etc/zpanel/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
-
-#adjustement for apache 2.4
+# adjustment for apache 2.4
 # Order allow,deny / Allow from all  ->  Require all granted
 # Order deny,allow / Deny from all   ->  Require all denied
 if [[ ("$OS" = "CentOs" && "$VER" = "7") || 
@@ -622,12 +616,13 @@ if [[ ("$OS" = "CentOs" && "$VER" = "7") ||
 
     sed -i 's|Order allow,deny|Require all granted|I'  $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
     sed -i '/Allow from all/d' $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
+
+    # - remove NameVirtualHost that is now without effect and generate warning ONLY FOR 2.4 as 2.2 REQUIRES this to work
+    sed -i '/    \$line \.= \"NameVirtualHost/ {N;N;N;N;d}' /etc/zpanel/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
+    # - Options must have ALL (or none) +/- prefix, disable listing directories
+    sed -i 's| FollowSymLinks [-]Indexes| +FollowSymLinks -Indexes|' /etc/zpanel/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
 fi
 
-# - remove NameVirtualHost that is now without effect and generate warning
-sed -i '/    \$line \.= \"NameVirtualHost/ {N;N;N;N;d}' /etc/zpanel/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
-# - Options must have ALL (or none) +/- prefix, disable listing directories
-sed -i 's| FollowSymLinks [-]Indexes| +FollowSymLinks -Indexes|' /etc/zpanel/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
 
 
 #--- PHP
@@ -691,9 +686,7 @@ echo -e "\n-- Installing ProFTPD"
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER proftpd proftpd-mysql 
     FTP_CONF_PATH='/etc/proftpd.conf'
-    if [[ "VER" = "7" ]] ; then
-        sed "s|nogroup|nobody|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
-    fi
+    sed -i "s|nogroup|nobody|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER proftpd-mod-mysql
     FTP_CONF_PATH='/etc/proftpd/proftpd.conf'
@@ -713,6 +706,9 @@ HTTP_GID=$(sed -nr "s/^$HTTP_GROUP:x:([0-9]+):.*/\1/p" /etc/group)
 mysql -u root -p"$mysqlpassword" -e "ALTER TABLE zpanel_proftpd.ftpuser ALTER COLUMN uid SET DEFAULT $HTTP_UID"
 mysql -u root -p"$mysqlpassword" -e "ALTER TABLE zpanel_proftpd.ftpuser ALTER COLUMN gid SET DEFAULT $HTTP_GID"
 sed -i "s|!SQL_MIN_ID!|$HTTP_UID|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
+if [[ "$OS" = "CentOs" ]]; then
+    sed -i "s|!nogroup!|nobody|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
+fi
 
 #setup proftpd base file to call zpanel config
 rm -f "$FTP_CONF_PATH"
@@ -774,7 +770,7 @@ cat $BIND_FILES/rndc.key $PANEL_PATH/configs/bind/named.conf > $BIND_FILES/named
 cat $BIND_FILES/rndc.key $PANEL_PATH/configs/bind/rndc.conf > $BIND_FILES/rndc.conf
 rm -f $BIND_FILES/rndc.key
 
-#--- CRON
+#--- Crond
 echo -e "\n-- Installing and configuring cron tasks"
 if [[ "$OS" = "CentOs" ]]; then
     #cronie & crontabs may be missing
@@ -791,26 +787,31 @@ mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_
 mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$CRON_FILE' WHERE so_name_vc='cron_reload_path'"
 mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$CRON_USER' WHERE so_name_vc='cron_reload_user'"
 
+PANEL_DAEMON_PATH="$PANEL_PATH/panel/bin/daemon.php"
+crontab -l -u $HTTP_USER > mycron
+echo "SHELL=/bin/bash" >> mycron
+echo "PATH=/sbin:/bin:/usr/sbin:/usr/bin" >> mycron
+echo "*/5 * * * * nice -2 php -q $PANEL_DAEMON_PATH >> /var/zpanel/logs/daemon.log 2>&1" >> mycron
+crontab -u $HTTP_USER mycron
+rm -f mycron
+
 if [[ "$OS" = "CentOs" ]]; then
-    PANEL_DAEMON_PATH="$PANEL_PATH/panel/bin/daemon.php"
-    crontab -l -u $HTTP_USER > mycron
-    echo "*/5 * * * * nice -2 php -q $PANEL_DAEMON_PATH >> $PANEL_PATH/daemon_last_run.log 2>&1" >> mycron
-    crontab -u $HTTP_USER mycron
-    rm -f mycron
-    
+
+    chmod 744 /var/spool/cron
+    chmod 644 $CRON_FILE
+    chmod -R 644 /etc/cron.d/
+    chown -R $HTTP_USER:$HTTP_USER /var/spool/cron/
+
 elif [[ "$OS" = "Ubuntu" ]]; then
+
     mkdir -p /var/spool/cron/crontabs/
     mkdir -p /etc/cron.d/
-    touch /var/spool/cron/crontabs/www-data
-    touch /etc/cron.d/www-data
-    crontab -u www-data /var/spool/cron/crontabs/www-data
-    cp $PANEL_PATH/configs/cron/zdaemon /etc/cron.d/zdaemon
-    chmod -R 644 /var/spool/cron/crontabs/
     chmod 744 /var/spool/cron/crontabs
+    chmod 644 $CRON_FILE
     chmod -R 644 /etc/cron.d/
-    chown -R www-data:www-data /var/spool/cron/crontabs/
-fi
+    chown -R $HTTP_USER:$HTTP_USER /var/spool/crontabs/
 
+fi
 
 #--- phpMyAdmin
 echo -e "\n-- Configuring phpMyAdmin"
@@ -856,9 +857,7 @@ $PANEL_PATH/panel/bin/setso --set apache_changed "true"
 php -q $PANEL_PATH/panel/bin/daemon.php
 
 
-#--- firewall
-
-
+#--- Firewall
 # Enable system services and start/restart them as required.
 echo -e "\n-- Starting/restarting services"
 if [[ "$OS" = "CentOs" ]]; then
