@@ -25,7 +25,6 @@ SENTORA_PRECONF_VERSION="master"
 PANEL_PATH="/etc/zpanel"
 PANEL_DATA="/var/zpanel"
 
-
 #--- Display the 'welcome' splash/user warning info..
 echo -e "\n#################################################"
 echo "#   Welcome to the Official Sentora Installer   #"
@@ -414,7 +413,9 @@ rm -rf "$PANEL_PATH/_delete_me"
 rm -rf "$PANEL_PATH/panel/etc/build"
 
 #--- Set-up Sentora directories and configure permissions
-mkdir -p $PANEL_PATH/configs
+PANEL_CONF="$PANEL_PATH/configs"
+
+mkdir -p $PANEL_CONF
 mkdir -p $PANEL_PATH/docs
 chmod -R 777 $PANEL_PATH
 
@@ -435,12 +436,12 @@ ln -s $PANEL_PATH/panel/bin/setzadmin /usr/bin/setzadmin
 #--- Install preconfig 
 wget -nv -O sentora_preconfig.zip https://github.com/5050/sentora-installers/archive/$SENTORA_PRECONF_VERSION.zip
 unzip -oq sentora_preconfig.zip
-cp -rf sentora-installers-$SENTORA_PRECONF_VERSION/preconf/* $PANEL_PATH/configs
+cp -rf sentora-installers-$SENTORA_PRECONF_VERSION/preconf/* $PANEL_CONF
 rm sentora_preconfig*
 rm -rf sentora-*
 
 #--- Prepare zsudo
-cc -o $PANEL_PATH/panel/bin/zsudo $PANEL_PATH/configs/bin/zsudo.c
+cc -o $PANEL_PATH/panel/bin/zsudo $PANEL_CONF/bin/zsudo.c
 sudo chown root $PANEL_PATH/panel/bin/zsudo
 chmod +s $PANEL_PATH/panel/bin/zsudo
 
@@ -506,7 +507,7 @@ sed -i "s|\[mysqld\]|&\nsecure-file-priv = /var/tmp|" $MY_CNF_PATH
 
 # setup sentora access and core database
 sed -i "s|YOUR_ROOT_MYSQL_PASSWORD|$mysqlpassword|" $PANEL_PATH/panel/cnf/db.php
-mysql -u root -p"$mysqlpassword" < $PANEL_PATH/configs/sentora-install/sql/sentora_core.sql
+mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_core.sql
 
 
 #--- Postfix
@@ -520,7 +521,7 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     USR_LIB_PATH="/usr/lib"
 fi
 
-mysql -u root -p"$mysqlpassword" < $PANEL_PATH/configs/sentora-install/sql/sentora_postfix.sql
+mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_postfix.sql
 mysql -u root -p"$mysqlpassword" -e "UPDATE mysql.user SET Password=PASSWORD('$postfixpassword') WHERE User='postfix' AND Host='localhost';";
 
 mkdir $PANEL_DATA/vmail
@@ -534,58 +535,58 @@ chown -R vacation:vacation /var/spool/vacation
 chmod -R 770 /var/spool/vacation
 
 #Removed optionnal transport that was leaved empty, until it is fully handled.
-#ln -s $PANEL_PATH/configs/postfix/transport /etc/postfix/transport
+#ln -s $PANEL_CONF/postfix/transport /etc/postfix/transport
 #postmap /etc/postfix/transport
 
 add_local_domain "$MAIN_FQDN"
 add_local_domain "autoreply.$MAIN_FQDN"
 
 rm -rf /etc/postfix/main.cf /etc/postfix/master.cf
-ln -s $PANEL_PATH/configs/postfix/master.cf /etc/postfix/master.cf
-ln -s $PANEL_PATH/configs/postfix/main.cf /etc/postfix/main.cf
-ln -s $PANEL_PATH/configs/postfix/vacation.pl /var/spool/vacation/vacation.pl
+ln -s $PANEL_CONF/postfix/master.cf /etc/postfix/master.cf
+ln -s $PANEL_CONF/postfix/main.cf /etc/postfix/main.cf
+ln -s $PANEL_CONF/postfix/vacation.pl /var/spool/vacation/vacation.pl
 
-sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_PATH/configs/postfix/*.cf
-sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_PATH/configs/postfix/vacation.conf
-sed -i "s|!PANEL_FQDN!|$MAIN_FQDN|" $PANEL_PATH/configs/postfix/main.cf
+sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_CONF/postfix/*.cf
+sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_CONF/postfix/vacation.conf
+sed -i "s|!PANEL_FQDN!|$MAIN_FQDN|" $PANEL_CONF/postfix/main.cf
 
-sed -i "s|!USR_LIB!|$USR_LIB_PATH|" $PANEL_PATH/configs/postfix/master.cf
-sed -i "s|!USR_LIB!|$USR_LIB_PATH|" $PANEL_PATH/configs/postfix/main.cf
-sed -i "s|!SERVER_IP!|$PUBLIC_IP|" $PANEL_PATH/configs/postfix/main.cf 
+sed -i "s|!USR_LIB!|$USR_LIB_PATH|" $PANEL_CONF/postfix/master.cf
+sed -i "s|!USR_LIB!|$USR_LIB_PATH|" $PANEL_CONF/postfix/main.cf
+sed -i "s|!SERVER_IP!|$PUBLIC_IP|" $PANEL_CONF/postfix/main.cf 
 
 VMAIL_UID=$(id -u vmail)
 MAIL_GID=$(sed -nr "s/^mail:x:([0-9]+):.*/\1/p" /etc/group)
-sed -i "s|!POS_UID!|$VMAIL_UID|" $PANEL_PATH/configs/postfix/main.cf
-sed -i "s|!POS_GID!|$MAIL_GID|" $PANEL_PATH/configs/postfix/main.cf
+sed -i "s|!POS_UID!|$VMAIL_UID|" $PANEL_CONF/postfix/main.cf
+sed -i "s|!POS_GID!|$MAIL_GID|" $PANEL_CONF/postfix/main.cf
 
 # remove unusued directives that issue warnings
-sed -i '/virtual_mailbox_limit_maps/d' $PANEL_PATH/configs/postfix/main.cf
-sed -i '/smtpd_bind_address/d' $PANEL_PATH/configs/postfix/master.cf
+sed -i '/virtual_mailbox_limit_maps/d' $PANEL_CONF/postfix/main.cf
+sed -i '/smtpd_bind_address/d' $PANEL_CONF/postfix/master.cf
 
 
 #--- Dovecot (includes Sieve)
 echo -e "\n-- Installing Dovecot"
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER dovecot dovecot-mysql dovecot-pigeonhole 
-    sed -i "s|#first_valid_uid = ?|first_valid_uid = $VMAIL_UID\n#last_valid_uid = $VMAIL_UID\n\nfirst_valid_gid = $MAIL_GID\n#last_valid_gid = $MAIL_GID|" /etc/dovecot/dovecot.conf
+    sed -i "s|#first_valid_uid = ?|first_valid_uid = $VMAIL_UID\n#last_valid_uid = $VMAIL_UID\n\nfirst_valid_gid = $MAIL_GID\n#last_valid_gid = $MAIL_GID|" $PANEL_CONF/dovecot2/dovecot.conf
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER dovecot-mysql dovecot-imapd dovecot-pop3d dovecot-common dovecot-managesieved dovecot-lmtpd 
-    sed -i "s|#first_valid_uid = ?|first_valid_uid = $VMAIL_UID\nlast_valid_uid = $VMAIL_UID\n\nfirst_valid_gid = $MAIL_GID\nlast_valid_gid = $MAIL_GID|" /etc/dovecot/dovecot.conf
+    sed -i "s|#first_valid_uid = ?|first_valid_uid = $VMAIL_UID\nlast_valid_uid = $VMAIL_UID\n\nfirst_valid_gid = $MAIL_GID\nlast_valid_gid = $MAIL_GID|" $PANEL_CONF/dovecot2/dovecot.conf
 fi
 
 mkdir -p $PANEL_DATA/sieve
 chown -R vmail:mail $PANEL_DATA/sieve
 mkdir -p /var/lib/dovecot/sieve/
 touch /var/lib/dovecot/sieve/default.sieve
-ln -s $PANEL_PATH/configs/dovecot2/globalfilter.sieve $PANEL_DATA/sieve/globalfilter.sieve
+ln -s $PANEL_CONF/dovecot2/globalfilter.sieve $PANEL_DATA/sieve/globalfilter.sieve
 
 rm -rf /etc/dovecot/dovecot.conf
-ln -s $PANEL_PATH/configs/dovecot2/dovecot.conf /etc/dovecot/dovecot.conf
-sed -i "s|!POSTMASTER_EMAIL!|postmaster@$MAIN_FQDN|" $PANEL_PATH/configs/dovecot2/dovecot.conf
-sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_PATH/configs/dovecot2/dovecot-dict-quota.conf
-sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_PATH/configs/dovecot2/dovecot-mysql.conf
-sed -i "s|!DOV_UID!|$VMAIL_UID|" $PANEL_PATH/configs/dovecot2/dovecot-mysql.conf
-sed -i "s|!DOV_GID!|$MAIL_GID|" $PANEL_PATH/configs/dovecot2/dovecot-mysql.conf
+ln -s $PANEL_CONF/dovecot2/dovecot.conf /etc/dovecot/dovecot.conf
+sed -i "s|!POSTMASTER_EMAIL!|postmaster@$MAIN_FQDN|" $PANEL_CONF/dovecot2/dovecot.conf
+sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_CONF/dovecot2/dovecot-dict-quota.conf
+sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_CONF/dovecot2/dovecot-mysql.conf
+sed -i "s|!DOV_UID!|$VMAIL_UID|" $PANEL_CONF/dovecot2/dovecot-mysql.conf
+sed -i "s|!DOV_GID!|$MAIL_GID|" $PANEL_CONF/dovecot2/dovecot-mysql.conf
 
 touch /var/log/dovecot.log /var/log/dovecot-info.log /var/log/dovecot-debug.log
 chown vmail:mail /var/log/dovecot*
@@ -616,8 +617,8 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     a2enmod rewrite
 fi
 
-if ! grep -q "Include $PANEL_PATH/configs/apache/httpd.conf" "$HTTP_CONF_PATH"; then
-    echo "Include $PANEL_PATH/configs/apache/httpd.conf" >> "$HTTP_CONF_PATH";
+if ! grep -q "Include $PANEL_CONF/apache/httpd.conf" "$HTTP_CONF_PATH"; then
+    echo "Include $PANEL_CONF/apache/httpd.conf" >> "$HTTP_CONF_PATH";
 fi
 add_local_domain "$PANEL_FQDN"
 add_local_domain "$(hostname)"
@@ -657,12 +658,12 @@ fi
 if [[ ("$OS" = "CentOs" && "$VER" = "7") || 
       ("$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then 
     # Order deny,allow / Deny from all   ->  Require all denied
-    sed -i 's|Order deny,allow|Require all denied|I'  $PANEL_PATH/configs/apache/httpd.conf
-    sed -i '/Deny from all/d' $PANEL_PATH/configs/apache/httpd.conf
+    sed -i 's|Order deny,allow|Require all denied|I'  $PANEL_CONF/apache/httpd.conf
+    sed -i '/Deny from all/d' $PANEL_CONF/apache/httpd.conf
 
     # Order allow,deny / Allow from all  ->  Require all granted
-    sed -i 's|Order allow,deny|Require all granted|I' $PANEL_PATH/configs/apache/httpd-vhosts.conf
-    sed -i '/Allow from all/d' $PANEL_PATH/configs/apache/httpd-vhosts.conf
+    sed -i 's|Order allow,deny|Require all granted|I' $PANEL_CONF/apache/httpd-vhosts.conf
+    sed -i '/Allow from all/d' $PANEL_CONF/apache/httpd-vhosts.conf
 
     sed -i 's|Order allow,deny|Require all granted|I'  $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
     sed -i '/Allow from all/d' $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
@@ -734,18 +735,18 @@ echo -e "\n-- Installing ProFTPD"
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER proftpd proftpd-mysql 
     FTP_CONF_PATH='/etc/proftpd.conf'
-    sed -i "s|nogroup|nobody|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
+    sed -i "s|nogroup|nobody|" $PANEL_CONF/proftpd/proftpd-mysql.conf
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER proftpd-mod-mysql
     FTP_CONF_PATH='/etc/proftpd/proftpd.conf'
 fi
 
 # Create and init proftpd database
-mysql -u root -p"$mysqlpassword" < $PANEL_PATH/configs/sentora-install/sql/sentora_proftpd.sql
+mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_proftpd.sql
 
 # Create and configure mysql password for proftpd
 proftpdpassword=$(passwordgen);
-sed -i "s|!SQL_PASSWORD!|$proftpdpassword|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
+sed -i "s|!SQL_PASSWORD!|$proftpdpassword|" $PANEL_CONF/proftpd/proftpd-mysql.conf
 mysql -u root -p"$mysqlpassword" -e "UPDATE mysql.user SET Password=PASSWORD('$proftpdpassword') WHERE User='proftpd' AND Host='localhost'";
 
 # Assign httpd user and group to all users that will be created
@@ -753,12 +754,12 @@ HTTP_UID=$(id -u "$HTTP_USER")
 HTTP_GID=$(sed -nr "s/^$HTTP_GROUP:x:([0-9]+):.*/\1/p" /etc/group)
 mysql -u root -p"$mysqlpassword" -e "ALTER TABLE zpanel_proftpd.ftpuser ALTER COLUMN uid SET DEFAULT $HTTP_UID"
 mysql -u root -p"$mysqlpassword" -e "ALTER TABLE zpanel_proftpd.ftpuser ALTER COLUMN gid SET DEFAULT $HTTP_GID"
-sed -i "s|!SQL_MIN_ID!|$HTTP_UID|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
+sed -i "s|!SQL_MIN_ID!|$HTTP_UID|" $PANEL_CONF/proftpd/proftpd-mysql.conf
 
 # Setup proftpd base file to call zpanel config
 rm -f "$FTP_CONF_PATH"
 touch "$FTP_CONF_PATH"
-echo "include $PANEL_PATH/configs/proftpd/proftpd-mysql.conf" >> "$FTP_CONF_PATH";
+echo "include $PANEL_CONF/proftpd/proftpd-mysql.conf" >> "$FTP_CONF_PATH";
 
 chmod -R 644 $PANEL_DATA/logs/proftpd
 
@@ -781,7 +782,7 @@ elif [[ "$OS" = "Ubuntu" ]]; then
 fi
 mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$BIND_PATH' WHERE so_name_vc='bind_dir'"
 mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$BIND_SERVICE' WHERE so_name_vc='bind_service'"
-chmod -R 777 $PANEL_PATH/configs/bind/zones/
+chmod -R 777 $PANEL_CONF/bind/zones/
 
 # Setup logging directory
 mkdir $PANEL_DATA/logs/bind
@@ -792,12 +793,12 @@ chmod 660 $PANEL_DATA/logs/bind/bind.log $PANEL_DATA/logs/bind/debug.log
 if [[ "$OS" = "CentOs" ]]; then
     chmod 751 /var/named
     chmod 771 /var/named/data
-    sed -i 's|bind/zones.rfc1918|named.rfc1912.zones|' $PANEL_PATH/configs/bind/named.conf
+    sed -i 's|bind/zones.rfc1918|named.rfc1912.zones|' $PANEL_CONF/bind/named.conf
 elif [[ "$OS" = "Ubuntu" ]]; then
     mkdir -p /var/named/dynamic
     touch /var/named/dynamic/managed-keys.bind
     chown -R bind:bind /var/named/
-    chmod -R 777 $PANEL_PATH/configs/bind/etc
+    chmod -R 777 $PANEL_CONF/bind/etc
 
     chown root:root $BIND_FILES/rndc.key
     chmod 755 $BIND_FILES/rndc.key
@@ -810,8 +811,8 @@ ln -s /usr/sbin/named-compilezone /usr/bin/named-compilezone
 # Build key and conf files
 rm -rf $BIND_FILES/named.conf $BIND_FILES/rndc.conf $BIND_FILES/rndc.key
 rndc-confgen -a -r /dev/urandom
-cat $BIND_FILES/rndc.key $PANEL_PATH/configs/bind/named.conf > $BIND_FILES/named.conf
-cat $BIND_FILES/rndc.key $PANEL_PATH/configs/bind/rndc.conf > $BIND_FILES/rndc.conf
+cat $BIND_FILES/rndc.key $PANEL_CONF/bind/named.conf > $BIND_FILES/named.conf
+cat $BIND_FILES/rndc.key $PANEL_CONF/bind/rndc.conf > $BIND_FILES/rndc.conf
 rm -f $BIND_FILES/rndc.key
 
 
@@ -864,9 +865,9 @@ fi
 #--- phpMyAdmin
 echo -e "\n-- Configuring phpMyAdmin"
 phpmyadminsecret=$(passwordgen);
-chmod 644 $PANEL_PATH/configs/phpmyadmin/config.inc.php
-sed -i "s|\$cfg\['blowfish_secret'\] \= 'SENTORA';|\$cfg\['blowfish_secret'\] \= '$phpmyadminsecret';|" $PANEL_PATH/configs/phpmyadmin/config.inc.php
-ln -s $PANEL_PATH/configs/phpmyadmin/config.inc.php $PANEL_PATH/panel/etc/apps/phpmyadmin/config.inc.php
+chmod 644 $PANEL_CONF/phpmyadmin/config.inc.php
+sed -i "s|\$cfg\['blowfish_secret'\] \= 'SENTORA';|\$cfg\['blowfish_secret'\] \= '$phpmyadminsecret';|" $PANEL_CONF/phpmyadmin/config.inc.php
+ln -s $PANEL_CONF/phpmyadmin/config.inc.php $PANEL_PATH/panel/etc/apps/phpmyadmin/config.inc.php
 # Remove phpMyAdmin's setup folder in case it was left behind
 rm -rf $PANEL_PATH/panel/etc/apps/phpmyadmin/setup
 
@@ -874,14 +875,14 @@ rm -rf $PANEL_PATH/panel/etc/apps/phpmyadmin/setup
 #--- Roundcube
 echo -e "\n-- Configuring Roundcube"
 roundcube_des_key=$(passwordgen 24);
-mysql -u root -p"$mysqlpassword" < $PANEL_PATH/configs/sentora-install/sql/sentora_roundcube.sql
-sed -i "s|YOUR_MYSQL_ROOT_PASSWORD|$mysqlpassword|" $PANEL_PATH/configs/roundcube/db.inc.php
-sed -i "s|#||" $PANEL_PATH/configs/roundcube/db.inc.php
-sed -i "s|rcmail-!24ByteDESkey\*Str|$roundcube_des_key|" $PANEL_PATH/configs/roundcube/main.inc.php
+mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_roundcube.sql
+sed -i "s|YOUR_MYSQL_ROOT_PASSWORD|$mysqlpassword|" $PANEL_CONF/roundcube/db.inc.php
+sed -i "s|#||" $PANEL_CONF/roundcube/db.inc.php
+sed -i "s|rcmail-!24ByteDESkey\*Str|$roundcube_des_key|" $PANEL_CONF/roundcube/main.inc.php
 rm -rf $PANEL_PATH/panel/etc/apps/webmail/config/main.inc.php
-ln -s $PANEL_PATH/configs/roundcube/main.inc.php $PANEL_PATH/panel/etc/apps/webmail/config/main.inc.php
-ln -s $PANEL_PATH/configs/roundcube/config.inc.php $PANEL_PATH/panel/etc/apps/webmail/plugins/managesieve/config.inc.php
-ln -s $PANEL_PATH/configs/roundcube/db.inc.php $PANEL_PATH/panel/etc/apps/webmail/config/db.inc.php
+ln -s $PANEL_CONF/roundcube/main.inc.php $PANEL_PATH/panel/etc/apps/webmail/config/main.inc.php
+ln -s $PANEL_CONF/roundcube/config.inc.php $PANEL_PATH/panel/etc/apps/webmail/plugins/managesieve/config.inc.php
+ln -s $PANEL_CONF/roundcube/db.inc.php $PANEL_PATH/panel/etc/apps/webmail/config/db.inc.php
 
 #--- Webalizer
 echo -e "\n-- Configuring Webalizer"
