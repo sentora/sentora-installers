@@ -1,14 +1,5 @@
 #!/usr/bin/env bash
 
---- WARNING ---
-Even if I merged the "pull request #6 from zVPS/master" this evening (october 8th 0h), some bugs was localised
-in a few sections, mostly in postfix and dovecot and their correction is still not commited, some are not completed.
-
-*** DO NOT WASTE YOUR TIME TO TEST CURRENT VERSION UNITL I COMMITED THE CORRECTIONS : EMAILS WILL NOT WORK PROPERLY ***
-
-I will remove this message as soon as it will be done, very probably tomorrow 9th close to midnight.
----------------
-
 # Official Sentora Automated Installation Script
 # =============================================
 #
@@ -36,14 +27,13 @@ PANEL_DATA="/var/zpanel"
 
 
 #--- Display the 'welcome' splash/user warning info..
-echo -e "#################################################"
-echo -e "#   Welcome to the Official Sentora Installer   #"
-echo -e "#################################################"
+echo -e "\n#################################################"
+echo "#   Welcome to the Official Sentora Installer   #"
+echo "#################################################"
 
 echo -e "\nChecking that minimal requirements are ok"
 
 # Ensure the OS is compatible with the launcher
-# @todo move to a function
 BITS=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
 if [ -f /etc/lsb-release ]; then
     OS=$(grep DISTRIB_ID /etc/lsb-release | sed 's/^.*=//')
@@ -56,9 +46,8 @@ else
     OS=$(uname -s)
     VER=$(uname -r)
 fi
-
-
 echo "Detected : $OS  $VER  $BITS"
+
 if [[ "$OS" = "CentOs" && ("$VER" = "6" || "$VER" = "7" ) || 
       "$OS" = "Ubuntu" && ("$VER" = "12.04" || "$VER" = "14.04" ) ]] ; then 
     echo "Ok."
@@ -113,6 +102,12 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     }
 fi
 
+# Note : Postfix is installed by default on centos 6.5 netinstall / minimum install.
+# The installer seems to work fine even if Postfix is already installed.
+# -> The check of postfix is removed, but remains here to remember
+# if (inst $DB_SERVER) || (inst postfix) || (inst dovecot) || (inst $HTTP_SERVER) || (inst php) || (inst bind); then
+#    echo "It appears that apache/mysql/bind/postfix is already installed; This installer "
+
 if (inst $DB_SERVER) || (inst dovecot) || (inst $HTTP_SERVER) || (inst php) || (inst bind); then
     echo "It appears that apache/mysql/bind is already installed; This installer "
     echo "is designed to install and configure Sentora on a clean OS installation only!"
@@ -137,73 +132,110 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     tz=$(cat /etc/timezone)
 fi
 
-# Installer options
+# Installer parameters
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER bind-utils
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER dnsutils
 fi    
-echo "You will be asked for the FQDN that will be used to access Sentora on your server"
-echo "- It MUST be a sub-domain of you main domain, it must NOT be your main domain only. Example: panel.yourdomain.com"
-echo "- It MUST be already setup in your DNS nameserver (and propagated)."
+echo -e "\n\e[1;33m=== Informations required to build your server ===\e[0m"
+echo 'The installer requires 3 informations:'
+echo ' - the MAIN-DOMAIN that will be used for services emails (like webmaster@domain.tld),'
+echo ' - the SUB-DOMAIN of the main domain that wil be used to access Sentora panel,'
+echo ' - the PUBLIC IP of the server.'
+echo ''
+echo 'Both domains are supposed to be already defined in your domain provider DNS.'
+echo ' - the MAIN domain with an "A" (or "AAAA") record pointing to PUBLIC-IP,'
+echo ' - the sub domain with "CNAME" record pointing to same IP (usualy aliased as "@").'
 
-fqdn=$(/bin/hostname)
-publicip="$(wget -qO- http://api.sentora.org/ip.txt)"
+extern_ip="$(wget -qO- http://api.sentora.org/ip.txt)"
+local_ip=$(ifconfig | sed -En 's|127.0.0.1||;s|.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*|\2|p')
+
+MAIN_FQDN=$(/bin/hostname)
+panel_subdom="panel"
+PUBLIC_IP=$extern_ip
 while true; do
-    while true; do
-        read -e -p "FQDN for Sentora: " -i "$fqdn" fqdn
-        sub=$(echo "$fqdn" | sed -n 's|\(.*\)\..*\..*|\1|p')
-        if [[ "$sub" == "" ]]; then
-            echo -e "\e[1;31m!!! WARNING !!!"
-            echo -e "The FQDN must be a subdomain.\e[0m"
-            read -e -p "Continue or change the FQDN (y:Yes n:change fqdn q:quit)? " yn
-            case $yn in
-                [Yy]* ) break;;
-                [Nn]* ) continue;;
-                [Qq]* ) exit;;
-            esac
+    echo ""
+    read -e -p "Which MAIN-DOMAIN will be used for service emails? " -i "$MAIN_FQDN" MAIN_FQDN
+    echo "Which SUB-DOMAIN do you want to use to access the panel?"
+    read -e -p "  (enter only the sub-domain name without main-domain): " -i "$panel_subdom" panel_subdom
+    PANEL_FQDN="$panel_subdom.$MAIN_FQDN"
+    if [[ "$PUBLIC_IP" != "$local_ip" ]]; then
+      echo -e "\nThe public IP of the server is $PUBLIC_IP. Its local IP is $local_ip"
+      echo "For production server, the PUBLIC IP must be used."
+    fi  
+    read -e -p "Enter the IP that will be used by Sentora: " -i "$PUBLIC_IP" PUBLIC_IP
+    echo ""
+
+    # Checks if the main domain is already assigned in DNS
+    dns_main_ip=$(host "$MAIN_FQDN"|grep address|cut -d" " -f4)
+    if [[ "$dns_main_ip" == "" ]]; then
+        echo -e "\e[1;31mWARNING: $MAIN_FQDN is not defined in DNS!\e[0m"
+    else
+        echo -e "\e[1;32mOK\e[0m: DNS resoves $MAIN_FQDN to $dns_main_ip"
+    fi
+
+    # Checks if the panel domain is already assigned in DNS
+    dns_panel_ip=$(host "$PANEL_FQDN"|grep address|cut -d" " -f4)
+    if [[ "$dns_panel_ip" == "" ]]; then
+        echo -e "\e[1;31mWARNING: $PANEL_FQDN is not defined in DNS!\e[0m"
+    else
+        echo -e "\e[1;32mOK\e[0m: DNS resoves $PANEL_FQDN to $dns_panel_ip"
+    fi
+
+    # If one or both are not defined, add infos for beginners
+    if [[ "$dns_main_ip" == "" || "$dns_panel_ip" == "" ]]; then
+        echo "  You must add record(s) in the DNS manager (and then wait until propagation is done)."
+        echo "  For more information, read Sentora documentation:"
+        echo "   - http://docs.sentora.org/index.php?node=7 (Installing Sentora)"
+        echo "   - http://docs.sentora.org/index.php?node=51 (Installer questions)"
+        echo "  If this is a production installation, set the DNS up as soon as possible."
+        confirm="true"
+    else
+        # Check if both domains really points to us
+        if [[ "$dns_main_ip" != "$dns_panel_ip" ]]; then
+            echo -e -n "\e[1;31mWARNING: $MAIN_FQDN and $PANEL_FQDN do not point same IP!\e[0m"
+            echo " You have to correct the DNS configuration."
+            confirm="true"
         fi
-        
-        dnsip=$(host "$fqdn"|grep address|cut -d" " -f4)
-        if [[ "$dnsip" == "" ]]; then
-            echo -e "\e[1;31m!!! WARNING !!!"
-            echo -e "The subdomain $fqdn have no IP assigned in DNS\e[0m"
-            echo "You must add a A record in the DNS manager for this subdomain"
-            echo "  and then wait until propagation is done."
-            echo "For more information, install documentation is at"
-            echo " - http://docs.sentora.org/index.php?node=7 (Installing Sentora)"
-            echo " - http://docs.sentora.org/index.php?node=51 (Installer questions)"
-	          echo ""
-            read -e -p "If this is a production installation set the FQDN DNS up asap. Continue with installation (y:Yes n:change fqdn q:quit)? " yn
-            case $yn in
-                [Yy]* ) break;;
-                [Nn]* ) continue;;
-                [Qq]* ) exit;;
-            esac
-	      else
-	          break;
-	      fi
-	  done
-    read -e -p "Enter the public (external) server IP: " -i "$publicip" publicip
-    if [[ "$publicip" == "$dnsip" ]]; then
-        break
-    else	
-        echo -e "\e[1;31m!!! WARNING !!!"
-	      echo -e "The IP of your server is not the same than reported by the dns for domain $fqdn\e[0m"
-        echo "Continue to install Sentora with these parameters?"
-        read -e -p "(y):accept, (n):change fqdn or ip, (ctrl+c):quit installer? " yn
+        # Check if main domain matches public IP
+        if [[ "$dns_main_ip" != "$PUBLIC_IP" ]]; then
+            echo -e -n "\e[1;31mWARNING: $MAIN_FQDN DNS do not points to $PUBLIC_IP!\e[0m"
+            echo " The mail services will not work properly."
+            confirm="true"
+        fi
+        # Check if panel domain matches public IP
+        if [[ "$dns_panel_ip" != "$PUBLIC_IP" ]]; then
+            echo -e -n "\e[1;31mWARNING: $PANEL_FQDN DNS do not points to $PUBLIC_IP!\e[0m"
+            echo " Sentora will not be reachable from http://$MAIN_FQDN"
+            confirm="true"
+        fi
+    fi
+    
+    if [[ "$PUBLIC_IP" != "$extern_ip" || "$PUBLIC_IP" != $local_ip" ]]; then
+        echo -e -n "\e[1;31mWARNING: $PUBLIC_IP does not match detected IP !\e[0m"
+        echo "Sentora 
+    fi
+    
+  
+    echo ""
+    # if any warning, ask confirmation to continue or propose to change
+    if [[ "$confirm" != "" ]] ; then
+        echo "There are some warnings..."
+        echo "Are you really sure that you want to setup Sentora with these parameters?"
+        read -e -p "(y):accept and install, (n):change fqdn or ip, (q):quit installer? " yn
         case $yn in
             [Yy]* ) break;;
+            [Nn]* ) continue;;
+            [Qq]* ) exit;;
+        esac
+    else
+        read -e -p "All is ok, do you want to install Sentora (y/n)? " yn
+        case $yn in
+            [Yy]* ) break;;
+            [Nn]* ) exit;;
         esac
     fi
-done
-echo ""
-while true; do
-    read -e -p "Sentora is now ready to install, do you wish to continue (y/n)? " yn
-    case $yn in
-        [Yy]* ) break;;
-        [Nn]* ) exit;
-    esac
 done
 
 # ***************************************
@@ -211,11 +243,11 @@ done
 
 #--- Set custom logging methods so we create a log file in the current working directory.
 logfile=$$.log
-touch $$.log
+touch $logfile
 exec > >(tee $logfile)
 exec 2>&1
 
-echo -e "Installing Sentora $SENTORA_GITHUB_VERSION with fqdn $fqdn and ip $publicip"
+echo -e "Installing Sentora $SENTORA_GITHUB_VERSION at http://$PANEL_FQDN and ip $PUBLIC_IP"
 echo -e "on server under: $OS  $VER  $BITS"
 uname -a
 
@@ -255,8 +287,8 @@ if [[ "$OS" = "CentOs" ]]; then
     #check if the machine and on openvz
     if [ -f "/etc/yum.repos.d/vz.repo" ]; then
         #vz.repo
-        sed -i 's|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/centos-6|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/6/$basearch/os/|' "/etc/yum.repos.d/vz.repo"
-        sed -i 's|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/updates-released-ce6|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/6/$basearch/updates/|' "/etc/yum.repos.d/vz.repo"
+        sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/centos-6|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/6/$basearch/os/|" "/etc/yum.repos.d/vz.repo"
+        sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/updates-released-ce6|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/6/$basearch/updates/|" "/etc/yum.repos.d/vz.repo"
     fi
 
     #disable deposits that could result in installation errors
@@ -337,7 +369,7 @@ EOF
     fi
 fi
 
-#--- Logging system installed packages
+#--- List all already installed packages (may help to debug)
 echo -e "\n-- Listing of all packages installed:"
 if [[ "$OS" = "CentOs" ]]; then
     rpm -qa | sort
@@ -345,7 +377,7 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     dpkg --get-selections
 fi
 
-#--- Linux system updates
+#--- Ensures that all packages are up to date
 echo -e "\n-- Updating+upgrading system, it may take some time..."
 if [[ "$OS" = "CentOs" ]]; then
     yum -y update
@@ -356,7 +388,7 @@ elif [[ "$OS" = "Ubuntu" ]]; then
 fi
 
 
-#--- Install linux dependancies for Sentora and Installer
+#--- Install utility packages required by the installer and/or Sentora.
 echo -e "\n-- Downloading and installing required tools..."
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER sudo vim make zip unzip git chkconfig bash-completion
@@ -366,19 +398,19 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER sudo vim make zip unzip git debconf-utils at build-essential bash-completion
 fi
 
-#--- Sentora Package Download
+#--- Download Sentora archive from GitHub
 echo -e "\n-- Downloading Sentora, Please wait, this may take several minutes, the installer will continue after this is complete!"
 # Get latest sentora
-wget -nv -O sentora_installer.zip https://github.com/sentora/sentora-core/archive/$SENTORA_GITHUB_VERSION.zip
+wget -nv -O sentora_core.zip https://github.com/sentora/sentora-core/archive/$SENTORA_GITHUB_VERSION.zip
 mkdir -p $PANEL_PATH
 chown -R root:root $PANEL_PATH
-unzip -oq sentora_installer.zip -d $PANEL_PATH
+unzip -oq sentora_core.zip -d $PANEL_PATH
 mv "$PANEL_PATH/sentora-core-$SENTORA_GITHUB_VERSION" "$PANEL_PATH/panel"
-rm sentora_installer.zip
+rm sentora_core.zip
 rm "$PANEL_PATH/panel/LICENSE.md" "$PANEL_PATH/panel/README.md" "$PANEL_PATH/panel/.gitignore"
 rm -rf "$PANEL_PATH/_delete_me"
 
-#--- Sentora Directory Configurations
+#--- Set-up Sentora directories and configure permissions
 mkdir -p $PANEL_PATH/configs
 mkdir -p $PANEL_PATH/docs
 chmod -R 777 $PANEL_PATH
@@ -387,29 +419,41 @@ mkdir -p $PANEL_DATA/logs/proftpd
 mkdir -p $PANEL_DATA/backups
 chmod -R 777 $PANEL_DATA/
 
-#--- Sentora executables
+#--- Prepare Sentora executables
+chmod +x $PANEL_PATH/panel/bin/zppy 
 ln -s $PANEL_PATH/panel/bin/zppy /usr/bin/zppy
-ln -s $PANEL_PATH/panel/bin/setso /usr/bin/setso
-ln -s $PANEL_PATH/panel/bin/setzadmin /usr/bin/setzadmin
-chmod +x $PANEL_PATH/panel/bin/zppy $PANEL_PATH/panel/bin/setso $PANEL_PATH/panel/bin/setzadmin
 
-# install preconfig 
+chmod +x $PANEL_PATH/panel/bin/setso
+ln -s $PANEL_PATH/panel/bin/setso /usr/bin/setso
+
+chmod +x $PANEL_PATH/panel/bin/setzadmin
+ln -s $PANEL_PATH/panel/bin/setzadmin /usr/bin/setzadmin
+
+#--- Install preconfig 
 wget -nv -O sentora_preconfig.zip https://github.com/5050/sentora-installers/archive/$SENTORA_PRECONF_VERSION.zip
 unzip -oq sentora_preconfig.zip
 cp -rf sentora-installers-$SENTORA_PRECONF_VERSION/preconf/* $PANEL_PATH/configs
 rm sentora_preconfig*
 rm -rf sentora-*
 
-#--- zsudo
+#--- Prepare zsudo
 cc -o $PANEL_PATH/panel/bin/zsudo $PANEL_PATH/configs/bin/zsudo.c
 sudo chown root $PANEL_PATH/panel/bin/zsudo
 chmod +s $PANEL_PATH/panel/bin/zsudo
 
+#--- Some functions used many times below
 # Random password generator function
 passwordgen() {
     l=$1
     [ "$l" == "" ] && l=16
     tr -dc A-Za-z0-9 < /dev/urandom | head -c ${l} | xargs
+}
+
+#Add first parameter in hosts file as local IP domain
+add_local_domain() {
+    if ! grep -q "127.0.0.1 $1" /etc/hosts; then
+        echo "127.0.0.1 $1" >> /etc/hosts;
+    fi
 }
 
 #-----------------------------------------------------------
@@ -443,9 +487,9 @@ elif [[ "$OS" = "Ubuntu" ]]; then
 fi
 service $DB_SERVICE start
 
-
-#--- MySQL
+# setup mysql root password
 mysqladmin -u root password "$mysqlpassword"
+
 # small cleaning of mysql access
 mysql -u root -p"$mysqlpassword" -e "DELETE FROM mysql.user WHERE User='root' AND Host != 'localhost'";
 mysql -u root -p"$mysqlpassword" -e "DELETE FROM mysql.user WHERE User=''";
@@ -486,11 +530,10 @@ useradd -r -d /var/spool/vacation -s /sbin/nologin -c "Virtual vacation" vacatio
 chown -R vacation:vacation /var/spool/vacation
 chmod -R 770 /var/spool/vacation
 
-mkdir -p /etc/postfix/transport
+ln -s $PANEL_PATH/configs/postfix/transport /etc/postfix/transport
 postmap /etc/postfix/transport
-if ! grep -q "127.0.0.1 autoreply.$fqdn" /etc/hosts; then
-    echo "127.0.0.1 autoreply.$fqdn" >> /etc/hosts; 
-fi
+add_local_domain "$MAIN_FQDN"
+add_local_domain "autoreply.$MAIN_FQDN"
 
 rm -rf /etc/postfix/main.cf /etc/postfix/master.cf
 ln -s $PANEL_PATH/configs/postfix/master.cf /etc/postfix/master.cf
@@ -499,10 +542,11 @@ ln -s $PANEL_PATH/configs/postfix/vacation.pl /var/spool/vacation/vacation.pl
 
 sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_PATH/configs/postfix/*.cf
 sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_PATH/configs/postfix/vacation.conf
-sed -i "s|!PANEL_FQDN!|$fqdn|" $PANEL_PATH/configs/postfix/main.cf
+sed -i "s|!PANEL_FQDN!|$MAIN_FQDN|" $PANEL_PATH/configs/postfix/main.cf
 
 sed -i "s|!USR_LIB!|$USR_LIB_PATH|" $PANEL_PATH/configs/postfix/master.cf
 sed -i "s|!USR_LIB!|$USR_LIB_PATH|" $PANEL_PATH/configs/postfix/main.cf
+sed -i "s|!SERVER_IP!|$PUBLIC_IP|" $PANEL_PATH/configs/postfix/main.cf 
 
 VMAIL_UID=$(id -u vmail)
 MAIL_GID=$(sed -nr "s/^mail:x:([0-9]+):.*/\1/p" /etc/group)
@@ -510,8 +554,8 @@ sed -i "s|!POS_UID!|$VMAIL_UID|" $PANEL_PATH/configs/postfix/main.cf
 sed -i "s|!POS_GID!|$MAIL_GID|" $PANEL_PATH/configs/postfix/main.cf
 
 # remove unusued directives that issue warnings
-sed -i '/virtual_mailbox_limit_maps/d' /etc/postfix/main.cf
-sed -i '/smtpd_bind_address/d' /etc/postfix/master.cf
+sed -i '/virtual_mailbox_limit_maps/d' $PANEL_PATH/configs/postfix/main.cf
+sed -i '/smtpd_bind_address/d' $PANEL_PATH/configs/postfix/master.cf
 
 
 #--- Dovecot (includes Sieve)
@@ -529,9 +573,10 @@ chown -R vmail:mail $PANEL_DATA/sieve
 mkdir -p /var/lib/dovecot/sieve/
 touch /var/lib/dovecot/sieve/default.sieve
 ln -s $PANEL_PATH/configs/dovecot2/globalfilter.sieve $PANEL_DATA/sieve/globalfilter.sieve
+
 rm -rf /etc/dovecot/dovecot.conf
 ln -s $PANEL_PATH/configs/dovecot2/dovecot.conf /etc/dovecot/dovecot.conf
-sed -i "s|!POSTMASTER_EMAIL!|postmaster@$fqdn|" /etc/dovecot/dovecot.conf
+sed -i "s|!POSTMASTER_EMAIL!|postmaster@$MAIN_FQDN|" $PANEL_PATH/configs/dovecot2/dovecot.conf
 sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_PATH/configs/dovecot2/dovecot-dict-quota.conf
 sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_PATH/configs/dovecot2/dovecot-mysql.conf
 sed -i "s|!DOV_UID!|$VMAIL_UID|" $PANEL_PATH/configs/dovecot2/dovecot-mysql.conf
@@ -569,18 +614,14 @@ fi
 if ! grep -q "Include $PANEL_PATH/configs/apache/httpd.conf" "$HTTP_CONF_PATH"; then
     echo "Include $PANEL_PATH/configs/apache/httpd.conf" >> "$HTTP_CONF_PATH";
 fi
-if ! grep -q "127.0.0.1 $fqdn" /etc/hosts; then
-    echo "127.0.0.1 $fqdn" >> /etc/hosts;
-fi
-serverhost=$(hostname)
-if ! grep -q "127.0.0.1 $serverhost" /etc/hosts; then
-    echo "127.0.0.1 $serverhost" >> /etc/hosts;
-fi
+add_local_domain "$PANEL_FQDN"
+add_local_domain "$(hostname)"
+
 if ! grep -q "apache ALL=NOPASSWD: $PANEL_PATH/panel/bin/zsudo" /etc/sudoers; then
     echo "apache ALL=NOPASSWD: $PANEL_PATH/panel/bin/zsudo" >> /etc/sudoers;
 fi
 
-#--- Apache root public http docs
+# Create root directory for public HTTP docs
 mkdir -p $PANEL_DATA/hostdata/zadmin/public_html
 chown -R $HTTP_USER:$HTTP_GROUP $PANEL_DATA/hostdata/
 chmod -R 770 $PANEL_DATA/hostdata/
@@ -596,13 +637,8 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     fi
 fi
 
-if [[ "$OS" = "CentOs" ]]; then
-    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='httpd_exe'"
-    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='apache_sn'"
-elif [[ "$OS" = "Ubuntu" ]]; then
-    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='httpd_exe'"
-    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='apache_sn'"
-fi
+mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='httpd_exe'"
+mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='apache_sn'"
 
 #Set keepalive on (default is off)
 sed -i "s|KeepAlive Off|KeepAlive On|" $HTTP_CONF_PATH
@@ -612,26 +648,26 @@ if ! grep -q "umask 002" "$HTTP_VARS_PATH"; then
     echo "umask 002" >> "$HTTP_VARS_PATH";
 fi
 
-# adjustment for apache 2.4
-# Order allow,deny / Allow from all  ->  Require all granted
-# Order deny,allow / Deny from all   ->  Require all denied
+# adjustments for apache 2.4
 if [[ ("$OS" = "CentOs" && "$VER" = "7") || 
       ("$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then 
+    # Order deny,allow / Deny from all   ->  Require all denied
     sed -i 's|Order deny,allow|Require all denied|I'  $PANEL_PATH/configs/apache/httpd.conf
     sed -i '/Deny from all/d' $PANEL_PATH/configs/apache/httpd.conf
 
+    # Order allow,deny / Allow from all  ->  Require all granted
     sed -i 's|Order allow,deny|Require all granted|I' $PANEL_PATH/configs/apache/httpd-vhosts.conf
     sed -i '/Allow from all/d' $PANEL_PATH/configs/apache/httpd-vhosts.conf
 
     sed -i 's|Order allow,deny|Require all granted|I'  $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
     sed -i '/Allow from all/d' $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
 
-    # - remove NameVirtualHost that is now without effect and generate warning ONLY FOR 2.4 as 2.2 REQUIRES this to work
+    # Remove NameVirtualHost that is now without effect and generate warning
     sed -i '/    \$line \.= \"NameVirtualHost/ {N;N;N;N;d}' /etc/zpanel/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
-    # - Options must have ALL (or none) +/- prefix, disable listing directories
+
+    # Options must have ALL (or none) +/- prefix, disable listing directories
     sed -i 's| FollowSymLinks [-]Indexes| +FollowSymLinks -Indexes|' /etc/zpanel/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
 fi
-
 
 
 #--- PHP
@@ -648,22 +684,20 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     fi
     PHP_INI_PATH="/etc/php5/apache2/php.ini"
 fi
-# php upload dir
+# Setup php upload dir
 mkdir -p $PANEL_DATA/temp
 chmod 1777 $PANEL_DATA/temp/
 chown -R $HTTP_USER:$HTTP_GROUP $PANEL_DATA/temp/
 
-# php session save directory
+# Setup php session save directory
 mkdir "$PANEL_DATA/sessions"
 chown $HTTP_USER:$HTTP_GROUP "$PANEL_DATA/sessions"
 chmod 733 "$PANEL_DATA/sessions"
 chmod +t "$PANEL_DATA/sessions"
+sed -i "s|;session.save_path = \"/var/lib/php5\"|session.save_path = \"$PANEL_DATA/sessions\"|" $PHP_INI_PATH
 
 sed -i "s|;date.timezone =|date.timezone = $tz|" $PHP_INI_PATH
 sed -i "s|;upload_tmp_dir =|upload_tmp_dir = $PANEL_DATA/temp/|" $PHP_INI_PATH
-
-# init sessions save directory
-sed -i "s|;session.save_path = \"/var/lib/php5\"|session.save_path = \"$PANEL_DATA/sessions\"|" $PHP_INI_PATH
 
 # Disable php signature in headers to hide it from hackers
 sed -i "s|expose_php = On|expose_php = Off|" $PHP_INI_PATH
@@ -690,7 +724,7 @@ if [[ "$OS" = "CentOs" || ( "$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then
 fi
 
 
-#--- ProFTPD
+#--- ProFTPd
 echo -e "\n-- Installing ProFTPD"
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER proftpd proftpd-mysql 
@@ -701,30 +735,26 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     FTP_CONF_PATH='/etc/proftpd/proftpd.conf'
 fi
 
-#create and init proftpd database
+# Create and init proftpd database
 mysql -u root -p"$mysqlpassword" < $PANEL_PATH/configs/sentora-install/sql/sentora_proftpd.sql
 
-#create and configure mysql password for proftpd
+# Create and configure mysql password for proftpd
 proftpdpassword=$(passwordgen);
 sed -i "s|!SQL_PASSWORD!|$proftpdpassword|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
 mysql -u root -p"$mysqlpassword" -e "UPDATE mysql.user SET Password=PASSWORD('$proftpdpassword') WHERE User='proftpd' AND Host='localhost'";
 
-#assign httpd user and group to all users that will be created
+# Assign httpd user and group to all users that will be created
 HTTP_UID=$(id -u "$HTTP_USER")
 HTTP_GID=$(sed -nr "s/^$HTTP_GROUP:x:([0-9]+):.*/\1/p" /etc/group)
 mysql -u root -p"$mysqlpassword" -e "ALTER TABLE zpanel_proftpd.ftpuser ALTER COLUMN uid SET DEFAULT $HTTP_UID"
 mysql -u root -p"$mysqlpassword" -e "ALTER TABLE zpanel_proftpd.ftpuser ALTER COLUMN gid SET DEFAULT $HTTP_GID"
 sed -i "s|!SQL_MIN_ID!|$HTTP_UID|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
-if [[ "$OS" = "CentOs" ]]; then
-    sed -i "s|!nogroup!|nobody|" $PANEL_PATH/configs/proftpd/proftpd-mysql.conf
-fi
 
-#setup proftpd base file to call zpanel config
+# Setup proftpd base file to call zpanel config
 rm -f "$FTP_CONF_PATH"
 touch "$FTP_CONF_PATH"
-if ! grep -q "include $PANEL_PATH/configs/proftpd/proftpd-mysql.conf" "$FTP_CONF_PATH"; then
-    echo "include $PANEL_PATH/configs/proftpd/proftpd-mysql.conf" >> "$FTP_CONF_PATH"; 
-fi
+echo "include $PANEL_PATH/configs/proftpd/proftpd-mysql.conf" >> "$FTP_CONF_PATH";
+
 chmod -R 644 $PANEL_DATA/logs/proftpd
 
 
@@ -748,7 +778,7 @@ mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_
 mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$BIND_SERVICE' WHERE so_name_vc='bind_service'"
 chmod -R 777 $PANEL_PATH/configs/bind/zones/
 
-# setup logging directory
+# Setup logging directory
 mkdir $PANEL_DATA/logs/bind
 touch $PANEL_DATA/logs/bind/bind.log $PANEL_DATA/logs/bind/debug.log
 chown $BIND_USER $PANEL_DATA/logs/bind/bind.log $PANEL_DATA/logs/bind/debug.log
@@ -767,19 +797,20 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     chown root:root $BIND_FILES/rndc.key
     chmod 755 $BIND_FILES/rndc.key
 fi
-#some link to enable call from path
+# Some link to enable call from path
 ln -s /usr/sbin/named-checkconf /usr/bin/named-checkconf
 ln -s /usr/sbin/named-checkzone /usr/bin/named-checkzone
 ln -s /usr/sbin/named-compilezone /usr/bin/named-compilezone
 
-# build key and conf files
+# Build key and conf files
 rm -rf $BIND_FILES/named.conf $BIND_FILES/rndc.conf $BIND_FILES/rndc.key
 rndc-confgen -a -r /dev/urandom
 cat $BIND_FILES/rndc.key $PANEL_PATH/configs/bind/named.conf > $BIND_FILES/named.conf
 cat $BIND_FILES/rndc.key $PANEL_PATH/configs/bind/rndc.conf > $BIND_FILES/rndc.conf
 rm -f $BIND_FILES/rndc.key
 
-#--- Crond
+
+#--- CRON
 echo -e "\n-- Installing and configuring cron tasks"
 if [[ "$OS" = "CentOs" ]]; then
     #cronie & crontabs may be missing
@@ -797,30 +828,33 @@ mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_
 mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$CRON_USER' WHERE so_name_vc='cron_reload_user'"
 
 PANEL_DAEMON_PATH="$PANEL_PATH/panel/bin/daemon.php"
-crontab -l -u $HTTP_USER > mycron
-echo "SHELL=/bin/bash" >> mycron
-echo "PATH=/sbin:/bin:/usr/sbin:/usr/bin" >> mycron
-echo "*/5 * * * * nice -2 php -q $PANEL_DAEMON_PATH >> /var/zpanel/logs/daemon.log 2>&1" >> mycron
+{
+    crontab -l -u $HTTP_USER
+    echo "SHELL=/bin/bash"
+    echo "PATH=/sbin:/bin:/usr/sbin:/usr/bin"
+    echo "*/5 * * * * nice -2 php -q $PANEL_DAEMON_PATH >> /var/zpanel/logs/daemon.log 2>&1"
+} > mycron
 crontab -u $HTTP_USER mycron
 rm -f mycron
 
 if [[ "$OS" = "CentOs" ]]; then
-
     chmod 744 /var/spool/cron
-    chmod 644 $CRON_FILE
-    chmod -R 644 /etc/cron.d/
     chown -R $HTTP_USER:$HTTP_USER /var/spool/cron/
 
-elif [[ "$OS" = "Ubuntu" ]]; then
-
-    mkdir -p /var/spool/cron/crontabs/
-    mkdir -p /etc/cron.d/
-    chmod 744 /var/spool/cron/crontabs
     chmod 644 $CRON_FILE
+
     chmod -R 644 /etc/cron.d/
+elif [[ "$OS" = "Ubuntu" ]]; then
+    mkdir -p /var/spool/cron/crontabs/
+    chmod 744 /var/spool/cron/crontabs
     chown -R $HTTP_USER:$HTTP_USER /var/spool/crontabs/
 
+    chmod 644 $CRON_FILE
+
+    mkdir -p /etc/cron.d/
+    chmod -R 644 /etc/cron.d/
 fi
+
 
 #--- phpMyAdmin
 echo -e "\n-- Configuring phpMyAdmin"
@@ -832,7 +866,7 @@ ln -s $PANEL_PATH/configs/phpmyadmin/config.inc.php $PANEL_PATH/panel/etc/apps/p
 rm -rf $PANEL_PATH/panel/etc/apps/phpmyadmin/setup
 
 
-#--- Roundcube specific installation tasks...
+#--- Roundcube
 echo -e "\n-- Configuring Roundcube"
 roundcube_des_key=$(passwordgen 24);
 mysql -u root -p"$mysqlpassword" < $PANEL_PATH/configs/sentora-install/sql/sentora_roundcube.sql
@@ -844,7 +878,7 @@ ln -s $PANEL_PATH/configs/roundcube/main.inc.php $PANEL_PATH/panel/etc/apps/webm
 ln -s $PANEL_PATH/configs/roundcube/config.inc.php $PANEL_PATH/panel/etc/apps/webmail/plugins/managesieve/config.inc.php
 ln -s $PANEL_PATH/configs/roundcube/db.inc.php $PANEL_PATH/panel/etc/apps/webmail/config/db.inc.php
 
-#--- Webalizer specific installation tasks...
+#--- Webalizer
 echo -e "\n-- Configuring Webalizer"
 $PACKAGE_INSTALLER webalizer
 if [[ "$OS" = "CentOs" ]]; then
@@ -854,12 +888,12 @@ elif [[ "$OS" = "Ubuntu" ]]; then
 fi
 
 
-#--- Set some Sentora database entries using. setso and setzadmin
+#--- Set some Sentora database entries using. setso and setzadmin (require PHP)
 echo -e "\n-- Configuring Sentora"
 zadminpassword=$(passwordgen);
 setzadmin --set "$zadminpassword";
-$PANEL_PATH/panel/bin/setso --set zpanel_domain "$fqdn"
-$PANEL_PATH/panel/bin/setso --set server_ip "$publicip"
+$PANEL_PATH/panel/bin/setso --set zpanel_domain "$PANEL_FQDN"
+$PANEL_PATH/panel/bin/setso --set server_ip "$PUBLIC_IP"
 
 # make the daemon to build vhosts file.
 $PANEL_PATH/panel/bin/setso --set apache_changed "true"
@@ -867,7 +901,9 @@ php -q $PANEL_PATH/panel/bin/daemon.php
 
 
 #--- Firewall
-# Enable system services and start/restart them as required.
+
+
+#--- Enable system services and start/restart them as required.
 echo -e "\n-- Starting/restarting services"
 if [[ "$OS" = "CentOs" ]]; then
     chkconfig $HTTP_SERVER on
@@ -880,7 +916,7 @@ if [[ "$OS" = "CentOs" ]]; then
     service $HTTP_SERVER start
 fi    
 
-# restart all services to capture output messages
+# Restart all services to capture output messages
 service "$DB_SERVICE" restart
 service "$HTTP_SERVICE" restart
 service postfix restart
@@ -890,22 +926,23 @@ service "$BIND_SERVICE" restart
 service proftpd restart
 service atd restart
 
-# Store the passwords for user reference
+#--- Store the passwords for user reference
 {
     echo "zadmin Password        : $zadminpassword"
     echo "MySQL Root Password    : $mysqlpassword"
     echo "MySQL Postfix Password : $postfixpassword"
     echo "MySQL ProFTPd Password : $proftpdpassword"
-    echo "IP Address: $publicip"
-    echo "Panel Domain: $fqdn"
+    echo "Server IP address      : $PUBLIC_IP"
+    echo "Panel URL              : http://$PANEL_FQDN"
 } >> /root/passwords.txt
 
-# Advise the user that Sentora is now installed and accessible.
+#--- Advise the user that Sentora is now installed and accessible.
 echo "#########################################################" &>/dev/tty
 echo " Congratulations Sentora has now been installed on your"   &>/dev/tty
 echo " server. Please review the log file left in /root/ for "   &>/dev/tty
 echo " any errors encountered during installation."              &>/dev/tty
 echo ""                                                          &>/dev/tty
+echo " Login to Sentora at http://$PANEL_FQDN"                   &>/dev/tty
 echo " Sentora Username       : zadmin"                          &>/dev/tty
 echo " Sentora Password       : $zadminpassword"                 &>/dev/tty
 echo ""                                                          &>/dev/tty
@@ -914,8 +951,6 @@ echo " MySQL Postfix Password : $postfixpassword"                &>/dev/tty
 echo " MySQL ProFTPd Password : $proftpdpassword"                &>/dev/tty
 echo "   (theses passwords are saved in /root/passwords.txt)"    &>/dev/tty
 echo ""                                                          &>/dev/tty
-echo " Sentora Web login can be accessed using your server IP"   &>/dev/tty
-echo " inside your web browser."                                 &>/dev/tty
 echo "#########################################################" &>/dev/tty
 echo "" &>/dev/tty
 
