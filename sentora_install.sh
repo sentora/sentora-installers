@@ -212,7 +212,7 @@ while true; do
         fi
     fi
     
-    if [[ "$PUBLIC_IP" != "$extern_ip" || "$PUBLIC_IP" != $local_ip" ]]; then
+    if [[ "$PUBLIC_IP" != "$extern_ip" || "$PUBLIC_IP" != "$local_ip" ]]; then
         echo -e -n "\e[1;31mWARNING: $PUBLIC_IP does not match detected IP !\e[0m"
         echo "Sentora 
     fi
@@ -409,6 +409,9 @@ mv "$PANEL_PATH/sentora-core-$SENTORA_GITHUB_VERSION" "$PANEL_PATH/panel"
 rm sentora_core.zip
 rm "$PANEL_PATH/panel/LICENSE.md" "$PANEL_PATH/panel/README.md" "$PANEL_PATH/panel/.gitignore"
 rm -rf "$PANEL_PATH/_delete_me"
+
+# Remove unusued build branch until it is also removed from github sentora-core master
+rm -rf "$PANEL_PATH/panel/etc/build"
 
 #--- Set-up Sentora directories and configure permissions
 mkdir -p $PANEL_PATH/configs
