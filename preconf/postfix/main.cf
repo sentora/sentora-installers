@@ -34,7 +34,7 @@ recipient_delimiter = +
 # mappings
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
-transport_maps = hash:/etc/postfix/transport
+#transport_maps = hash:/etc/postfix/transport
 #local_recipient_maps =
 
 # virtual setup

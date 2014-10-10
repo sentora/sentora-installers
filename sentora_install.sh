@@ -533,8 +533,10 @@ useradd -r -d /var/spool/vacation -s /sbin/nologin -c "Virtual vacation" vacatio
 chown -R vacation:vacation /var/spool/vacation
 chmod -R 770 /var/spool/vacation
 
-ln -s $PANEL_PATH/configs/postfix/transport /etc/postfix/transport
-postmap /etc/postfix/transport
+#Removed optionnal transport that was leaved empty, until it is fully handled.
+#ln -s $PANEL_PATH/configs/postfix/transport /etc/postfix/transport
+#postmap /etc/postfix/transport
+
 add_local_domain "$MAIN_FQDN"
 add_local_domain "autoreply.$MAIN_FQDN"
 
@@ -600,7 +602,7 @@ if [[ "$OS" = "CentOs" ]]; then
     HTTP_USER="apache"
     HTTP_GROUP="apache"
     if [[ "$VER" = "6" ]]; then
-        sed "s|#NameVirtualHost|NameVirtualHost|" "$HTTP_CONF_PATH"
+        sed -i "s|#NameVirtualHost|NameVirtualHost|" "$HTTP_CONF_PATH"
     fi
     
 elif [[ "$OS" = "Ubuntu" ]]; then
