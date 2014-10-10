@@ -214,7 +214,7 @@ while true; do
     
     if [[ "$PUBLIC_IP" != "$extern_ip" || "$PUBLIC_IP" != "$local_ip" ]]; then
         echo -e -n "\e[1;31mWARNING: $PUBLIC_IP does not match detected IP !\e[0m"
-        echo "Sentora 
+        echo "Sentora will not work with this public IP..."
     fi
     
   
