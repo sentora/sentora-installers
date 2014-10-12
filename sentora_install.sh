@@ -602,10 +602,6 @@ if [[ "$OS" = "CentOs" ]]; then
     HTTP_SERVICE="httpd"
     HTTP_USER="apache"
     HTTP_GROUP="apache"
-    if [[ "$VER" = "6" ]]; then
-        sed -i "s|#NameVirtualHost|NameVirtualHost|" "$HTTP_CONF_PATH"
-    fi
-    
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER apache2 libapache2-mod-bw
     HTTP_CONF_PATH="/etc/apache2/apache2.conf"
@@ -613,7 +609,6 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     HTTP_SERVICE="apache2"
     HTTP_USER="www-data"
     HTTP_GROUP="www-data"
-    
     a2enmod rewrite
 fi
 
@@ -654,6 +649,13 @@ if ! grep -q "umask 002" "$HTTP_VARS_PATH"; then
     echo "umask 002" >> "$HTTP_VARS_PATH";
 fi
 
+# Comment "NameVirtualHost" directive that is handled by sentora in vhosts file
+if [[ "$OS" = "CentOs" && "$VER" = "6" ]]; then
+    sed -i "s|NameVirtualHost|#NameVirtualHost|" "$HTTP_CONF_PATH"
+elif [[ "$OS" = "Ubuntu" && "$VER" = "12.04" ]]; then
+    sed -i "s|NameVirtualHost|#NameVirtualHost|" /etc/apache2/ports.conf
+fi
+
 # adjustments for apache 2.4
 if [[ ("$OS" = "CentOs" && "$VER" = "7") || 
       ("$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then 
@@ -669,6 +671,7 @@ if [[ ("$OS" = "CentOs" && "$VER" = "7") ||
     sed -i '/Allow from all/d' $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
 
     # Remove NameVirtualHost that is now without effect and generate warning
+    sed -i '/NameVirtualHost/{N;d}' $PANEL_CONF/apache/httpd-vhosts.conf
     sed -i '/    \$line \.= \"NameVirtualHost/ {N;N;N;N;d}' /etc/zpanel/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
 
     # Options must have ALL (or none) +/- prefix, disable listing directories
@@ -923,6 +926,13 @@ if [[ "$OS" = "CentOs" ]]; then
 fi    
 
 # Restart all services to capture output messages
+if [[ "$OS" = "CentOs" && "$VER" == "7" ]]; then
+    # CentOs7 does not return anything except redirection to systemctl :-(
+    service() {
+       echo "Restarting $1"
+       systemctl $2 $1.service
+    }
+fi
 service "$DB_SERVICE" restart
 service "$HTTP_SERVICE" restart
 service postfix restart

@@ -88,7 +88,7 @@ smtpd_recipient_restrictions = permit_sasl_authenticated,
         reject_non_fqdn_sender,
         reject_non_fqdn_recipient,
         reject_unknown_recipient_domain
-# uncomment for realtime black list checks
+# uncomment for realtime black list checks. (Warn: will also reject false positive)
 #       ,reject_rbl_client zen.spamhaus.org
 #       ,reject_rbl_client bl.spamcop.net
 #       ,reject_rbl_client dnsbl.sorbs.net
