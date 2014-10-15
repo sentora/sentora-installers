@@ -3,8 +3,8 @@
 
 /*!40014  SET FOREIGN_KEY_CHECKS=0 */;
 
-CREATE SCHEMA IF NOT EXISTS `zpanel_roundcube`;
-USE zpanel_roundcube;
+CREATE SCHEMA IF NOT EXISTS `sentora_roundcube`;
+USE sentora_roundcube;
 
 -- Table structure for table `session`
 

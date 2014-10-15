@@ -28,8 +28,8 @@ $cfg['Servers'][$i]['extension'] = 'mysqli';
 /*
  * Directories for saving/loading files from server
  */
-$cfg['UploadDir'] = '/var/zpanel/temp/';
-$cfg['SaveDir'] = '/var/zpanel/temp/';
+$cfg['UploadDir'] = '/var/sentora/temp/';
+$cfg['SaveDir'] = '/var/sentora/temp/';
 
 /* rajk - for blobstreaming */
 $cfg['Servers'][$i]['bs_garbage_threshold'] = 50;

@@ -19,11 +19,11 @@
 #    OS VERSION supported: CentOS 6.4+/7.x Minimal, Ubuntu 12.04/14.04 
 #    32bit and 64bit
 
-SENTORA_GITHUB_VERSION="1.0.0-beta3"
+SENTORA_GITHUB_VERSION="1.0.0-beta4"
 SENTORA_PRECONF_VERSION="master"
 
-PANEL_PATH="/etc/zpanel"
-PANEL_DATA="/var/zpanel"
+PANEL_PATH="/etc/sentora"
+PANEL_DATA="/var/sentora"
 
 #--- Display the 'welcome' splash/user warning info..
 echo -e "\n#################################################"
@@ -423,6 +423,10 @@ mkdir -p $PANEL_DATA/logs/proftpd
 mkdir -p $PANEL_DATA/backups
 chmod -R 777 $PANEL_DATA/
 
+# Links for compatibility with zpanel access
+ln -s $PANEL_PATH /etc/zpanel
+ln -s $PANEL_DATA /var/zpanel
+
 #--- Prepare Sentora executables
 chmod +x $PANEL_PATH/panel/bin/zppy 
 ln -s $PANEL_PATH/panel/bin/zppy /usr/bin/zppy
@@ -638,8 +642,8 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     fi
 fi
 
-mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='httpd_exe'"
-mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='apache_sn'"
+mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='httpd_exe'"
+mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='apache_sn'"
 
 #Set keepalive on (default is off)
 sed -i "s|KeepAlive Off|KeepAlive On|" $HTTP_CONF_PATH
@@ -672,10 +676,10 @@ if [[ ("$OS" = "CentOs" && "$VER" = "7") ||
 
     # Remove NameVirtualHost that is now without effect and generate warning
     sed -i '/NameVirtualHost/{N;d}' $PANEL_CONF/apache/httpd-vhosts.conf
-    sed -i '/    \$line \.= \"NameVirtualHost/ {N;N;N;N;d}' /etc/zpanel/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
+    sed -i '/    \$line \.= \"NameVirtualHost/ {N;N;N;N;d}' $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
 
     # Options must have ALL (or none) +/- prefix, disable listing directories
-    sed -i 's| FollowSymLinks [-]Indexes| +FollowSymLinks -Indexes|' /etc/zpanel/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
+    sed -i 's| FollowSymLinks [-]Indexes| +FollowSymLinks -Indexes|' $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
 fi
 
 
@@ -728,7 +732,7 @@ if [[ "$OS" = "CentOs" || ( "$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then
     if [[ "$OS" = "CentOs" ]]; then 
         echo 'extension=suhosin.so' > $PHP_EXT_PATH/suhosin.ini
     elif [[ "$OS" = "Ubuntu" ]]; then
-        sed -i 'N;/default extension directory./a\extension=suhosin.so' $PHP_EXT_PATH/php.ini
+        sed -i 'N;/default extension directory./a\extension=suhosin.so' $PHP_INI_PATH
     fi	
 fi
 
@@ -755,11 +759,11 @@ mysql -u root -p"$mysqlpassword" -e "UPDATE mysql.user SET Password=PASSWORD('$p
 # Assign httpd user and group to all users that will be created
 HTTP_UID=$(id -u "$HTTP_USER")
 HTTP_GID=$(sed -nr "s/^$HTTP_GROUP:x:([0-9]+):.*/\1/p" /etc/group)
-mysql -u root -p"$mysqlpassword" -e "ALTER TABLE zpanel_proftpd.ftpuser ALTER COLUMN uid SET DEFAULT $HTTP_UID"
-mysql -u root -p"$mysqlpassword" -e "ALTER TABLE zpanel_proftpd.ftpuser ALTER COLUMN gid SET DEFAULT $HTTP_GID"
+mysql -u root -p"$mysqlpassword" -e "ALTER TABLE sentora_proftpd.ftpuser ALTER COLUMN uid SET DEFAULT $HTTP_UID"
+mysql -u root -p"$mysqlpassword" -e "ALTER TABLE sentora_proftpd.ftpuser ALTER COLUMN gid SET DEFAULT $HTTP_GID"
 sed -i "s|!SQL_MIN_ID!|$HTTP_UID|" $PANEL_CONF/proftpd/proftpd-mysql.conf
 
-# Setup proftpd base file to call zpanel config
+# Setup proftpd base file to call sentora config
 rm -f "$FTP_CONF_PATH"
 touch "$FTP_CONF_PATH"
 echo "include $PANEL_CONF/proftpd/proftpd-mysql.conf" >> "$FTP_CONF_PATH";
@@ -781,10 +785,10 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     BIND_FILES="/etc/bind"
     BIND_SERVICE="bind9"
     BIND_USER="bind"
-    mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='' WHERE so_name_vc='bind_log'"
+    mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='' WHERE so_name_vc='bind_log'"
 fi
-mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$BIND_PATH' WHERE so_name_vc='bind_dir'"
-mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$BIND_SERVICE' WHERE so_name_vc='bind_service'"
+mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$BIND_PATH' WHERE so_name_vc='bind_dir'"
+mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$BIND_SERVICE' WHERE so_name_vc='bind_service'"
 chmod -R 777 $PANEL_CONF/bind/zones/
 
 # Setup logging directory
@@ -832,16 +836,16 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     CRON_USER="www-data"
     CRON_SERVICE="cron"
 fi
-mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$CRON_FILE' WHERE so_name_vc='cron_file'"
-mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$CRON_FILE' WHERE so_name_vc='cron_reload_path'"
-mysql -u root -p"$mysqlpassword" -e "UPDATE zpanel_core.x_settings SET so_value_tx='$CRON_USER' WHERE so_name_vc='cron_reload_user'"
+mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$CRON_FILE' WHERE so_name_vc='cron_file'"
+mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$CRON_FILE' WHERE so_name_vc='cron_reload_path'"
+mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$CRON_USER' WHERE so_name_vc='cron_reload_user'"
 
 PANEL_DAEMON_PATH="$PANEL_PATH/panel/bin/daemon.php"
 {
     crontab -l -u $HTTP_USER
     echo "SHELL=/bin/bash"
     echo "PATH=/sbin:/bin:/usr/sbin:/usr/bin"
-    echo "*/5 * * * * nice -2 php -q $PANEL_DAEMON_PATH >> /var/zpanel/logs/daemon.log 2>&1"
+    echo "*/5 * * * * nice -2 php -q $PANEL_DAEMON_PATH >> $PANEL_DATA/logs/daemon.log 2>&1"
 } > mycron
 crontab -u $HTTP_USER mycron
 rm -f mycron
@@ -901,7 +905,7 @@ fi
 echo -e "\n-- Configuring Sentora"
 zadminpassword=$(passwordgen);
 setzadmin --set "$zadminpassword";
-$PANEL_PATH/panel/bin/setso --set zpanel_domain "$PANEL_FQDN"
+$PANEL_PATH/panel/bin/setso --set sentora_domain "$PANEL_FQDN"
 $PANEL_PATH/panel/bin/setso --set server_ip "$PUBLIC_IP"
 
 # make the daemon to build vhosts file.

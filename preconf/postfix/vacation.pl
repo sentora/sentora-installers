@@ -120,7 +120,7 @@ our $db_host = '';
 # connection details
 our $db_username = 'postfix';
 our $db_password = 'postfix';
-our $db_name     = 'zpanel_postfix';
+our $db_name     = 'sentora_postfix';
 
 our $vacation_domain = 'autoreply.example.org';
 

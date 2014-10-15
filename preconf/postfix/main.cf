@@ -26,7 +26,7 @@ mydomain = !PANEL_FQDN!
 myhostname = !PANEL_FQDN!
 mynetworks = 127.0.0.1, !SERVER_IP!
 mydestination = localhost.$mydomain, localhost
-relay_domains = proxy:mysql:/etc/zpanel/configs/postfix/mysql-relay_domains_maps.cf
+relay_domains = proxy:mysql:/etc/sentora/configs/postfix/mysql-relay_domains_maps.cf
 
 # mail delivery
 recipient_delimiter = +
@@ -38,12 +38,12 @@ alias_database = hash:/etc/aliases
 #local_recipient_maps =
 
 # virtual setup
-virtual_alias_maps = proxy:mysql:/etc/zpanel/configs/postfix/mysql-virtual_alias_maps.cf,
-                     regexp:/etc/zpanel/configs/postfix/virtual_regexp
-virtual_mailbox_base = /var/zpanel/vmail
-virtual_mailbox_domains = proxy:mysql:/etc/zpanel/configs/postfix/mysql-virtual_domains_maps.cf
-virtual_mailbox_maps = proxy:mysql:/etc/zpanel/configs/postfix/mysql-virtual_mailbox_maps.cf
-virtual_mailbox_limit_maps = proxy:mysql:/etc/zpanel/configs/postfix/mysql-virtual_mailbox_limit_maps.cf
+virtual_alias_maps = proxy:mysql:/etc/sentora/configs/postfix/mysql-virtual_alias_maps.cf,
+                     regexp:/etc/sentora/configs/postfix/virtual_regexp
+virtual_mailbox_base = /var/sentora/vmail
+virtual_mailbox_domains = proxy:mysql:/etc/sentora/configs/postfix/mysql-virtual_domains_maps.cf
+virtual_mailbox_maps = proxy:mysql:/etc/sentora/configs/postfix/mysql-virtual_mailbox_maps.cf
+virtual_mailbox_limit_maps = proxy:mysql:/etc/sentora/configs/postfix/mysql-virtual_mailbox_limit_maps.cf
 virtual_minimum_uid = !POS_UID!
 virtual_uid_maps = static:!POS_UID!
 virtual_gid_maps = static:!POS_GID!

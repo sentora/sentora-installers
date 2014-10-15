@@ -195,10 +195,10 @@ $rcmail_config['auto_create_user'] = true;
 
 // use this folder to store log files (must be writeable for apache user)
 // This is used by the 'file' log driver.
-$rcmail_config['log_dir'] = '/var/zpanel/logs/roundcube/';
+$rcmail_config['log_dir'] = '/var/sentora/logs/roundcube/';
 
 // use this folder to store temp files (must be writeable for apache user)
-$rcmail_config['temp_dir'] = '/var/zpanel/temp';
+$rcmail_config['temp_dir'] = '/var/sentora/temp';
 
 // lifetime of message cache
 // possible units: s, m, h, d, w
