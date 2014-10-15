@@ -1,31 +1,39 @@
 Sentora Installers
 ==================
 
+```
+# WARNING #
+Installers are in rebuild beta state. 
+
+  OLDERS INSTALLER MUST BE NOT USED. 
+
+They have been pushed in "Archive (obsolete)" directory to maintain them for reference only
+
+This text will be removed as soon as the installer will be released.
+```
+# ALL THAT FOLLOWS IS NOT COMPLETE NOR ACCURATE #
+
+
 Welcome to the Sentora installation script Git repository, this provides a central place to store, version and distribute Sentora installers and upgrade scripts from.
 
 ## How to install Sentora ##
 
-The new installers and upgrade scripts enable you to install/upgrade Sentora directly from the command line with a single command, you no longer need to manually download the file, *CHMOD* it and then execute it etc.
+The new installer and upgrade script enable you to install/upgrade Sentora directly from the command line with a single command, you no longer need to manually download the file, *CHMOD* it and then execute it etc.
 They check OS and version and will not allow you to install if requirements are not met.
 
-#### Installation for CentOS 6.4 ####
+They are compatible with CentOs 6 and 7, ubuntu 12.04 and 14.04
 
-```bash <(curl -Ss https://raw.githubusercontent.com/sentora/sentora-installers/master/sentora_install_centos.sh)```
+#### Installation ####
 
-- This installer have not yet been officially validated. A new installer is at work.
+```bash <(curl -Ss https://raw.githubusercontent.com/sentora/sentora-installers/1.0.0/sentora_install.sh)```
 
-#### Installation for Ubuntu 12.04 or 14.04 LTS ####
+- The new installer is designed to install public server, with more checks about dns setup to ensure it will work.
+  If the installer provide some warning, you MUST have knowledge enough of Linux and servers to be able to use it.
+  Use it for local install only if you know what you do 
 
-```bash <(curl -Ss https://raw.githubusercontent.com/sentora/sentora-installers/master/sentora_install_ubuntu.sh)```
+- It is STRONGLY recommended that to setup DNS for the panel PRIOR to installation.
 
-- This installer is designed to install public server, with more checks about dns setup to ensure it will work.
-  It is (currently) not designed for local server install
-
-- The subdomain DNS for the panel MUST have bee setup prior to installation.
-
-- It installs sentora in directory structure compatible with zpanel 10.1.1 addons.
-
-- the file sentora_install_ubuntu12.04.sh is obsolete and would not be used. It remains only for reference.
+- It installs sentora in directory /etc/sentora and /var/sentora but also setup symbolic links /etc/zpanel and /var/zpanel to provide compatibility with zpanel 10.1.1 addons.
 
 #### More informations to install and run Sentora ####
 
