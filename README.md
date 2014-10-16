@@ -5,7 +5,7 @@ Sentora Installers
 # WARNING #
 Installers are in rebuild beta state. 
 
-  OLDERS INSTALLER MUST BE NOT USED. 
+  OLDER INSTALLERS MUST BE NOT USED. 
 
 They have been pushed in "Archive (obsolete)" directory to maintain them for reference only
 
@@ -14,7 +14,7 @@ This text will be removed as soon as the installer will be released.
 # ALL THAT FOLLOWS IS NOT COMPLETE NOR ACCURATE #
 
 
-Welcome to the Sentora installation script Git repository, this provides a central place to store, version and distribute Sentora installers and upgrade scripts from.
+Welcome to the Sentora Installation Script Git repository, this provides a central place to store, version and distribute Sentora installers and upgrade scripts from.
 
 ## How to install Sentora ##
 
