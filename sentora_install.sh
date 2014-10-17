@@ -836,32 +836,31 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     CRON_USER="www-data"
     CRON_SERVICE="cron"
 fi
-CRON_FILE="$CRON_DIR/$CRON_USER"
 
+# prepare daemon crontab
+cp "$PANEL_CONF/cron/zdaemon" /etc/cron.d/zdaemon
+chmod 644 /etc/cron.d/zdaemon
+
+# prepare user crontabs
+CRON_FILE="$CRON_DIR/$CRON_USER"
 mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$CRON_FILE' WHERE so_name_vc='cron_file'"
 mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$CRON_FILE' WHERE so_name_vc='cron_reload_path'"
 mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$CRON_USER' WHERE so_name_vc='cron_reload_user'"
-
-PANEL_DAEMON_PATH="$PANEL_PATH/panel/bin/daemon.php"
 {
     crontab -l -u $HTTP_USER
     echo "SHELL=/bin/bash"
     echo "PATH=/sbin:/bin:/usr/sbin:/usr/bin"
-    echo "*/5 * * * * nice -2 php -q $PANEL_DAEMON_PATH >> $PANEL_DATA/logs/daemon.log 2>&1"
+    echo ""
 } > mycron
 crontab -u $HTTP_USER mycron
 rm -f mycron
 
 if [[ "$OS" = "Ubuntu" ]]; then
-    mkdir -p /etc/cron.d/
     mkdir -p "$CRON_DIR"
 fi
 chmod 744 "$CRON_DIR"
 chown -R $HTTP_USER:$HTTP_USER "$CRON_DIR"
 chmod 644 "$CRON_FILE"
-
-chmod -R 644 /etc/cron.d/
-
 
 #--- phpMyAdmin
 echo -e "\n-- Configuring phpMyAdmin"
@@ -913,6 +912,11 @@ php -q $PANEL_PATH/panel/bin/daemon.php
 #--- Enable system services and start/restart them as required.
 echo -e "\n-- Starting/restarting services"
 if [[ "$OS" = "CentOs" ]]; then
+    # CentOs7 does not return anything except redirection to systemctl :-(
+    chkconfig() {
+       echo "Enabling $1"
+       systemctl enable $1.service
+    }
     chkconfig $HTTP_SERVER on
     chkconfig postfix on
     chkconfig dovecot on
