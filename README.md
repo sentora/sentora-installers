@@ -4,7 +4,7 @@
  
 To install use 
 ```
-bash <(curl -L -Ss http://sentora.org/install)
+bash <(curl -L -Ss http://sentora.org/install-beta)
 ```
 
 Please to report anything wrong that you may find to the forum
