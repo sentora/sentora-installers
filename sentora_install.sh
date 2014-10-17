@@ -828,14 +828,16 @@ echo -e "\n-- Installing and configuring cron tasks"
 if [[ "$OS" = "CentOs" ]]; then
     #cronie & crontabs may be missing
     $PACKAGE_INSTALLER crontabs
-    CRON_FILE="/var/spool/cron/apache"
+    CRON_DIR="/var/spool/cron"
     CRON_USER="apache"
     CRON_SERVICE="crond"
 elif [[ "$OS" = "Ubuntu" ]]; then
-    CRON_FILE="/var/spool/cron/crontabs/www-data"
+    CRON_DIR="/var/spool/cron/crontabs"
     CRON_USER="www-data"
     CRON_SERVICE="cron"
 fi
+CRON_FILE="$CRON_DIR/$CRON_USER"
+
 mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$CRON_FILE' WHERE so_name_vc='cron_file'"
 mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$CRON_FILE' WHERE so_name_vc='cron_reload_path'"
 mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$CRON_USER' WHERE so_name_vc='cron_reload_user'"
@@ -850,23 +852,15 @@ PANEL_DAEMON_PATH="$PANEL_PATH/panel/bin/daemon.php"
 crontab -u $HTTP_USER mycron
 rm -f mycron
 
-if [[ "$OS" = "CentOs" ]]; then
-    chmod 744 /var/spool/cron
-    chown -R $HTTP_USER:$HTTP_USER /var/spool/cron/
-
-    chmod 644 $CRON_FILE
-
-    chmod -R 644 /etc/cron.d/
-elif [[ "$OS" = "Ubuntu" ]]; then
-    mkdir -p /var/spool/cron/crontabs/
-    chmod 744 /var/spool/cron/crontabs
-    chown -R $HTTP_USER:$HTTP_USER /var/spool/crontabs/
-
-    chmod 644 $CRON_FILE
-
+if [[ "$OS" = "Ubuntu" ]]; then
     mkdir -p /etc/cron.d/
-    chmod -R 644 /etc/cron.d/
+    mkdir -p "$CRON_DIR"
 fi
+chmod 744 "$CRON_DIR"
+chown -R $HTTP_USER:$HTTP_USER "$CRON_DIR"
+chmod 644 "$CRON_FILE"
+
+chmod -R 644 /etc/cron.d/
 
 
 #--- phpMyAdmin
