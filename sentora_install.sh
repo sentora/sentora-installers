@@ -815,6 +815,9 @@ ln -s /usr/sbin/named-checkconf /usr/bin/named-checkconf
 ln -s /usr/sbin/named-checkzone /usr/bin/named-checkzone
 ln -s /usr/sbin/named-compilezone /usr/bin/named-compilezone
 
+# Setup acl IP to forbid zone transfer
+sed -i "s|!SERVR_IP!|$PUBLIC_IP|" $PANEL_CONF/bind/named.conf
+
 # Build key and conf files
 rm -rf $BIND_FILES/named.conf $BIND_FILES/rndc.conf $BIND_FILES/rndc.key
 rndc-confgen -a -r /dev/urandom
