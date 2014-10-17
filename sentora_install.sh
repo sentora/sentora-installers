@@ -3,23 +3,28 @@
 # Official Sentora Automated Installation Script
 # =============================================
 #
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
 #
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-#    OS VERSION supported: CentOS 6.4+/7.x Minimal, Ubuntu 12.04/14.04 
-#    32bit and 64bit
+#  OS VERSION supported: CentOS 6.4+/7.x Minimal, Ubuntu 12.04/14.04 
+#  32bit and 64bit
+#
+#  Author Pascal Peyremorte (ppeyremorte@sentora.org)
+#    (main merge of all installers, modularization, reworks and comments)
+#  With the huge help from Mehdi Blagui, Kevin Andrews and, indirectly,
+#  all those who participated in the previous installers in the past.
 
-SENTORA_GITHUB_VERSION="1.0.0-beta4"
+SENTORA_GITHUB_VERSION="1.0.0-beta5"
 SENTORA_PRECONF_VERSION="master"
 
 PANEL_PATH="/etc/sentora"
@@ -832,15 +837,15 @@ if [[ "$OS" = "CentOs" ]]; then
     #cronie & crontabs may be missing
     $PACKAGE_INSTALLER crontabs
     CRON_DIR="/var/spool/cron"
-    CRON_USER="apache"
     CRON_SERVICE="crond"
 elif [[ "$OS" = "Ubuntu" ]]; then
     CRON_DIR="/var/spool/cron/crontabs"
-    CRON_USER="www-data"
     CRON_SERVICE="cron"
 fi
+CRON_USER="$HTTP_USER"
 
 # prepare daemon crontab
+sed -i "s|!USER!|$CRON_USER|" "$PANEL_CONF/cron/zdaemon"
 cp "$PANEL_CONF/cron/zdaemon" /etc/cron.d/zdaemon
 chmod 644 /etc/cron.d/zdaemon
 
@@ -858,9 +863,6 @@ mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value
 crontab -u $HTTP_USER mycron
 rm -f mycron
 
-if [[ "$OS" = "Ubuntu" ]]; then
-    mkdir -p "$CRON_DIR"
-fi
 chmod 744 "$CRON_DIR"
 chown -R $HTTP_USER:$HTTP_USER "$CRON_DIR"
 chmod 644 "$CRON_FILE"
