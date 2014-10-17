@@ -653,7 +653,7 @@ insert  into `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx
 (63,'custom_ip','Allow Custom IP','true','true|false','Allow users to change IP settings in A records. If set to false, IP is locked to server IP setting in Sentora Config','DNS Config','true'),
 (64,'bind_dir','Path to BIND Root','',NULL,'Path to the root directory where BIND is installed.','DNS Config','true'),
 (65,'bind_service','BIND Service Name','',NULL,'Name of the BIND service','DNS Config','true'),
-(66,'allow_xfer','Allow Zone Transfers','any',NULL,'Setting to restrict zone transfers in setting: allow-transfer {}; Default = all','DNS Config','true'),
+(66,'allow_xfer','Allow Zone Transfers','trusted-servers',NULL,'Setting to restrict zone transfers in setting: allow-transfer {}; Default = all','DNS Config','true'),
 (67,'allowed_types','Allowed Record Types','A AAAA CNAME MX TXT SRV SPF NS',NULL,'Types of records allowed seperated by a space. Default = A AAAA CNAME MX TXT SRV SPF NS','DNS Config','true'),
 (68,'bind_log','Bind Log','/var/sentora/logs/bind/bind.log',NULL,'Path and name of the Bind Log','DNS Config','true'),
 (69,'hosted_dir','Vhosts Directory','/var/sentora/hostdata/',NULL,'Virtual host directory','Apache Config','true'),
