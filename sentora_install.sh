@@ -845,7 +845,8 @@ fi
 CRON_USER="$HTTP_USER"
 
 # prepare daemon crontab
-sed -i "s|!USER!|$CRON_USER|" "$PANEL_CONF/cron/zdaemon"
+# sed -i "s|!USER!|$CRON_USER|" "$PANEL_CONF/cron/zdaemon" #it screw update search!#
+sed -i "s|!USER!|root|" "$PANEL_CONF/cron/zdaemon"
 cp "$PANEL_CONF/cron/zdaemon" /etc/cron.d/zdaemon
 chmod 644 /etc/cron.d/zdaemon
 
