@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+echo -e "\nTHIS UPGRADER IS OBSOLETE AND MUST NOT BE USED"
+echo "It is no longer compatible with Sentora core structure"
+echo "To install Sentora, please read infos at"
+echo -e "    http://docs.sentora.org/?node=22\n"
+exit
+
 # OS VERSION: CentOS 6.4+ Minimal
 # ARCH: x32_64
 

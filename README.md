@@ -1,16 +1,20 @@
 Sentora Installers
 ==================
 
-```
 # WARNING #
-Installers are in rebuild beta state. 
-
-  OLDERS INSTALLER MUST BE NOT USED. 
-
-They have been pushed in "Archive (obsolete)" directory to maintain them for reference only
-
-This text will be removed as soon as the installer will be released.
+* * * 
 ```
+A single common installer is in rebuild beta state.
+
+  OLDERS INSTALLER MUST BE NOT USED.
+
+They have been pushed in "Archive (obsolete)" directory for reference only.
+
+This warning will be removed as soon as the installer will be released.
+
+Anounce will be done on forum http://forums.sentora.org/
+```
+* * *
 # ALL THAT FOLLOWS IS NOT COMPLETE NOR ACCURATE #
 
 
@@ -21,11 +25,11 @@ Welcome to the Sentora installation script Git repository, this provides a centr
 The new installer and upgrade script enable you to install/upgrade Sentora directly from the command line with a single command, you no longer need to manually download the file, *CHMOD* it and then execute it etc.
 They check OS and version and will not allow you to install if requirements are not met.
 
-They are compatible with CentOs 6 and 7, ubuntu 12.04 and 14.04
+It is compatible with CentOs 6 and 7, ubuntu 12.04 and 14.04
 
 #### Installation ####
 
-```bash <(curl -Ss https://raw.githubusercontent.com/sentora/sentora-installers/1.0.0/sentora_install.sh)```
+```bash <(curl -Ss https://github.com/sentora/sentora-installers/archive/1.0.0.sh)```
 
 - The new installer is designed to install public server, with more checks about dns setup to ensure it will work.
   If the installer provide some warning, you MUST have knowledge enough of Linux and servers to be able to use it.

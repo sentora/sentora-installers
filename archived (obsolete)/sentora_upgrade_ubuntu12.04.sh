@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+echo -e "\nTHIS UPGRADER IS OBSOLETE AND MUST NOT BE USED"
+echo "It is no longer compatible with Sentora core structure"
+echo "To Install Sentora, please read infos at"
+echo -e "    http://docs.sentora.org/?node=22\n"
+exit
+
 # OS VERSION: Ubuntu Server 12.04.x LTS
 # ARCH: x32_64
 
