@@ -10,7 +10,7 @@ A single common installer is in rebuild beta state.
 
 They have been pushed in "Archive (obsolete)" directory for reference only.
 
-This warning will be removed as soon as the installer will be released.
+This warning will be removed as soon as the new installer will be released.
 
 Anounce will be done on forum http://forums.sentora.org/
 ```
@@ -18,7 +18,7 @@ Anounce will be done on forum http://forums.sentora.org/
 # ALL THAT FOLLOWS IS NOT COMPLETE NOR ACCURATE #
 
 
-Welcome to the Sentora installation script Git repository, this provides a central place to store, version and distribute Sentora installers and upgrade scripts from.
+Welcome to the Sentora Installation Script Git repository, this provides a central place to store, version and distribute Sentora installers and upgrade scripts from.
 
 ## How to install Sentora ##
 
