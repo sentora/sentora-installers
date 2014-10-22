@@ -924,8 +924,6 @@ if [[ "$OS" = "CentOs" && "$VER" == "7" ]]; then
        echo "Enabling $1"
        systemctl enable $1.service
     }
-fi
-
 chkconfig $HTTP_SERVER on
 chkconfig postfix on
 chkconfig dovecot on
@@ -934,6 +932,7 @@ chkconfig $DB_SERVICE on
 chkconfig named on
 chkconfig proftpd on
 service $HTTP_SERVER start
+fi
   
 # Restart all services to capture output messages
 if [[ "$OS" = "CentOs" && "$VER" == "7" ]]; then
