@@ -822,7 +822,7 @@ ln -s /usr/sbin/named-checkzone /usr/bin/named-checkzone
 ln -s /usr/sbin/named-compilezone /usr/bin/named-compilezone
 
 # Setup acl IP to forbid zone transfer
-sed -i "s|!SERVR_IP!|$PUBLIC_IP|" $PANEL_CONF/bind/named.conf
+sed -i "s|!SERVER_IP!|$PUBLIC_IP|" $PANEL_CONF/bind/named.conf
 
 # Build key and conf files
 rm -rf $BIND_FILES/named.conf $BIND_FILES/rndc.conf $BIND_FILES/rndc.key
@@ -918,22 +918,23 @@ php -q $PANEL_PATH/panel/bin/daemon.php
 
 #--- Enable system services and start/restart them as required.
 echo -e "\n-- Starting/restarting services"
-if [[ "$OS" = "CentOs" ]]; then
+if [[ "$OS" = "CentOs" && "$VER" == "7" ]]; then
     # CentOs7 does not return anything except redirection to systemctl :-(
     chkconfig() {
        echo "Enabling $1"
        systemctl enable $1.service
     }
-    chkconfig $HTTP_SERVER on
-    chkconfig postfix on
-    chkconfig dovecot on
-    chkconfig crond on
-    chkconfig $DB_SERVICE on
-    chkconfig named on
-    chkconfig proftpd on
-    service $HTTP_SERVER start
-fi    
+fi
 
+chkconfig $HTTP_SERVER on
+chkconfig postfix on
+chkconfig dovecot on
+chkconfig crond on
+chkconfig $DB_SERVICE on
+chkconfig named on
+chkconfig proftpd on
+service $HTTP_SERVER start
+  
 # Restart all services to capture output messages
 if [[ "$OS" = "CentOs" && "$VER" == "7" ]]; then
     # CentOs7 does not return anything except redirection to systemctl :-(
@@ -942,6 +943,7 @@ if [[ "$OS" = "CentOs" && "$VER" == "7" ]]; then
        systemctl $2 $1.service
     }
 fi
+
 service "$DB_SERVICE" restart
 service "$HTTP_SERVICE" restart
 service postfix restart
