@@ -21,14 +21,11 @@ Welcome to the Sentora Installation Script Git repository, this provides a centr
 ## How to install Sentora ##
 
   Sentora installer is still in beta state. 
-  Preliminary install infos are on [Sentora Documentation](http://docs.sentora.org/index.php?node=7)
   
-#### More informations to install and run Sentora ####
+  Preliminary install infos are on [Sentora Documentation](http://docs.sentora.org/index.php?node=7)
 
-Please refer to sentora documentation at [Sentora documentation](http://docs.sentora.org/?node=7).
-
-In case of problem, please use [Sentora forums](http://forums.sentora.org).
-
+  
+  
 #### Upgraders and removers ####
 
 Upgraders are still here only for later use or reference. They must NOT be used.
