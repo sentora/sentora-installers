@@ -4,18 +4,17 @@ Sentora Installers
 # WARNING #
 * * * 
 ```
-A single common installer is in rebuild beta state.
+A single common installer is currently in the stages of being rebuilt.
 
-  OLDERS INSTALLER MUST BE NOT USED.
+ PLEASE NOTE THAT OLDER INSTALLERS MUST BE NOT USED!
 
-They have been pushed in "Archive (obsolete)" directory for reference only.
+The deprecated installers have now been pushed to the "Archive (obsolete)" directory for reference purposes only.
 
 This warning will be removed as soon as the new installer will be released.
 
-Anounce will be done on forum http://forums.sentora.org/
+An anouncement will be done on our forums at http://forums.sentora.org/ in due course.
 ```
 * * *
-
 
 Welcome to the Sentora Installation Script Git repository, this provides a central place to store, version and distribute Sentora installers and upgrade scripts from.
 
