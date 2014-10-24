@@ -144,15 +144,17 @@ elif [[ "$OS" = "Ubuntu" ]]; then
 fi    
 echo -e "\n\e[1;33m=== Informations required to build your server ===\e[0m"
 echo 'The installer requires 2 informations:'
-echo ' - the FQDN (Fully Qualified Domain Name) that will be used to access Sentora panel,'
+echo ' - the FQDN (Fully Qualified Domain Name) that'
+echo '    will be used to access Sentora panel,'
 echo ' - the PUBLIC IP of the server.'
 echo ''
-echo 'The FQDN MUST be a sub-domain of your main domain, it must NOT be your main domain only.'
+echo 'The FQDN MUST be a sub-domain of your main domain,'
+echo '      it MUST NOT be your main domain only.'
 echo '   Example: panel.yourdomain.com'
 echo 'It must be already setup in your DNS nameserver, and propagated.'
 
 extern_ip="$(wget -qO- http://api.sentora.org/ip.txt)"
-local_ip=$(ifconfig | sed -En 's|127.0.0.1||;s|.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*|\2|p')
+local_ip=$(ifconfig | sed -En 's|127.0.0.1||;s|.*inet (adr:)?(([0-9]*\.){3}[0-9]*).*|\2|p')
 
 PANEL_FQDN="panel.$(/bin/hostname)"
 PUBLIC_IP=$extern_ip
