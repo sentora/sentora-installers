@@ -24,6 +24,7 @@
 #  With the huge help from Mehdi Blagui, Kevin Andrews and, indirectly,
 #  all those who participated in the previous installers in the past.
 
+SENTORA_INSTALLER_VERSION="V1.0.0-beta2"
 SENTORA_GITHUB_VERSION="1.0.0-beta5"
 SENTORA_PRECONF_VERSION="master"
 
@@ -33,7 +34,7 @@ PANEL_DATA="/var/sentora"
 #--- Display the 'welcome' splash/user warning info..
 echo ""
 echo "############################################################"
-echo "#  Welcome to the Official Sentora Installer V1.0.0-beta2  #"
+echo "#  Welcome to the Official Sentora Installer $SENTORA_INSTALLER_VERSION  #"
 echo "############################################################"
 
 echo -e "\nChecking that minimal requirements are ok"
@@ -233,8 +234,12 @@ touch $logfile
 exec > >(tee $logfile)
 exec 2>&1
 
-echo -e "Installing Sentora $SENTORA_GITHUB_VERSION at http://$PANEL_FQDN and ip $PUBLIC_IP"
-echo -e "on server under: $OS  $VER  $BITS"
+echo "Installer version $SENTORA_INSTALLER_VERSION"
+echo "Sentora github version $SENTORA_GITHUB_VERSION"
+echo "Sentora preconf version $SENTORA_PRECONF_VERSION"
+echo ""
+echo "Installing Sentora $SENTORA_GITHUB_VERSION at http://$PANEL_FQDN and ip $PUBLIC_IP"
+echo "on server under: $OS  $VER  $BITS"
 uname -a
 
 #--- AppArmor must be disabled to avoid problems
