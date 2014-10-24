@@ -31,9 +31,10 @@ PANEL_PATH="/etc/sentora"
 PANEL_DATA="/var/sentora"
 
 #--- Display the 'welcome' splash/user warning info..
-echo -e "\n#################################################"
-echo "#   Welcome to the Official Sentora Installer   #"
-echo "#################################################"
+echo ""
+echo "############################################################"
+echo "#  Welcome to the Official Sentora Installer V1.0.0-beta2  #"
+echo "############################################################"
 
 echo -e "\nChecking that minimal requirements are ok"
 
@@ -645,6 +646,10 @@ if [[ "$OS" = "CentOs" && "$VER" = "6" ]]; then
 elif [[ "$OS" = "Ubuntu" && "$VER" = "12.04" ]]; then
     sed -i "s|NameVirtualHost|#NameVirtualHost|" /etc/apache2/ports.conf
 fi
+
+# Remove Listen that must be handled in vhosts file to enable change of ports
+# sed -i '/Listen +[*|1-9]*/d' "$HTTP_CONF_PATH"
+# TO BE COMPLETED according to update of core !
 
 # adjustments for apache 2.4
 if [[ ("$OS" = "CentOs" && "$VER" = "7") || 
