@@ -143,84 +143,63 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER dnsutils
 fi    
 echo -e "\n\e[1;33m=== Informations required to build your server ===\e[0m"
-echo 'The installer requires 3 informations:'
-echo ' - the MAIN-DOMAIN that will be used for services emails (like webmaster@domain.tld),'
-echo ' - the SUB-DOMAIN of the main domain that wil be used to access Sentora panel,'
+echo 'The installer requires 2 informations:'
+echo ' - the FQDN (Fully Qualified Domain Name) that will be used to access Sentora panel,'
 echo ' - the PUBLIC IP of the server.'
 echo ''
-echo 'Both domains are supposed to be already defined in your domain provider DNS.'
-echo ' - the MAIN domain with an "A" (or "AAAA") record pointing to PUBLIC-IP,'
-echo ' - the sub domain with "CNAME" record pointing to same IP (usualy aliased as "@").'
+echo 'The FQDN MUST be a sub-domain of your main domain, it must NOT be your main domain only.'
+echo '   Example: panel.yourdomain.com'
+echo 'It must be already setup in your DNS nameserver, and propagated.'
 
 extern_ip="$(wget -qO- http://api.sentora.org/ip.txt)"
 local_ip=$(ifconfig | sed -En 's|127.0.0.1||;s|.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*|\2|p')
 
-MAIN_FQDN=$(/bin/hostname)
-panel_subdom="panel"
+PANEL_FQDN="panel.$(/bin/hostname)"
 PUBLIC_IP=$extern_ip
 while true; do
     echo ""
-    read -e -p "Which MAIN-DOMAIN will be used for service emails? " -i "$MAIN_FQDN" MAIN_FQDN
-    echo "Which SUB-DOMAIN do you want to use to access the panel?"
-    read -e -p "  (enter only the sub-domain name without main-domain): " -i "$panel_subdom" panel_subdom
-    PANEL_FQDN="$panel_subdom.$MAIN_FQDN"
+    read -e -p "Enter the FQDN to be used to access Sentora panel: " -i "$PANEL_FQDN" PANEL_FQDN
+
     if [[ "$PUBLIC_IP" != "$local_ip" ]]; then
       echo -e "\nThe public IP of the server is $PUBLIC_IP. Its local IP is $local_ip"
-      echo "For production server, the PUBLIC IP must be used."
+      echo "  For production server, the PUBLIC IP must be used."
     fi  
-    read -e -p "Enter the IP that will be used by Sentora: " -i "$PUBLIC_IP" PUBLIC_IP
+    read -e -p "Enter (or confirm) the public IP for this server: " -i "$PUBLIC_IP" PUBLIC_IP
     echo ""
 
-    # Checks if the main domain is already assigned in DNS
-    dns_main_ip=$(host "$MAIN_FQDN"|grep address|cut -d" " -f4)
-    if [[ "$dns_main_ip" == "" ]]; then
-        echo -e "\e[1;31mWARNING: $MAIN_FQDN is not defined in DNS!\e[0m"
-    else
-        echo -e "\e[1;32mOK\e[0m: DNS resoves $MAIN_FQDN to $dns_main_ip"
+    # Checks if the panel domain is a subdomain
+    sub=$(echo "$PANEL_FQDN" | sed -n 's|\(.*\)\..*\..*|\1|p')
+    if [[ "$sub" == "" ]]; then
+        echo -e "\e[1;31mWARNING: $PANEL_FQDN is not a subdomain!\e[0m"
+        confirm="true"
     fi
 
     # Checks if the panel domain is already assigned in DNS
     dns_panel_ip=$(host "$PANEL_FQDN"|grep address|cut -d" " -f4)
     if [[ "$dns_panel_ip" == "" ]]; then
         echo -e "\e[1;31mWARNING: $PANEL_FQDN is not defined in DNS!\e[0m"
-    else
-        echo -e "\e[1;32mOK\e[0m: DNS resoves $PANEL_FQDN to $dns_panel_ip"
-    fi
-
-    # If one or both are not defined, add infos for beginners
-    if [[ "$dns_main_ip" == "" || "$dns_panel_ip" == "" ]]; then
-        echo "  You must add record(s) in the DNS manager (and then wait until propagation is done)."
+        echo "  You must add record in the DNS manager (and then wait until propagation is done)."
         echo "  For more information, read Sentora documentation:"
         echo "   - http://docs.sentora.org/index.php?node=7 (Installing Sentora)"
         echo "   - http://docs.sentora.org/index.php?node=51 (Installer questions)"
         echo "  If this is a production installation, set the DNS up as soon as possible."
         confirm="true"
     else
-        # Check if both domains really points to us
-        if [[ "$dns_main_ip" != "$dns_panel_ip" ]]; then
-            echo -e -n "\e[1;31mWARNING: $MAIN_FQDN and $PANEL_FQDN do not point same IP!\e[0m"
-            echo " You have to correct the DNS configuration."
-            confirm="true"
-        fi
-        # Check if main domain matches public IP
-        if [[ "$dns_main_ip" != "$PUBLIC_IP" ]]; then
-            echo -e -n "\e[1;31mWARNING: $MAIN_FQDN DNS do not points to $PUBLIC_IP!\e[0m"
-            echo " The mail services will not work properly."
-            confirm="true"
-        fi
+        echo -e "\e[1;32mOK\e[0m: DNS resoves $PANEL_FQDN to $dns_panel_ip"
+
         # Check if panel domain matches public IP
         if [[ "$dns_panel_ip" != "$PUBLIC_IP" ]]; then
             echo -e -n "\e[1;31mWARNING: $PANEL_FQDN DNS do not points to $PUBLIC_IP!\e[0m"
-            echo " Sentora will not be reachable from http://$MAIN_FQDN"
+            echo "  Sentora will not be reachable from http://$PANEL_FQDN"
             confirm="true"
         fi
     fi
-    
-    if [[ "$PUBLIC_IP" != "$extern_ip" || "$PUBLIC_IP" != "$local_ip" ]]; then
+
+    if [[ "$PUBLIC_IP" != "$extern_ip" && "$PUBLIC_IP" != "$local_ip" ]]; then
         echo -e -n "\e[1;31mWARNING: $PUBLIC_IP does not match detected IP !\e[0m"
-        echo "Sentora will not work with this public IP..."
+        echo "  Sentora will not work with this IP..."
+            confirm="true"
     fi
-    
   
     echo ""
     # if any warning, ask confirmation to continue or propose to change
@@ -548,8 +527,8 @@ chmod -R 770 /var/spool/vacation
 #ln -s $PANEL_CONF/postfix/transport /etc/postfix/transport
 #postmap /etc/postfix/transport
 
-add_local_domain "$MAIN_FQDN"
-add_local_domain "autoreply.$MAIN_FQDN"
+add_local_domain "$PANEL_FQDN"
+add_local_domain "autoreply.$PANEL_FQDN"
 
 rm -rf /etc/postfix/main.cf /etc/postfix/master.cf
 ln -s $PANEL_CONF/postfix/master.cf /etc/postfix/master.cf
@@ -558,7 +537,7 @@ ln -s $PANEL_CONF/postfix/vacation.pl /var/spool/vacation/vacation.pl
 
 sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_CONF/postfix/*.cf
 sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_CONF/postfix/vacation.conf
-sed -i "s|!PANEL_FQDN!|$MAIN_FQDN|" $PANEL_CONF/postfix/main.cf
+sed -i "s|!PANEL_FQDN!|$PANEL_FQDN|" $PANEL_CONF/postfix/main.cf
 
 sed -i "s|!USR_LIB!|$USR_LIB_PATH|" $PANEL_CONF/postfix/master.cf
 sed -i "s|!USR_LIB!|$USR_LIB_PATH|" $PANEL_CONF/postfix/main.cf
@@ -592,7 +571,7 @@ ln -s $PANEL_CONF/dovecot2/globalfilter.sieve $PANEL_DATA/sieve/globalfilter.sie
 
 rm -rf /etc/dovecot/dovecot.conf
 ln -s $PANEL_CONF/dovecot2/dovecot.conf /etc/dovecot/dovecot.conf
-sed -i "s|!POSTMASTER_EMAIL!|postmaster@$MAIN_FQDN|" $PANEL_CONF/dovecot2/dovecot.conf
+sed -i "s|!POSTMASTER_EMAIL!|postmaster@$PANEL_FQDN|" $PANEL_CONF/dovecot2/dovecot.conf
 sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_CONF/dovecot2/dovecot-dict-quota.conf
 sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_CONF/dovecot2/dovecot-mysql.conf
 sed -i "s|!DOV_UID!|$VMAIL_UID|" $PANEL_CONF/dovecot2/dovecot-mysql.conf
@@ -625,7 +604,6 @@ fi
 if ! grep -q "Include $PANEL_CONF/apache/httpd.conf" "$HTTP_CONF_PATH"; then
     echo "Include $PANEL_CONF/apache/httpd.conf" >> "$HTTP_CONF_PATH";
 fi
-add_local_domain "$PANEL_FQDN"
 add_local_domain "$(hostname)"
 
 if ! grep -q "apache ALL=NOPASSWD: $PANEL_PATH/panel/bin/zsudo" /etc/sudoers; then
@@ -912,8 +890,7 @@ $PANEL_PATH/panel/bin/setso --set server_ip "$PUBLIC_IP"
 $PANEL_PATH/panel/bin/setso --set apache_changed "true"
 php -q $PANEL_PATH/panel/bin/daemon.php
 
-
-#--- Firewall
+#--- Firewall ?
 
 
 #--- Enable system services and start/restart them as required.
@@ -922,7 +899,7 @@ if [[ "$OS" = "CentOs" && "$VER" == "7" ]]; then
     # CentOs7 does not return anything except redirection to systemctl :-(
     chkconfig() {
        echo "Enabling $1"
-       systemctl enable $1.service
+       systemctl enable "$1.service"
     }
 chkconfig $HTTP_SERVER on
 chkconfig postfix on
@@ -931,15 +908,20 @@ chkconfig crond on
 chkconfig $DB_SERVICE on
 chkconfig named on
 chkconfig proftpd on
+
+# These service are not started by their installer
 service $HTTP_SERVER start
+service dovecot start
+service proftpd start
+service atd start
 fi
   
-# Restart all services to capture output messages
+# Restart all services to capture output messages, if any
 if [[ "$OS" = "CentOs" && "$VER" == "7" ]]; then
     # CentOs7 does not return anything except redirection to systemctl :-(
     service() {
        echo "Restarting $1"
-       systemctl $2 $1.service
+       systemctl "$2" "$1.service"
     }
 fi
 
@@ -954,15 +936,16 @@ service atd restart
 
 #--- Store the passwords for user reference
 {
+    echo "Server IP address      : $PUBLIC_IP"
+    echo "Panel URL              : http://$PANEL_FQDN"
     echo "zadmin Password        : $zadminpassword"
+    echo ""
     echo "MySQL Root Password    : $mysqlpassword"
     echo "MySQL Postfix Password : $postfixpassword"
     echo "MySQL ProFTPd Password : $proftpdpassword"
-    echo "Server IP address      : $PUBLIC_IP"
-    echo "Panel URL              : http://$PANEL_FQDN"
 } >> /root/passwords.txt
 
-#--- Advise the user that Sentora is now installed and accessible.
+#--- Advise the admin that Sentora is now installed and accessible.
 echo "#########################################################" &>/dev/tty
 echo " Congratulations Sentora has now been installed on your"   &>/dev/tty
 echo " server. Please review the log file left in /root/ for "   &>/dev/tty
