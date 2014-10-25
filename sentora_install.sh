@@ -68,17 +68,17 @@ if [[ "$OS" = "CentOs" ]] ; then
     PACKAGE_REMOVER="yum -y -q remove"
 
     if  [[ "$VER" = "7" ]]; then
-        DB_SERVER="mariadb" &&  echo "DB server will be mariaDB"
+        DB_PCKG="mariadb" &&  echo "DB server will be mariaDB"
     else 
-        DB_SERVER="mysql" && echo "DB server will be mySQL"
+        DB_PCKG="mysql" && echo "DB server will be mySQL"
     fi
-    HTTP_SERVER="httpd"
+    HTTP_PCKG="httpd"
 elif [[ "$OS" = "Ubuntu" ]]; then
     PACKAGE_INSTALLER="apt-get -yqq install"
     PACKAGE_REMOVER="apt-get -yqq remove"
     
-    DB_SERVER="mysql"
-    HTTP_SERVER="apache"
+    DB_PCKG="mysql-server"
+    HTTP_PCKG="apache2"
 fi
   
 # Check if the user is 'root' before allowing installation to commence
@@ -111,10 +111,10 @@ fi
 # Note : Postfix is installed by default on centos 6.5 netinstall / minimum install.
 # The installer seems to work fine even if Postfix is already installed.
 # -> The check of postfix is removed, but remains here to remember
-# if (inst $DB_SERVER) || (inst postfix) || (inst dovecot) || (inst $HTTP_SERVER) || (inst php) || (inst bind); then
+# if (inst $DB_PCKG) || (inst postfix) || (inst dovecot) || (inst $HTTP_PCKG) || (inst php) || (inst bind); then
 #    echo "It appears that apache/mysql/bind/postfix is already installed; This installer "
 
-if (inst $DB_SERVER) || (inst dovecot) || (inst $HTTP_SERVER) || (inst php) || (inst bind); then
+if (inst $DB_PCKG) || (inst dovecot) || (inst $HTTP_PCKG) || (inst php) || (inst bind); then
     echo "It appears that apache/mysql/bind is already installed; This installer "
     echo "is designed to install and configure Sentora on a clean OS installation only!"
     echo -e "\nPlease re-install your OS before attempting to install using this script."
@@ -469,8 +469,9 @@ fi
 #--- MySQL
 echo -e "\n-- Installing MySQL"
 mysqlpassword=$(passwordgen);
+$PACKAGE_INSTALLER "$DB_PCKG"
 if [[ "$OS" = "CentOs" ]]; then
-    $PACKAGE_INSTALLER "$DB_SERVER" "$DB_SERVER-devel" "$DB_SERVER-server" 
+    $PACKAGE_INSTALLER "DB_PCKG-devel" "$DB_PCKG-server" 
     MY_CNF_PATH="/etc/my.cnf"
     if  [[ "$VER" = "7" ]]; then
         DB_SERVICE="mariadb"
@@ -478,8 +479,7 @@ if [[ "$OS" = "CentOs" ]]; then
         DB_SERVICE="mysqld"
     fi
 elif [[ "$OS" = "Ubuntu" ]]; then
-    $PACKAGE_INSTALLER bsdutils
-    $PACKAGE_INSTALLER "$DB_SERVER-server" libsasl2-modules-sql libsasl2-modules
+    $PACKAGE_INSTALLER bsdutils libsasl2-modules-sql libsasl2-modules
     if [ "$VER" = "12.04" ]; then
         $PACKAGE_INSTALLER db4.7-util
     fi
@@ -592,15 +592,16 @@ chmod 660 /var/log/dovecot*
 
 #--- Apache server
 echo -e "\n-- Installing and configuring Apache"
+$PACKAGE_INSTALLER "$HTTP_PCKG"
 if [[ "$OS" = "CentOs" ]]; then
-    $PACKAGE_INSTALLER $HTTP_SERVER $HTTP_SERVER-devel 
+    $PACKAGE_INSTALLER "$HTTP_PCKG-devel"
     HTTP_CONF_PATH="/etc/httpd/conf/httpd.conf"
     HTTP_VARS_PATH="/etc/sysconfig/httpd"
     HTTP_SERVICE="httpd"
     HTTP_USER="apache"
     HTTP_GROUP="apache"
 elif [[ "$OS" = "Ubuntu" ]]; then
-    $PACKAGE_INSTALLER apache2 libapache2-mod-bw
+    $PACKAGE_INSTALLER libapache2-mod-bw
     HTTP_CONF_PATH="/etc/apache2/apache2.conf"
     HTTP_VARS_PATH="/etc/apache2/envvars"
     HTTP_SERVICE="apache2"
@@ -913,7 +914,7 @@ if [[ "$OS" = "CentOs" && "$VER" == "7" ]]; then
        echo "Enabling $1"
        systemctl enable "$1.service"
     }
-chkconfig $HTTP_SERVER on
+chkconfig $HTTP_SERVICE on
 chkconfig postfix on
 chkconfig dovecot on
 chkconfig crond on
@@ -922,7 +923,7 @@ chkconfig named on
 chkconfig proftpd on
 
 # These service are not started by their installer
-service $HTTP_SERVER start
+service $HTTP_SERVICE start
 service dovecot start
 service proftpd start
 service atd start
