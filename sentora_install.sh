@@ -21,8 +21,9 @@
 #
 #  Author Pascal Peyremorte (ppeyremorte@sentora.org)
 #    (main merge of all installers, modularization, reworks and comments)
-#  With the huge help from Mehdi Blagui, Kevin Andrews and, indirectly,
-#  all those who participated in the previous installers in the past.
+#  With huge help and contributions from Mehdi Blagui, Kevin Andrews and 
+#  all those who participated to this and to previous installers.
+#  Thanks to all.
 
 SENTORA_INSTALLER_VERSION="V1.0.0-beta2"
 SENTORA_GITHUB_VERSION="1.0.0-beta6"
@@ -41,13 +42,13 @@ echo -e "\nChecking that minimal requirements are ok"
 
 # Ensure the OS is compatible with the launcher
 BITS=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
-if [ -f /etc/lsb-release ]; then
-    OS=$(grep DISTRIB_ID /etc/lsb-release | sed 's/^.*=//')
-    VER=$(grep DISTRIB_RELEASE /etc/lsb-release | sed 's/^.*=//')
-elif [ -f /etc/centos-release ]; then
+if [ -f /etc/centos-release ]; then
     OS="CentOs"
     VERFULL=$(sed 's/^.*release //;s/ (Fin.*$//' /etc/centos-release)
     VER=${VERFULL:0:1} # return 6 or 7
+elif [ -f /etc/lsb-release ]; then
+    OS=$(grep DISTRIB_ID /etc/lsb-release | sed 's/^.*=//')
+    VER=$(grep DISTRIB_RELEASE /etc/lsb-release | sed 's/^.*=//')
 else
     OS=$(uname -s)
     VER=$(uname -r)
@@ -138,6 +139,9 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     tz=$(cat /etc/timezone)
 fi
 
+# clear timezone information to focus user on important notice
++clear
+
 # Installer parameters
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER bind-utils
@@ -146,14 +150,13 @@ elif [[ "$OS" = "Ubuntu" ]]; then
 fi    
 echo -e "\n\e[1;33m=== Informations required to build your server ===\e[0m"
 echo 'The installer requires 2 informations:'
-echo ' - the FQDN (Fully Qualified Domain Name) that'
-echo '    will be used to access Sentora panel,'
-echo ' - the PUBLIC IP of the server.'
+echo ' - the sub-domain that you want to use to access to Sentora panel (FQDN),'
+echo '   It must be a sub-domain of your main domain, NOT the main domain itself'
+echo '      Example: panel.yourdomain.com'
+echo '   It must be already setup in your DNS nameserver and propagated.'
 echo ''
-echo 'The FQDN MUST be a sub-domain of your main domain,'
-echo '      it MUST NOT be your main domain only.'
-echo '   Example: panel.yourdomain.com'
-echo 'It must be already setup in your DNS nameserver, and propagated.'
+echo ' - the public IP of the server.'
+echo ''
 
 extern_ip="$(wget -qO- http://api.sentora.org/ip.txt)"
 local_ip=$(ifconfig | sed -En 's|127.0.0.1||;s|.*inet (adr:)?(([0-9]*\.){3}[0-9]*).*|\2|p')
