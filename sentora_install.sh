@@ -25,7 +25,7 @@
 #  all those who participated in the previous installers in the past.
 
 SENTORA_INSTALLER_VERSION="V1.0.0-beta2"
-SENTORA_GITHUB_VERSION="1.0.0-beta5"
+SENTORA_GITHUB_VERSION="1.0.0-beta6"
 SENTORA_PRECONF_VERSION="master"
 
 PANEL_PATH="/etc/sentora"
