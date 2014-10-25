@@ -159,7 +159,7 @@ echo ' - the public IP of the server.'
 echo ''
 
 extern_ip="$(wget -qO- http://api.sentora.org/ip.txt)"
-local_ip=$(ifconfig | sed -En 's|127.0.0.1||;s|.*inet (adr:)?(([0-9]*\.){3}[0-9]*).*|\2|p')
+local_ip=$(ifconfig | sed -En 's|127.0.0.1||;s|.*inet (ad{1,2}r)?:(([0-9]*\.){3}[0-9]*).*|\2|p')
 
 PANEL_FQDN="panel.$(/bin/hostname)"
 PUBLIC_IP=$extern_ip
