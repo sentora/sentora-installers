@@ -694,6 +694,8 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER libapache2-mod-php5 php5-common php5-cli php5-mysql php5-gd php5-mcrypt php5-curl php-pear php5-imap php5-xmlrpc php5-xsl
     if [ "$VER" = "12.04" ]; then
         $PACKAGE_INSTALLER php5-suhosin
+    else
+        php5enmod mcrypt  # missing in the package for Ubuntu 14!
     fi
     PHP_INI_PATH="/etc/php5/apache2/php.ini"
 fi
