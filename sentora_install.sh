@@ -26,8 +26,8 @@
 #  Thanks to all.
 
 SENTORA_INSTALLER_VERSION="V1.0.0-beta2"
-SENTORA_GITHUB_VERSION="1.0.0-beta6"
-SENTORA_PRECONF_VERSION="master"
+SENTORA_CORE_VERSION="1.0.0-beta6"
+SENTORA_PRECONF_VERSION="V1.0.0-beta2"
 
 PANEL_PATH="/etc/sentora"
 PANEL_DATA="/var/sentora"
@@ -140,7 +140,7 @@ elif [[ "$OS" = "Ubuntu" ]]; then
 fi
 
 # clear timezone information to focus user on important notice
-+clear
+clear
 
 # Installer parameters
 if [[ "$OS" = "CentOs" ]]; then
@@ -238,10 +238,10 @@ exec > >(tee $logfile)
 exec 2>&1
 
 echo "Installer version $SENTORA_INSTALLER_VERSION"
-echo "Sentora github version $SENTORA_GITHUB_VERSION"
+echo "Sentora core version $SENTORA_CORE_VERSION"
 echo "Sentora preconf version $SENTORA_PRECONF_VERSION"
 echo ""
-echo "Installing Sentora $SENTORA_GITHUB_VERSION at http://$PANEL_FQDN and ip $PUBLIC_IP"
+echo "Installing Sentora $SENTORA_CORE_VERSION at http://$PANEL_FQDN and ip $PUBLIC_IP"
 echo "on server under: $OS  $VER  $BITS"
 uname -a
 
@@ -396,11 +396,11 @@ fi
 #--- Download Sentora archive from GitHub
 echo -e "\n-- Downloading Sentora, Please wait, this may take several minutes, the installer will continue after this is complete!"
 # Get latest sentora
-wget -nv -O sentora_core.zip https://github.com/sentora/sentora-core/archive/$SENTORA_GITHUB_VERSION.zip
+wget -nv -O sentora_core.zip https://github.com/sentora/sentora-core/archive/$SENTORA_CORE_VERSION.zip
 mkdir -p $PANEL_PATH
 chown -R root:root $PANEL_PATH
 unzip -oq sentora_core.zip -d $PANEL_PATH
-mv "$PANEL_PATH/sentora-core-$SENTORA_GITHUB_VERSION" "$PANEL_PATH/panel"
+mv "$PANEL_PATH/sentora-core-$SENTORA_CORE_VERSION" "$PANEL_PATH/panel"
 rm sentora_core.zip
 rm "$PANEL_PATH/panel/LICENSE.md" "$PANEL_PATH/panel/README.md" "$PANEL_PATH/panel/.gitignore"
 rm -rf "$PANEL_PATH/_delete_me"
