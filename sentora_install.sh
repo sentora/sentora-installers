@@ -25,7 +25,7 @@
 #  all those who participated to this and to previous installers.
 #  Thanks to all.
 
-SENTORA_INSTALLER_VERSION="1.0.0-beta3"
+SENTORA_INSTALLER_VERSION="1.0.0-beta4"
 SENTORA_CORE_VERSION="1.0.0-beta8"
 SENTORA_PRECONF_VERSION="1.0.0-beta3"
 
