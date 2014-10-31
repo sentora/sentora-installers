@@ -152,6 +152,7 @@ while getopts d:i:t: opt; do
   case $opt in
   d)
       PANEL_FQDN=$OPTARG
+      INSTALL="auto"
       ;;
   i)
       PUBLIC_IP=$OPTARG
@@ -172,6 +173,7 @@ if [[ ("$PANEL_FQDN" != "" && "$PUBLIC_IP" == "") ||
     echo "-d and -i must be both present or both absent."
     exit 2
 fi
+
 
 if [[ "$tz" == "" && "$PANEL_FQDN" == "" ]] ; then
     # Propose selection list for the time zone
@@ -695,10 +697,10 @@ elif [[ "$OS" = "Ubuntu" ]]; then
 fi
 
 # Comment "NameVirtualHost" and Listen directives that are handled in vhosts file
-if [[ "$OS" = "CentOs" && "$VER" = "6" ]]; then
+if [[ "$OS" = "CentOs" ]]; then
     sed -i "s|^\(NameVirtualHost .*$\)|#\1\n# NameVirtualHost is now handled in Sentora vhosts file|" "$HTTP_CONF_PATH"
     sed -i 's|^\(Listen .*$\)|#\1\n# Listen is now handled in Sentora vhosts file|' "$HTTP_CONF_PATH"
-elif [[ "$OS" = "Ubuntu" && "$VER" = "12.04" ]]; then
+elif [[ "$OS" = "Ubuntu" ]]; then
     sed -i "s|\(Include ports.conf\)|#\1\n# Ports are now handled in Sentora vhosts file|" "$HTTP_CONF_PATH"
     mv /etc/apache2/ports.conf /etc/apache2/ports.conf.removed_by_sentora
 fi
@@ -1024,12 +1026,14 @@ echo ""                                                          &>/dev/tty
 echo "#########################################################" &>/dev/tty
 echo "" &>/dev/tty
 
-# We now request that the user restarts their server...
-while true; do
-    read -e -p "Restart your server now to complete the install (y/n)? " rsn
-    case $rsn in
-        [Yy]* ) break;;
-        [Nn]* ) exit;
-    esac
-done
+# Wait until the user have read before restarts the server...
+if [[ "$INSTALL" != "auto" ]] ; then
+    while true; do
+        read -e -p "Restart your server now to complete the install (y/n)? " rsn
+        case $rsn in
+            [Yy]* ) break;;
+            [Nn]* ) exit;
+        esac
+    done
+fi
 shutdown -r now
