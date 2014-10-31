@@ -198,10 +198,10 @@ if [[ "$PANEL_FQDN" == "" ]] ; then
     echo -e "\n\e[1;33m=== Informations required to build your server ===\e[0m"
     echo 'The installer requires 2 pieces of information:'
     echo ' 1) the sub-domain that you want to use to access to Sentora panel,'
-    echo '   - do not use your main domain (like domain.com)
+    echo '   - do not use your main domain (like domain.com)'
     echo '   - use a sub-domain, e.g panel.domain.com'
     echo '   - or use the server hostname, e.g server1.domain.com'
-    echo '   - DNS must already be configured and pointing to the server IP
+    echo '   - DNS must already be configured and pointing to the server IP'
     echo '       for this sub-domain'
     echo ' 2) the public IP of the server.'
     echo ''
