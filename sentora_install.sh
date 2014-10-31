@@ -60,7 +60,7 @@ if [[ "$OS" = "CentOs" && ("$VER" = "6" || "$VER" = "7" ) ||
     echo "Ok."
 else
     echo "Sorry, this OS is not supported by Sentora." 
-    exit 1;
+    exit 1
 fi
 
 # Select modules that will be checked before start
@@ -94,7 +94,7 @@ if [ -e /usr/local/cpanel ] || [ -e /usr/local/directadmin ] || [ -e /usr/local/
     echo "It appears that a control panel is already installed on your server; This installer "
     echo "is designed to install and configure Sentora on a clean OS installation only!"
     echo -e "\nPlease re-install your OS before attempting to install using this script."
-    exit 1;
+    exit 1
 fi
 
 # Check for some common packages that we know will affect the installation/operating of Sentora.
@@ -119,114 +119,157 @@ if (inst $DB_PCKG) || (inst dovecot) || (inst $HTTP_PCKG) || (inst php) || (inst
     echo "It appears that apache/mysql/bind is already installed; This installer "
     echo "is designed to install and configure Sentora on a clean OS installation only!"
     echo -e "\nPlease re-install your OS before attempting to install using this script."
-    exit 1;
+    exit 1
 fi
 
-# ***************************************
-# Prepare or query informations required to install
+# *************************************************
+#--- Prepare or query informations required to install
 
-# Propose selection list for the time zone
-echo "Preparing to select timezone, please wait a few seconds..."
-$PACKAGE_INSTALLER tzdata wget
-# setup server timezone
-if [[ "$OS" = "CentOs" ]]; then
-    # make tzselect to save TZ in /etc/timezone
-    echo "echo \$TZ > /etc/timezone" >> /usr/bin/tzselect
-    tzselect
-    tz=$(cat /etc/timezone)
-elif [[ "$OS" = "Ubuntu" ]]; then
-    dpkg-reconfigure tzdata
-    tz=$(cat /etc/timezone)
-fi
-
-# clear timezone information to focus user on important notice
-clear
-
-# Installer parameters
+# Install wget and util used to grab server IP, and get server IPs
+$PACKAGE_INSTALLER wget 
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER bind-utils
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER dnsutils
-fi    
-echo -e "\n\e[1;33m=== Informations required to build your server ===\e[0m"
-echo 'The installer requires 2 informations:'
-echo ' - the sub-domain that you want to use to access to Sentora panel (FQDN),'
-echo '   It must be a sub-domain of your main domain, NOT the main domain itself'
-echo '      Example: panel.yourdomain.com'
-echo '   It must be already setup in your DNS nameserver and propagated.'
-echo ''
-echo ' - the public IP of the server.'
-echo ''
-
+fi
 extern_ip="$(wget -qO- http://api.sentora.org/ip.txt)"
 local_ip=$(ifconfig | sed -En 's|127.0.0.1||;s|.*inet (ad{1,2}r)?:(([0-9]*\.){3}[0-9]*).*|\2|p')
 
-PANEL_FQDN="panel.$(/bin/hostname)"
-PUBLIC_IP=$extern_ip
-while true; do
-    echo ""
-    read -e -p "Enter the FQDN to be used to access Sentora panel: " -i "$PANEL_FQDN" PANEL_FQDN
+# Enable parameters to be entered on commandline, required for vagrant install
+#   -d <panel-domain>
+#   -i <server-ip> (or -i local or -i public, see below)
+#   -t <timezone-string>
+# like :
+#   sentora_install.sh -t Europe/Paris -d panel.domain.tld -i xxx.xxx.xxx.xxx
+# notes:
+#   -d and -i must be both present or both absent
+#   -i local  force use of local detected ip
+#   -i public  force use of public detected ip
+#   if -t is used without -d/-i, timezone is set from value given and not asked to user
+#   if -t absent and -d/-i are present, timezone is not set at all
 
-    if [[ "$PUBLIC_IP" != "$local_ip" ]]; then
-      echo -e "\nThe public IP of the server is $PUBLIC_IP. Its local IP is $local_ip"
-      echo "  For production server, the PUBLIC IP must be used."
-    fi  
-    read -e -p "Enter (or confirm) the public IP for this server: " -i "$PUBLIC_IP" PUBLIC_IP
-    echo ""
+while getopts d:i:t: opt; do
+  case $opt in
+  d)
+      PANEL_FQDN=$OPTARG
+      ;;
+  i)
+      PUBLIC_IP=$OPTARG
+      if [[ "$PUBLIC_IP" == "local" ]] ; then
+          PUBLIC_IP=$local_ip
+      elif [[ "$PUBLIC_IP" == "public" ]] ; then
+          PUBLIC_IP=$extern_ip
+      fi
+      ;;
+  t)
+      echo $OPTARG > /etc/timezone
+      tz=$(cat /etc/timezone)
+      ;;
+  esac
+done
+if [[ ("$PANEL_FQDN" != "" && "$PUBLIC_IP" == "") || 
+      ("$PANEL_FQDN" == "" && "$PUBLIC_IP" != "") ]] ; then
+    echo "-d and -i must be both present or both absent."
+    exit 2
+fi
 
-    # Checks if the panel domain is a subdomain
-    sub=$(echo "$PANEL_FQDN" | sed -n 's|\(.*\)\..*\..*|\1|p')
-    if [[ "$sub" == "" ]]; then
-        echo -e "\e[1;31mWARNING: $PANEL_FQDN is not a subdomain!\e[0m"
-        confirm="true"
+if [[ "$tz" == "" && "$PANEL_FQDN" == "" ]] ; then
+    # Propose selection list for the time zone
+    echo "Preparing to select timezone, please wait a few seconds..."
+    $PACKAGE_INSTALLER tzdata
+    # setup server timezone
+    if [[ "$OS" = "CentOs" ]]; then
+        # make tzselect to save TZ in /etc/timezone
+        echo "echo \$TZ > /etc/timezone" >> /usr/bin/tzselect
+        tzselect
+        tz=$(cat /etc/timezone)
+    elif [[ "$OS" = "Ubuntu" ]]; then
+        dpkg-reconfigure tzdata
+        tz=$(cat /etc/timezone)
     fi
+fi
+# clear timezone information to focus user on important notice
+clear
 
-    # Checks if the panel domain is already assigned in DNS
-    dns_panel_ip=$(host "$PANEL_FQDN"|grep address|cut -d" " -f4)
-    if [[ "$dns_panel_ip" == "" ]]; then
-        echo -e "\e[1;31mWARNING: $PANEL_FQDN is not defined in DNS!\e[0m"
-        echo "  You must add record in the DNS manager (and then wait until propagation is done)."
-        echo "  For more information, read Sentora documentation:"
-        echo "   - http://docs.sentora.org/index.php?node=7 (Installing Sentora)"
-        echo "   - http://docs.sentora.org/index.php?node=51 (Installer questions)"
-        echo "  If this is a production installation, set the DNS up as soon as possible."
-        confirm="true"
-    else
-        echo -e "\e[1;32mOK\e[0m: DNS resoves $PANEL_FQDN to $dns_panel_ip"
+# Installer parameters
+if [[ "$PANEL_FQDN" == "" ]] ; then
+    echo -e "\n\e[1;33m=== Informations required to build your server ===\e[0m"
+    echo 'The installer requires 2 informations:'
+    echo ' - the sub-domain that you want to use to access to Sentora panel (FQDN),'
+    echo '   It must be a sub-domain of your main domain, NOT the main domain itself'
+    echo '      Example: panel.yourdomain.com'
+    echo '   It must be already setup in your DNS nameserver and propagated.'
+    echo ''
+    echo ' - the public IP of the server.'
+    echo ''
 
-        # Check if panel domain matches public IP
-        if [[ "$dns_panel_ip" != "$PUBLIC_IP" ]]; then
-            echo -e -n "\e[1;31mWARNING: $PANEL_FQDN DNS do not points to $PUBLIC_IP!\e[0m"
-            echo "  Sentora will not be reachable from http://$PANEL_FQDN"
+    PANEL_FQDN="panel.$(/bin/hostname)"
+    PUBLIC_IP=$extern_ip
+    while true; do
+        echo ""
+        read -e -p "Enter the FQDN to be used to access Sentora panel: " -i "$PANEL_FQDN" PANEL_FQDN
+
+        if [[ "$PUBLIC_IP" != "$local_ip" ]]; then
+          echo -e "\nThe public IP of the server is $PUBLIC_IP. Its local IP is $local_ip"
+          echo "  For production server, the PUBLIC IP must be used."
+        fi  
+        read -e -p "Enter (or confirm) the public IP for this server: " -i "$PUBLIC_IP" PUBLIC_IP
+        echo ""
+
+        # Checks if the panel domain is a subdomain
+        sub=$(echo "$PANEL_FQDN" | sed -n 's|\(.*\)\..*\..*|\1|p')
+        if [[ "$sub" == "" ]]; then
+            echo -e "\e[1;31mWARNING: $PANEL_FQDN is not a subdomain!\e[0m"
             confirm="true"
         fi
-    fi
 
-    if [[ "$PUBLIC_IP" != "$extern_ip" && "$PUBLIC_IP" != "$local_ip" ]]; then
-        echo -e -n "\e[1;31mWARNING: $PUBLIC_IP does not match detected IP !\e[0m"
-        echo "  Sentora will not work with this IP..."
+        # Checks if the panel domain is already assigned in DNS
+        dns_panel_ip=$(host "$PANEL_FQDN"|grep address|cut -d" " -f4)
+        if [[ "$dns_panel_ip" == "" ]]; then
+            echo -e "\e[1;31mWARNING: $PANEL_FQDN is not defined in DNS!\e[0m"
+            echo "  You must add record in the DNS manager (and then wait until propagation is done)."
+            echo "  For more information, read Sentora documentation:"
+            echo "   - http://docs.sentora.org/index.php?node=7 (Installing Sentora)"
+            echo "   - http://docs.sentora.org/index.php?node=51 (Installer questions)"
+            echo "  If this is a production installation, set the DNS up as soon as possible."
             confirm="true"
-    fi
-  
-    echo ""
-    # if any warning, ask confirmation to continue or propose to change
-    if [[ "$confirm" != "" ]] ; then
-        echo "There are some warnings..."
-        echo "Are you really sure that you want to setup Sentora with these parameters?"
-        read -e -p "(y):accept and install, (n):change fqdn or ip, (q):quit installer? " yn
-        case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) continue;;
-            [Qq]* ) exit;;
-        esac
-    else
-        read -e -p "All is ok, do you want to install Sentora (y/n)? " yn
-        case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) exit;;
-        esac
-    fi
-done
+        else
+            echo -e "\e[1;32mOK\e[0m: DNS resoves $PANEL_FQDN to $dns_panel_ip"
+
+            # Check if panel domain matches public IP
+            if [[ "$dns_panel_ip" != "$PUBLIC_IP" ]]; then
+                echo -e -n "\e[1;31mWARNING: $PANEL_FQDN DNS do not points to $PUBLIC_IP!\e[0m"
+                echo "  Sentora will not be reachable from http://$PANEL_FQDN"
+                confirm="true"
+            fi
+        fi
+
+        if [[ "$PUBLIC_IP" != "$extern_ip" && "$PUBLIC_IP" != "$local_ip" ]]; then
+            echo -e -n "\e[1;31mWARNING: $PUBLIC_IP does not match detected IP !\e[0m"
+            echo "  Sentora will not work with this IP..."
+                confirm="true"
+        fi
+      
+        echo ""
+        # if any warning, ask confirmation to continue or propose to change
+        if [[ "$confirm" != "" ]] ; then
+            echo "There are some warnings..."
+            echo "Are you really sure that you want to setup Sentora with these parameters?"
+            read -e -p "(y):accept and install, (n):change fqdn or ip, (q):quit installer? " yn
+            case $yn in
+                [Yy]* ) break;;
+                [Nn]* ) continue;;
+                [Qq]* ) exit;;
+            esac
+        else
+            read -e -p "All is ok, do you want to install Sentora (y/n)? " yn
+            case $yn in
+                [Yy]* ) break;;
+                [Nn]* ) exit;;
+            esac
+        fi
+    done
+fi
 
 # ***************************************
 # Installation really starts here
