@@ -16,7 +16,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-#  OS VERSION supported: CentOS 6.4+/7.x Minimal, Ubuntu 12.04/14.04 
+#  OS VERSION supported: CentOS 6.*/7.* Minimal, Ubuntu 12.04/14.04 
 #  32bit and 64bit
 #
 #  Author Pascal Peyremorte (ppeyremorte@sentora.org)
@@ -92,7 +92,7 @@ fi
 # Check for some common control panels that we know will affect the installation/operating of Sentora.
 if [ -e /usr/local/cpanel ] || [ -e /usr/local/directadmin ] || [ -e /usr/local/solusvm/www ] || [ -e /usr/local/home/admispconfig ] || [ -e /usr/local/lxlabs/kloxo ] ; then
     echo "It appears that a control panel is already installed on your server; This installer "
-    echo "is designed to install and configure Sentora on a clean OS installation only!"
+    echo "is designed to install and configure Sentora on a clean OS installation only."
     echo -e "\nPlease re-install your OS before attempting to install using this script."
     exit 1
 fi
@@ -194,16 +194,17 @@ clear
 # Installer parameters
 if [[ "$PANEL_FQDN" == "" ]] ; then
     echo -e "\n\e[1;33m=== Informations required to build your server ===\e[0m"
-    echo 'The installer requires 2 informations:'
-    echo ' - the sub-domain that you want to use to access to Sentora panel (FQDN),'
-    echo '   It must be a sub-domain of your main domain, NOT the main domain itself'
-    echo '      Example: panel.yourdomain.com'
-    echo '   It must be already setup in your DNS nameserver and propagated.'
-    echo ''
-    echo ' - the public IP of the server.'
+    echo 'The installer requires 2 pieces of information:'
+    echo ' 1) the sub-domain that you want to use to access to Sentora panel,'
+    echo '   - do not use your main domain (like domain.com)
+    echo '   - use a sub-domain, e.g panel.domain.com'
+    echo '   - or use the server hostname, e.g server1.domain.com'
+    echo '   - DNS must already be configured and pointing to the server IP
+    echo '       for this sub-domain'
+    echo ' 2) the public IP of the server.'
     echo ''
 
-    PANEL_FQDN="panel.$(/bin/hostname)"
+    PANEL_FQDN="$(/bin/hostname)"
     PUBLIC_IP=$extern_ip
     while true; do
         echo ""
@@ -226,19 +227,19 @@ if [[ "$PANEL_FQDN" == "" ]] ; then
         # Checks if the panel domain is already assigned in DNS
         dns_panel_ip=$(host "$PANEL_FQDN"|grep address|cut -d" " -f4)
         if [[ "$dns_panel_ip" == "" ]]; then
-            echo -e "\e[1;31mWARNING: $PANEL_FQDN is not defined in DNS!\e[0m"
-            echo "  You must add record in the DNS manager (and then wait until propagation is done)."
+            echo -e "\e[1;31mWARNING: $PANEL_FQDN is not defined in your DNS!\e[0m"
+            echo "  You must add record in your DNS manager (and then wait until propagation is done)."
             echo "  For more information, read Sentora documentation:"
             echo "   - http://docs.sentora.org/index.php?node=7 (Installing Sentora)"
             echo "   - http://docs.sentora.org/index.php?node=51 (Installer questions)"
             echo "  If this is a production installation, set the DNS up as soon as possible."
             confirm="true"
         else
-            echo -e "\e[1;32mOK\e[0m: DNS resoves $PANEL_FQDN to $dns_panel_ip"
+            echo -e "\e[1;32mOK\e[0m: DNS successfully resolves $PANEL_FQDN to $dns_panel_ip"
 
             # Check if panel domain matches public IP
             if [[ "$dns_panel_ip" != "$PUBLIC_IP" ]]; then
-                echo -e -n "\e[1;31mWARNING: $PANEL_FQDN DNS do not points to $PUBLIC_IP!\e[0m"
+                echo -e -n "\e[1;31mWARNING: $PANEL_FQDN DNS does not point to $PUBLIC_IP!\e[0m"
                 echo "  Sentora will not be reachable from http://$PANEL_FQDN"
                 confirm="true"
             fi
@@ -670,6 +671,18 @@ mkdir -p $PANEL_DATA/hostdata/zadmin/public_html
 chown -R $HTTP_USER:$HTTP_GROUP $PANEL_DATA/hostdata/
 chmod -R 770 $PANEL_DATA/hostdata/
 
+mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='httpd_exe'"
+mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='apache_sn'"
+
+#Set keepalive on (default is off)
+sed -i "s|KeepAlive Off|KeepAlive On|" "$HTTP_CONF_PATH"
+
+# Permissions fix for Apache and ProFTPD (to enable them to play nicely together!)
+if ! grep -q "umask 002" "$HTTP_VARS_PATH"; then
+    echo "umask 002" >> "$HTTP_VARS_PATH";
+fi
+
+# remove default virtual site to ensure Sentora is the default vhost
 if [[ "$OS" = "CentOs" ]]; then
     sed -i "s|DocumentRoot \"/var/www/html\"|DocumentRoot $PANEL_PATH/panel|" "$HTTP_CONF_PATH"
 elif [[ "$OS" = "Ubuntu" ]]; then
@@ -681,27 +694,14 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     fi
 fi
 
-mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='httpd_exe'"
-mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$HTTP_SERVICE' WHERE so_name_vc='apache_sn'"
-
-#Set keepalive on (default is off)
-sed -i "s|KeepAlive Off|KeepAlive On|" $HTTP_CONF_PATH
-
-# Permissions fix for Apache and ProFTPD (to enable them to play nicely together!)
-if ! grep -q "umask 002" "$HTTP_VARS_PATH"; then
-    echo "umask 002" >> "$HTTP_VARS_PATH";
-fi
-
-# Comment "NameVirtualHost" directive that is handled by sentora in vhosts file
+# Comment "NameVirtualHost" and Listen directives that are handled in vhosts file
 if [[ "$OS" = "CentOs" && "$VER" = "6" ]]; then
-    sed -i "s|NameVirtualHost|#NameVirtualHost|" "$HTTP_CONF_PATH"
+    sed -i "s|^\(NameVirtualHost .*$\)|#\1\n# NameVirtualHost is now handled in Sentora vhosts file|" "$HTTP_CONF_PATH"
+    sed -i 's|^\(Listen .*$\)|#\1\n# Listen is now handled in Sentora vhosts file|' "$HTTP_CONF_PATH"
 elif [[ "$OS" = "Ubuntu" && "$VER" = "12.04" ]]; then
-    sed -i "s|NameVirtualHost|#NameVirtualHost|" /etc/apache2/ports.conf
+    sed -i "s|\(Include ports.conf\)|#\1\n# Ports are now handled in Sentora vhosts file|" "$HTTP_CONF_PATH"
+    mv /etc/apache2/ports.conf /etc/apache2/ports.conf.removed_by_sentora
 fi
-
-# Remove Listen that must be handled in vhosts file to enable change of ports
-# sed -i '/Listen +[*|1-9]*/d' "$HTTP_CONF_PATH"
-# TO BE COMPLETED according to update of core !
 
 # adjustments for apache 2.4
 if [[ ("$OS" = "CentOs" && "$VER" = "7") || 
@@ -719,7 +719,7 @@ if [[ ("$OS" = "CentOs" && "$VER" = "7") ||
 
     # Remove NameVirtualHost that is now without effect and generate warning
     sed -i '/NameVirtualHost/{N;d}' $PANEL_CONF/apache/httpd-vhosts.conf
-    sed -i '/    \$line \.= \"NameVirtualHost/ {N;N;N;N;d}' $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
+    sed -i '/# NameVirtualHost is/ {N;N;N;N;N;d}' $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
 
     # Options must have ALL (or none) +/- prefix, disable listing directories
     sed -i 's| FollowSymLinks [-]Indexes| +FollowSymLinks -Indexes|' $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
