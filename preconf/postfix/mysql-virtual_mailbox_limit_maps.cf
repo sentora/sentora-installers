@@ -1,0 +1,5 @@
+hosts = localhost
+user = postfix
+password = !POSTFIX_PASSWORD!
+dbname = sentora_postfix
+query = SELECT quota FROM mailbox WHERE username='%s' AND active = '1'

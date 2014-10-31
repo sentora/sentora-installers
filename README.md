@@ -1,30 +1,25 @@
 Sentora Installers
 ==================
 
-# WARNING #
-* * * 
-```
-A single common installer is currently in the stages of being rebuilt.
-
- PLEASE NOTE THAT OLDER INSTALLERS MUST BE NOT USED!
-
-The deprecated installers have now been pushed to the "Archive (obsolete)" directory for reference purposes only.
-
-This warning will be removed as soon as the new installer will be released.
-
-An anouncement will be done on our forums at http://forums.sentora.org/ in due course.
-```
-* * *
-
-Welcome to the Sentora Installation Script Git repository, this provides a central place to store, version and distribute Sentora installers and upgrade scripts from.
+Welcome to the Sentora Installation Script Git repository, this provides a central place to store, version and distribute Sentora installer and upgrade scripts from.
 
 ## How to install Sentora ##
 
-  Sentora installer is still in beta state. 
-  
-  Preliminary install infos are on [Sentora Documentation](http://docs.sentora.org/index.php?node=7)
+__This common installer is in BETA-TEST__
 
+It supports CentOs 6 / 7 and Ubuntu 12.04 / 14.04
   
+Preliminary install infos are on [Sentora Documentation](http://docs.sentora.org/index.php?node=7)
+
+ 
+To install use:
+```
+bash <(curl -L -Ss http://sentora.org/install-beta)
+```
+
+Please report any errors that you may find to the [beta-test dedicated forum](http://forums.sentora.org/forumdisplay.php?fid=60).
+Thank you.
+
   
 #### Upgraders and removers ####
 
@@ -33,6 +28,9 @@ Upgraders are still here only for later use or reference. They must NOT be used.
 Removers *may* work but their use is not recommended. They remove most of the packages but they are NOT leaving your OS in his initial state.
 
 
+* * *
+## ALL INFOS BELOW MAY BE INACURATE OR INCOMPLETE ##
+* * *
 
 ## Vagrant installer/upgrader development & testing ##
 
