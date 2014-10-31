@@ -479,8 +479,8 @@ ln -s $PANEL_PATH/panel/bin/setso /usr/bin/setso
 chmod +x $PANEL_PATH/panel/bin/setzadmin
 ln -s $PANEL_PATH/panel/bin/setzadmin /usr/bin/setzadmin
 
-#--- Install preconfig 
-wget -nv -O sentora_preconfig.zip https://github.com/5050/sentora-installers/archive/$SENTORA_PRECONF_VERSION.zip
+#--- Install preconfig
+wget -nv -O sentora_preconfig.zip https://github.com/sentora/sentora-installers/archive/$SENTORA_PRECONF_VERSION.zip
 unzip -oq sentora_preconfig.zip
 cp -rf sentora-installers-$SENTORA_PRECONF_VERSION/preconf/* $PANEL_CONF
 rm sentora_preconfig*
@@ -1035,5 +1035,5 @@ if [[ "$INSTALL" != "auto" ]] ; then
             [Nn]* ) exit;
         esac
     done
+    shutdown -r now
 fi
-shutdown -r now
