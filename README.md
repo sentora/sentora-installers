@@ -80,4 +80,4 @@ Please be aware that community supported install and upgrade scripts that we wil
 - Will be licensed under the GPL and hosted on this repository.
 - Must maintain the same user interface as our official install/upgrade scripts (eg. shell script echo's and 'read' statements must match the same wording to ensure that the installation experience across all OSes and distributions give the same user experience.)
 
-If you have any queries regarding the above rules please feel free to contact me at: [ballen@sentora.io](mailto:ballen@sentora.io).
+If you have any queries regarding the above rules please feel free to contact us at: [info@sentora.org](mailto:info@sentora.org).
