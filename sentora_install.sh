@@ -25,7 +25,7 @@
 #  all those who participated to this and to previous installers.
 #  Thanks to all.
 
-SENTORA_INSTALLER_VERSION="1.0.0-beta4"
+SENTORA_INSTALLER_VERSION="1.0.0-beta6"
 SENTORA_CORE_VERSION="1.0.0-beta8"
 SENTORA_PRECONF_VERSION="1.0.0-beta3"
 
@@ -41,7 +41,6 @@ echo "############################################################"
 echo -e "\nChecking that minimal requirements are ok"
 
 # Ensure the OS is compatible with the launcher
-BITS=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
 if [ -f /etc/centos-release ]; then
     OS="CentOs"
     VERFULL=$(sed 's/^.*release //;s/ (Fin.*$//' /etc/centos-release)
@@ -53,6 +52,8 @@ else
     OS=$(uname -s)
     VER=$(uname -r)
 fi
+#BITS=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
+BITS=$(uname -m)
 echo "Detected : $OS  $VER  $BITS"
 
 if [[ "$OS" = "CentOs" && ("$VER" = "6" || "$VER" = "7" ) || 
@@ -74,12 +75,16 @@ if [[ "$OS" = "CentOs" ]] ; then
         DB_PCKG="mysql" && echo "DB server will be mySQL"
     fi
     HTTP_PCKG="httpd"
+    PHP_PCKG="php"
+    BIND_PCKG="bind"
 elif [[ "$OS" = "Ubuntu" ]]; then
     PACKAGE_INSTALLER="apt-get -yqq install"
     PACKAGE_REMOVER="apt-get -yqq remove"
     
     DB_PCKG="mysql-server"
     HTTP_PCKG="apache2"
+    PHP_PCKG="apache2-mod-php5"
+    BIND_PCKG="bind9"
 fi
   
 # Check if the user is 'root' before allowing installation to commence
@@ -101,7 +106,7 @@ fi
 # We expect a clean OS so no apache/mySQL/bind/postfix/php!
 if [[ "$OS" = "CentOs" ]] ; then
     inst() {
-       rpm -q "$1" 2> /dev/null
+       rpm -q "$1" &> /dev/null
     }
 elif [[ "$OS" = "Ubuntu" ]]; then
     inst() {
@@ -109,18 +114,17 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     }
 fi
 
-# Note : Postfix is installed by default on centos 6.5 netinstall / minimum install.
+# Note : Postfix is installed by default on centos netinstall / minimum install.
 # The installer seems to work fine even if Postfix is already installed.
-# -> The check of postfix is removed, but remains here to remember
-# if (inst $DB_PCKG) || (inst postfix) || (inst dovecot) || (inst $HTTP_PCKG) || (inst php) || (inst bind); then
-#    echo "It appears that apache/mysql/bind/postfix is already installed; This installer "
-
-if (inst $DB_PCKG) || (inst dovecot) || (inst $HTTP_PCKG) || (inst php) || (inst bind); then
-    echo "It appears that apache/mysql/bind is already installed; This installer "
-    echo "is designed to install and configure Sentora on a clean OS installation only!"
-    echo -e "\nPlease re-install your OS before attempting to install using this script."
-    exit 1
-fi
+# -> The check of postfix is removed, but this comment remains to remember
+for package in "$DB_PCKG" "dovecot-mysql" "$HTTP_PCKG" "$PHP_PCKG" "proftpd" "$BIND_PCKG" ; do
+    if (inst "$package"); then
+        echo "It appears that package $package is already installed. This installer"
+        echo "is designed to install and configure Sentora on a clean OS installation only!"
+        echo -e "\nPlease re-install your OS before attempting to install using this script."
+        exit 1
+    fi
+done
 
 # *************************************************
 #--- Prepare or query informations required to install
@@ -133,7 +137,7 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER dnsutils
 fi
 extern_ip="$(wget -qO- http://api.sentora.org/ip.txt)"
-local_ip=$(ifconfig | sed -En 's|127.0.0.1||;s|.*inet (ad{1,2}r)?:(([0-9]*\.){3}[0-9]*).*|\2|p')
+local_ip=$(ifconfig eth0 | sed -En 's|.*inet [^0-9]*(([0-9]*\.){3}[0-9]*).*$|\1|p')
 
 # Enable parameters to be entered on commandline, required for vagrant install
 #   -d <panel-domain>
@@ -163,7 +167,7 @@ while getopts d:i:t: opt; do
       fi
       ;;
   t)
-      echo $OPTARG > /etc/timezone
+      echo "$OPTARG" > /etc/timezone
       tz=$(cat /etc/timezone)
       ;;
   esac
@@ -198,10 +202,10 @@ if [[ "$PANEL_FQDN" == "" ]] ; then
     echo -e "\n\e[1;33m=== Informations required to build your server ===\e[0m"
     echo 'The installer requires 2 pieces of information:'
     echo ' 1) the sub-domain that you want to use to access to Sentora panel,'
-    echo '   - do not use your main domain (like domain.com)
+    echo '   - do not use your main domain (like domain.com)'
     echo '   - use a sub-domain, e.g panel.domain.com'
     echo '   - or use the server hostname, e.g server1.domain.com'
-    echo '   - DNS must already be configured and pointing to the server IP
+    echo '   - DNS must already be configured and pointing to the server IP'
     echo '       for this sub-domain'
     echo ' 2) the public IP of the server.'
     echo ''
@@ -278,9 +282,9 @@ fi
 # Installation really starts here
 
 #--- Set custom logging methods so we create a log file in the current working directory.
-logfile=$$.log
-touch $logfile
-exec > >(tee $logfile)
+logfile=$(date +%Y-%m-%d_%H.%M.%S_sentora_install.log)
+touch "$logfile"
+exec > >(tee "$logfile")
 exec 2>&1
 
 echo "Installer version $SENTORA_INSTALLER_VERSION"
@@ -291,6 +295,11 @@ echo "Installing Sentora $SENTORA_CORE_VERSION at http://$PANEL_FQDN and ip $PUB
 echo "on server under: $OS  $VER  $BITS"
 uname -a
 
+# Function to disable a file by appending its name with _disabled
+disable_file() {
+    mv "$1" "$1_disabled_by_sentora" &> /dev/null
+}
+
 #--- AppArmor must be disabled to avoid problems
 if [[ "$OS" = "Ubuntu" ]]; then
     [ -f /etc/init.d/apparmor ]
@@ -299,7 +308,7 @@ if [[ "$OS" = "Ubuntu" ]]; then
         /etc/init.d/apparmor stop &> /dev/null
         update-rc.d -f apparmor remove &> /dev/null
         apt-get remove -y --purge apparmor* &> /dev/null
-        mv /etc/init.d/apparmor /etc/init.d/apparmpr.removed &> /dev/null
+        disable_file /etc/init.d/apparmor &> /dev/null
         echo -e "AppArmor has been removed."
     fi
 fi
@@ -326,9 +335,8 @@ if [[ "$OS" = "CentOs" ]]; then
 
     #check if the machine and on openvz
     if [ -f "/etc/yum.repos.d/vz.repo" ]; then
-        #vz.repo
-        sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/centos-6|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/6/$basearch/os/|" "/etc/yum.repos.d/vz.repo"
-        sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/updates-released-ce6|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/6/$basearch/updates/|" "/etc/yum.repos.d/vz.repo"
+        sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/centos-6|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/6/$BITS/os/|" "/etc/yum.repos.d/vz.repo"
+        sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/updates-released-ce6|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/6/$BITS/updates/|" "/etc/yum.repos.d/vz.repo"
     fi
 
     #disable deposits that could result in installation errors
@@ -379,7 +387,14 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     rm -rf "/etc/apt/sources.list/*"
     cp "/etc/apt/sources.list" "/etc/apt/sources.list.save"
 
-    if [ "$VER" = "12.04" ]; then
+    if [ "$VER" = "14.04" ]; then
+        cat > /etc/apt/sources.list <<EOF
+#Depots main restricted
+deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc)-security main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc)-updates main restricted universe multiverse
+EOF
+    else
         cat > /etc/apt/sources.list <<EOF
 #Depots main restricted
 deb http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc) main restricted
@@ -398,13 +413,6 @@ deb http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc)-updates universe multiv
 deb-src http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc) universe multiverse
 deb-src http://security.ubuntu.com/ubuntu $(lsb_release -sc)-security universe multiverse
 deb-src http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc)-updates universe multiverse
-EOF
-    elif [ "$VER" = "14.04" ]; then
-        cat > /etc/apt/sources.list <<EOF
-#Depots main restricted
-deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main restricted universe multiverse
-deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc)-security main restricted universe multiverse
-deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc)-updates main restricted universe multiverse
 EOF
     fi
 fi
@@ -427,7 +435,6 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     apt-get -yqq upgrade
 fi
 
-
 #--- Install utility packages required by the installer and/or Sentora.
 echo -e "\n-- Downloading and installing required tools..."
 if [[ "$OS" = "CentOs" ]]; then
@@ -438,6 +445,25 @@ if [[ "$OS" = "CentOs" ]]; then
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER sudo vim make zip unzip git debconf-utils at build-essential bash-completion
 fi
+
+#: <<'TO_BE_CHECKED'
+#--- Prepare hostname
+old_hostname=$(cat /etc/hostname)
+# In file hostname
+echo "$PANEL_FQDN" /etc/hostnames
+
+# In file hosts
+sed -i "s|$old_hostname|$PANEL_FQDN|" /etc/hosts
+
+# For current session
+hostname "$PANEL_FQDN"
+
+# In network file
+if [[ "$OS" = "CentOs" && "$VER" = "6" ]]; then
+    sed -i "s|^\(HOSTNAME=\).*\$|HOSTNAME=$PANEL_FQDN|" /etc/sysconfig/network
+    /etc/init.d/network restart
+fi
+#TO_BE_CHECKED
 
 #--- Download Sentora archive from GitHub
 echo -e "\n-- Downloading Sentora, Please wait, this may take several minutes, the installer will continue after this is complete!"
@@ -499,7 +525,7 @@ passwordgen() {
     tr -dc A-Za-z0-9 < /dev/urandom | head -c ${l} | xargs
 }
 
-#Add first parameter in hosts file as local IP domain
+# Add first parameter in hosts file as local IP domain
 add_local_domain() {
     if ! grep -q "127.0.0.1 $1" /etc/hosts; then
         echo "127.0.0.1 $1" >> /etc/hosts;
@@ -513,7 +539,6 @@ if [[ "$OS" = "Ubuntu" ]]; then
     # Disable the DPKG prompts before we run the software install to enable fully automated install.
     export DEBIAN_FRONTEND=noninteractive
 fi
-
 
 #--- MySQL
 echo -e "\n-- Installing MySQL"
@@ -554,6 +579,15 @@ sed -i "s|\[mysqld\]|&\nsecure-file-priv = /var/tmp|" $MY_CNF_PATH
 # setup sentora access and core database
 sed -i "s|YOUR_ROOT_MYSQL_PASSWORD|$mysqlpassword|" $PANEL_PATH/panel/cnf/db.php
 mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_core.sql
+
+# Register mysql/mariadb service for autostart
+if [[ "$OS" = "CentOs" ]]; then
+    if [[ "$VER" == "7" ]]; then
+        systemctl enable "$DB_SERVICE".service
+    else
+        chkconfig "$DB_SERVICE" on
+    fi
+fi
 
 
 #--- Postfix
@@ -609,6 +643,17 @@ sed -i "s|!POS_GID!|$MAIL_GID|" $PANEL_CONF/postfix/main.cf
 sed -i '/virtual_mailbox_limit_maps/d' $PANEL_CONF/postfix/main.cf
 sed -i '/smtpd_bind_address/d' $PANEL_CONF/postfix/master.cf
 
+# Register postfix service for autostart (it is automatically started)
+if [[ "$OS" = "CentOs" ]]; then
+    if [[ "$VER" == "7" ]]; then
+        systemctl enable postfix.service
+        # systemctl start postfix.service
+    else
+        chkconfig postfix on
+        # /etc/init.d/postfix start
+    fi
+fi
+
 
 #--- Dovecot (includes Sieve)
 echo -e "\n-- Installing Dovecot"
@@ -638,6 +683,16 @@ touch /var/log/dovecot.log /var/log/dovecot-info.log /var/log/dovecot-debug.log
 chown vmail:mail /var/log/dovecot*
 chmod 660 /var/log/dovecot*
 
+# Register dovecot service for autostart and start it
+if [[ "$OS" = "CentOs" ]]; then
+    if [[ "$VER" == "7" ]]; then
+        systemctl enable dovecot.service
+        systemctl start dovecot.service
+    else
+        chkconfig postfix on
+        /etc/init.d/dovecot start
+    fi
+fi
 
 #--- Apache server
 echo -e "\n-- Installing and configuring Apache"
@@ -649,6 +704,15 @@ if [[ "$OS" = "CentOs" ]]; then
     HTTP_SERVICE="httpd"
     HTTP_USER="apache"
     HTTP_GROUP="apache"
+    if [[ "$VER" = "7" ]]; then
+        # Disable extra modules in centos 7
+        disable_file /etc/httpd/conf.modules.d/01-cgi.conf
+        disable_file /etc/httpd/conf.modules.d/00-lua.conf
+        disable_file /etc/httpd/conf.modules.d/00-dav.conf
+    else
+        disable_file /etc/httpd/conf.d/welcome.conf
+        disable_file /etc/httpd/conf.d/webalizer.conf
+    fi     
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER libapache2-mod-bw
     HTTP_CONF_PATH="/etc/apache2/apache2.conf"
@@ -689,10 +753,10 @@ if [[ "$OS" = "CentOs" ]]; then
     sed -i "s|DocumentRoot \"/var/www/html\"|DocumentRoot $PANEL_PATH/panel|" "$HTTP_CONF_PATH"
 elif [[ "$OS" = "Ubuntu" ]]; then
     # disable completely sites-enabled/000-default.conf
-    if [[ "$VER" = "12.04" ]]; then 
-        sed -i "s|Include sites-enabled|#&|" "$HTTP_CONF_PATH"
-    else
+    if [[ "$VER" = "14.04" ]]; then 
         sed -i "s|IncludeOptional sites-enabled|#&|" "$HTTP_CONF_PATH"
+    else
+        sed -i "s|Include sites-enabled|#&|" "$HTTP_CONF_PATH"
     fi
 fi
 
@@ -702,7 +766,7 @@ if [[ "$OS" = "CentOs" ]]; then
     sed -i 's|^\(Listen .*$\)|#\1\n# Listen is now handled in Sentora vhosts file|' "$HTTP_CONF_PATH"
 elif [[ "$OS" = "Ubuntu" ]]; then
     sed -i "s|\(Include ports.conf\)|#\1\n# Ports are now handled in Sentora vhosts file|" "$HTTP_CONF_PATH"
-    mv /etc/apache2/ports.conf /etc/apache2/ports.conf.removed_by_sentora
+    disable_file /etc/apache2/ports.conf
 fi
 
 # adjustments for apache 2.4
@@ -737,10 +801,10 @@ if [[ "$OS" = "CentOs" ]]; then
     PHP_EXT_PATH="/etc/php.d"
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER libapache2-mod-php5 php5-common php5-cli php5-mysql php5-gd php5-mcrypt php5-curl php-pear php5-imap php5-xmlrpc php5-xsl
-    if [ "$VER" = "12.04" ]; then
-        $PACKAGE_INSTALLER php5-suhosin
-    else
+    if [ "$VER" = "14.04" ]; then
         php5enmod mcrypt  # missing in the package for Ubuntu 14!
+    else
+        $PACKAGE_INSTALLER php5-suhosin
     fi
     PHP_INI_PATH="/etc/php5/apache2/php.ini"
 fi
@@ -754,8 +818,17 @@ mkdir "$PANEL_DATA/sessions"
 chown $HTTP_USER:$HTTP_GROUP "$PANEL_DATA/sessions"
 chmod 733 "$PANEL_DATA/sessions"
 chmod +t "$PANEL_DATA/sessions"
-sed -i "s|;session.save_path = \"/var/lib/php5\"|session.save_path = \"$PANEL_DATA/sessions\"|" $PHP_INI_PATH
 
+if [[ "$OS" = "CentOs" ]]; then
+    # Remove session & php values from apache that cause override
+    sed -i "/php_value/d" /etc/httpd/conf.d/php.conf
+elif [[ "$OS" = "Ubuntu" ]]; then
+    sed -i "s|;session.save_path = \"/var/lib/php5\"|session.save_path = \"$PANEL_DATA/sessions\"|" $PHP_INI_PATH
+fi
+sed -i "/php_value/d" $PHP_INI_PATH
+echo "session.save_path = $PANEL_DATA/sessions;">> $PHP_INI_PATH
+
+# setup timezone and upload temp dir
 sed -i "s|;date.timezone =|date.timezone = $tz|" $PHP_INI_PATH
 sed -i "s|;upload_tmp_dir =|upload_tmp_dir = $PANEL_DATA/temp/|" $PHP_INI_PATH
 
@@ -764,16 +837,16 @@ sed -i "s|expose_php = On|expose_php = Off|" $PHP_INI_PATH
 
 # Build suhosin for PHP 5.x which is required by Sentora. 
 if [[ "$OS" = "CentOs" || ( "$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then
-    echo -e "\n# Building suhosin for php5.4"
+    echo -e "\n# Building suhosin"
     if [[ "$OS" = "Ubuntu" ]]; then
         $PACKAGE_INSTALLER php5-dev
     fi
     git clone https://github.com/stefanesser/suhosin
     cd suhosin
-    phpize
-    ./configure
-    make
-    make install
+    phpize &> /dev/null
+    ./configure &> /dev/null
+    make &> /dev/null
+    make install 
     cd ..
     rm -rf suhosin
     if [[ "$OS" = "CentOs" ]]; then 
@@ -781,6 +854,17 @@ if [[ "$OS" = "CentOs" || ( "$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then
     elif [[ "$OS" = "Ubuntu" ]]; then
         sed -i 'N;/default extension directory./a\extension=suhosin.so' $PHP_INI_PATH
     fi	
+fi
+
+# Register apache(+php) service for autostart and start it
+if [[ "$OS" = "CentOs" ]]; then
+    if [[ "$VER" == "7" ]]; then
+        systemctl enable "$HTTP_SERVICE.service"
+        systemctl start "$HTTP_SERVICE.service"
+    else
+        chkconfig "$HTTP_SERVICE" on
+        "/etc/init.d/$HTTP_SERVICE" start
+    fi
 fi
 
 
@@ -812,11 +896,22 @@ sed -i "s|!SQL_MIN_ID!|$HTTP_UID|" $PANEL_CONF/proftpd/proftpd-mysql.conf
 
 # Setup proftpd base file to call sentora config
 rm -f "$FTP_CONF_PATH"
-touch "$FTP_CONF_PATH"
-echo "include $PANEL_CONF/proftpd/proftpd-mysql.conf" >> "$FTP_CONF_PATH";
+#touch "$FTP_CONF_PATH"
+#echo "include $PANEL_CONF/proftpd/proftpd-mysql.conf" >> "$FTP_CONF_PATH";
+ln -s "$PANEL_CONF/proftpd/proftpd-mysql.conf" "$FTP_CONF_PATH"
 
 chmod -R 644 $PANEL_DATA/logs/proftpd
 
+# Register proftpd service for autostart and start it
+if [[ "$OS" = "CentOs" ]]; then
+    if [[ "$VER" == "7" ]]; then
+        systemctl enable proftpd.service
+        systemctl start proftpd.service
+    else
+        chkconfig proftpd on
+        /etc/init.d/proftpd start
+    fi
+fi
 
 #--- BIND
 echo -e "\n-- Installing and configuring Bind"
@@ -872,8 +967,19 @@ cat $BIND_FILES/rndc.key $PANEL_CONF/bind/named.conf > $BIND_FILES/named.conf
 cat $BIND_FILES/rndc.key $PANEL_CONF/bind/rndc.conf > $BIND_FILES/rndc.conf
 rm -f $BIND_FILES/rndc.key
 
+# Register Bind service for autostart and start it
+if [[ "$OS" = "CentOs" ]]; then
+    if [[ "$VER" == "7" ]]; then
+        systemctl enable named.service
+        systemctl start named.service
+    else
+        chkconfig named on
+        /etc/init.d/named start
+    fi
+fi
 
-#--- CRON
+
+#--- CRON and ATD
 echo -e "\n-- Installing and configuring cron tasks"
 if [[ "$OS" = "CentOs" ]]; then
     #cronie & crontabs may be missing
@@ -898,7 +1004,6 @@ mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value
 mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$CRON_FILE' WHERE so_name_vc='cron_reload_path'"
 mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$CRON_USER' WHERE so_name_vc='cron_reload_user'"
 {
-    crontab -l -u $HTTP_USER
     echo "SHELL=/bin/bash"
     echo "PATH=/sbin:/bin:/usr/sbin:/usr/bin"
     echo ""
@@ -909,6 +1014,20 @@ rm -f mycron
 chmod 744 "$CRON_DIR"
 chown -R $HTTP_USER:$HTTP_USER "$CRON_DIR"
 chmod 644 "$CRON_FILE"
+
+# Register cron and atd services for autostart and start them
+if [[ "$OS" = "CentOs" ]]; then
+    if [[ "$VER" == "7" ]]; then
+        systemctl enable crond.service
+        systemctl start crond.service
+        systemctl start atd.service
+    else
+        chkconfig crond on
+        /etc/init.d/crond start
+        /etc/init.d/atd start
+    fi
+fi
+
 
 #--- phpMyAdmin
 echo -e "\n-- Configuring phpMyAdmin"
@@ -956,35 +1075,12 @@ php -q $PANEL_PATH/panel/bin/daemon.php
 #--- Firewall ?
 
 
-#--- Enable system services and start/restart them as required.
-echo -e "\n-- Starting/restarting services"
-if [[ "$OS" = "CentOs" && "$VER" == "7" ]]; then
-    # CentOs7 does not return anything except redirection to systemctl :-(
-    chkconfig() {
-       echo "Enabling $1"
-       systemctl enable "$1.service"
-    }
-chkconfig $HTTP_SERVICE on
-chkconfig postfix on
-chkconfig dovecot on
-chkconfig crond on
-chkconfig $DB_SERVICE on
-chkconfig named on
-chkconfig proftpd on
-
-# These service are not started by their installer
-service $HTTP_SERVICE start
-service dovecot start
-service proftpd start
-service atd start
-fi
-  
-# Restart all services to capture output messages, if any
+#--- Restart all services to capture output messages, if any
 if [[ "$OS" = "CentOs" && "$VER" == "7" ]]; then
     # CentOs7 does not return anything except redirection to systemctl :-(
     service() {
        echo "Restarting $1"
-       systemctl "$2" "$1.service"
+       systemctl restart "$1.service"
     }
 fi
 
