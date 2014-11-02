@@ -25,7 +25,7 @@
 #  all those who participated to this and to previous installers.
 #  Thanks to all.
 
-SENTORA_INSTALLER_VERSION="1.0.0-beta6"
+SENTORA_INSTALLER_VERSION="1.0.0-beta7"
 SENTORA_CORE_VERSION="1.0.0-beta8"
 SENTORA_PRECONF_VERSION="1.0.0-beta3"
 
@@ -317,7 +317,11 @@ fi
 echo -e "\n-- Updating repositories and packages sources"
 if [[ "$OS" = "CentOs" ]]; then
     #EPEL Repo Install
-    EPEL_BASE_URL="http://dl.fedoraproject.org/pub/epel/$VER/$(arch)";
+    archi="$BIT"
+    if [[ "$archi" != "x86_64" ]]; then
+        archi="i386"
+    fi
+    EPEL_BASE_URL="http://dl.fedoraproject.org/pub/epel/$VER/$archi";
     if  [[ "$VER" = "7" ]]; then
         EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL/e/" | grep -oP '(?<=href=")epel-release.*(?=">)')
         wget "$EPEL_BASE_URL/e/$EPEL_FILE"
@@ -335,8 +339,8 @@ if [[ "$OS" = "CentOs" ]]; then
 
     #check if the machine and on openvz
     if [ -f "/etc/yum.repos.d/vz.repo" ]; then
-        sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/centos-6|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/6/$BITS/os/|" "/etc/yum.repos.d/vz.repo"
-        sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/updates-released-ce6|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/6/$BITS/updates/|" "/etc/yum.repos.d/vz.repo"
+        sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/centos-$VER|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/$VER/$archi/os/|" "/etc/yum.repos.d/vz.repo"
+        sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/updates-released-ce$VER|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/$VER/$archi/updates/|" "/etc/yum.repos.d/vz.repo"
     fi
 
     #disable deposits that could result in installation errors
@@ -689,7 +693,7 @@ if [[ "$OS" = "CentOs" ]]; then
         systemctl enable dovecot.service
         systemctl start dovecot.service
     else
-        chkconfig postfix on
+        chkconfig dovecot on
         /etc/init.d/dovecot start
     fi
 fi
