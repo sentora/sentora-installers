@@ -201,24 +201,24 @@ clear
 if [[ "$PANEL_FQDN" == "" ]] ; then
     echo -e "\n\e[1;33m=== Informations required to build your server ===\e[0m"
     echo 'The installer requires 2 pieces of information:'
-    echo ' 1) the sub-domain that you want to use to access to Sentora panel,'
-    echo '   - do not use your main domain (like domain.com)'
-    echo '   - use a sub-domain, e.g panel.domain.com'
-    echo '   - or use the server hostname, e.g server1.domain.com'
-    echo '   - DNS must already be configured and pointing to the server IP'
+    echo ' 1) The sub-domain that you want to use to access Sentora panel login,'
+    echo '   - do not use a main domain (e.g. domain.com)'
+    echo '   - use a sub-domain - a.k.a. FQDN (e.g. panel.domain.com)'
+    echo '   - or use the server hostname (e.g. server1.domain.com)'
+    echo '   - DNS MUST already be configured and pointing to the server IP'
     echo '       for this sub-domain'
-    echo ' 2) the public IP of the server.'
+    echo ' 2) The public IP of the server.'
     echo ''
 
     PANEL_FQDN="$(/bin/hostname)"
     PUBLIC_IP=$extern_ip
     while true; do
         echo ""
-        read -e -p "Enter the FQDN to be used to access Sentora panel: " -i "$PANEL_FQDN" PANEL_FQDN
+        read -e -p "Enter the FQDN to be used to access Sentora panel login: " -i "$PANEL_FQDN" PANEL_FQDN
 
         if [[ "$PUBLIC_IP" != "$local_ip" ]]; then
           echo -e "\nThe public IP of the server is $PUBLIC_IP. Its local IP is $local_ip"
-          echo "  For production server, the PUBLIC IP must be used."
+          echo "  For a production server, the PUBLIC IP must be used."
         fi  
         read -e -p "Enter (or confirm) the public IP for this server: " -i "$PUBLIC_IP" PUBLIC_IP
         echo ""
@@ -234,8 +234,8 @@ if [[ "$PANEL_FQDN" == "" ]] ; then
         dns_panel_ip=$(host "$PANEL_FQDN"|grep address|cut -d" " -f4)
         if [[ "$dns_panel_ip" == "" ]]; then
             echo -e "\e[1;31mWARNING: $PANEL_FQDN is not defined in your DNS!\e[0m"
-            echo "  You must add record in your DNS manager (and then wait until propagation is done)."
-            echo "  For more information, read Sentora documentation:"
+            echo "  You must add records in your DNS manager (and then wait until propagation is done)."
+            echo "  For more information, read the Sentora documentation:"
             echo "   - http://docs.sentora.org/index.php?node=7 (Installing Sentora)"
             echo "   - http://docs.sentora.org/index.php?node=51 (Installer questions)"
             echo "  If this is a production installation, set the DNS up as soon as possible."
@@ -269,7 +269,7 @@ if [[ "$PANEL_FQDN" == "" ]] ; then
                 [Qq]* ) exit;;
             esac
         else
-            read -e -p "All is ok, do you want to install Sentora (y/n)? " yn
+            read -e -p "All is ok. Do you want to install Sentora now (y/n)? " yn
             case $yn in
                 [Yy]* ) break;;
                 [Nn]* ) exit;;
