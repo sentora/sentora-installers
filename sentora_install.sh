@@ -262,7 +262,7 @@ if [[ "$PANEL_FQDN" == "" ]] ; then
         if [[ "$confirm" != "" ]] ; then
             echo "There are some warnings..."
             echo "Are you really sure that you want to setup Sentora with these parameters?"
-            read -e -p "(y):accept and install, (n):change fqdn or ip, (q):quit installer? " yn
+            read -e -p "(y):Accept and install, (n):Change FQDN or IP, (q):Quit installer? " yn
             case $yn in
                 [Yy]* ) break;;
                 [Nn]* ) continue;;
