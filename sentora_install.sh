@@ -16,7 +16,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-#  OS VERSION supported: CentOS 6.*/7.* Minimal, Ubuntu 12.04/14.04 
+# Supported Operating Systems: CentOS 6.*/7.* Minimal, Ubuntu server 12.04/14.04 
 #  32bit and 64bit
 #
 #  Author Pascal Peyremorte (ppeyremorte@sentora.org)
@@ -25,8 +25,8 @@
 #  all those who participated to this and to previous installers.
 #  Thanks to all.
 
-SENTORA_INSTALLER_VERSION="1.0.0-beta7"
-SENTORA_CORE_VERSION="1.0.0-beta8"
+SENTORA_INSTALLER_VERSION="1.0.0-beta8"
+SENTORA_CORE_VERSION="1.0.0-beta9"
 SENTORA_PRECONF_VERSION="1.0.0-beta3"
 
 PANEL_PATH="/etc/sentora"
@@ -52,15 +52,31 @@ else
     OS=$(uname -s)
     VER=$(uname -r)
 fi
-#BITS=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
-BITS=$(uname -m)
-echo "Detected : $OS  $VER  $BITS"
+ARCH=$(uname -m)
+
+echo "Detected : $OS  $VER  $ARCH"
 
 if [[ "$OS" = "CentOs" && ("$VER" = "6" || "$VER" = "7" ) || 
       "$OS" = "Ubuntu" && ("$VER" = "12.04" || "$VER" = "14.04" ) ]] ; then 
     echo "Ok."
 else
     echo "Sorry, this OS is not supported by Sentora." 
+    exit 1
+fi
+
+if [[ "$ARCH" == "i386" || "$ARCH" == "i486" || "$ARCH" == "i586" || "$ARCH" == "i686" ]]; then
+    ARCH="i386"
+elif [[ "$ARCH" != "x86_64" ]]; then
+    echo "Unexpected architecture name was returned ($ARCH ). :-("
+    echo "The installer have been designed for i[3-6]8- and x86_6' architectures. If you"
+    echo " think it may work on your, please report it to the Sentora forum or bugtracker."
+    exit 1
+fi
+
+# Check if the user is 'root' before allowing installation to commence
+if [ $UID -ne 0 ]; then
+    echo "Install failed: you must be logged in as 'root' to install."
+    echo "Use command 'sudo -i', then enter root password and then try again."
     exit 1
 fi
 
@@ -87,16 +103,9 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     BIND_PCKG="bind9"
 fi
   
-# Check if the user is 'root' before allowing installation to commence
-if [ $UID -ne 0 ]; then
-    echo "Install failed: you must be logged in as 'root' to install."
-    echo "Use command 'sudo -i', then enter root password and then try again."
-    exit 1
-fi
-
 # Check for some common control panels that we know will affect the installation/operating of Sentora.
 if [ -e /usr/local/cpanel ] || [ -e /usr/local/directadmin ] || [ -e /usr/local/solusvm/www ] || [ -e /usr/local/home/admispconfig ] || [ -e /usr/local/lxlabs/kloxo ] ; then
-    echo "It appears that a control panel is already installed on your server; This installer "
+    echo "It appears that a control panel is already installed on your server; This installer"
     echo "is designed to install and configure Sentora on a clean OS installation only."
     echo -e "\nPlease re-install your OS before attempting to install using this script."
     exit 1
@@ -201,7 +210,7 @@ clear
 if [[ "$PANEL_FQDN" == "" ]] ; then
     echo -e "\n\e[1;33m=== Informations required to build your server ===\e[0m"
     echo 'The installer requires 2 pieces of information:'
-    echo ' 1) the sub-domain that you want to use to access to Sentora panel,'
+    echo ' 1) the sub-domain that you want to use to access Sentora panel,'
     echo '   - do not use your main domain (like domain.com)'
     echo '   - use a sub-domain, e.g panel.domain.com'
     echo '   - or use the server hostname, e.g server1.domain.com'
@@ -214,7 +223,7 @@ if [[ "$PANEL_FQDN" == "" ]] ; then
     PUBLIC_IP=$extern_ip
     while true; do
         echo ""
-        read -e -p "Enter the FQDN to be used to access Sentora panel: " -i "$PANEL_FQDN" PANEL_FQDN
+        read -e -p "Enter the sub-domain you want to access Sentora panel: " -i "$PANEL_FQDN" PANEL_FQDN
 
         if [[ "$PUBLIC_IP" != "$local_ip" ]]; then
           echo -e "\nThe public IP of the server is $PUBLIC_IP. Its local IP is $local_ip"
@@ -245,7 +254,7 @@ if [[ "$PANEL_FQDN" == "" ]] ; then
 
             # Check if panel domain matches public IP
             if [[ "$dns_panel_ip" != "$PUBLIC_IP" ]]; then
-                echo -e -n "\e[1;31mWARNING: $PANEL_FQDN DNS does not point to $PUBLIC_IP!\e[0m"
+                echo -e -n "\e[1;31mWARNING: $PANEL_FQDN DNS record does not point to $PUBLIC_IP!\e[0m"
                 echo "  Sentora will not be reachable from http://$PANEL_FQDN"
                 confirm="true"
             fi
@@ -262,7 +271,7 @@ if [[ "$PANEL_FQDN" == "" ]] ; then
         if [[ "$confirm" != "" ]] ; then
             echo "There are some warnings..."
             echo "Are you really sure that you want to setup Sentora with these parameters?"
-            read -e -p "(y):accept and install, (n):change fqdn or ip, (q):quit installer? " yn
+            read -e -p "(a):Accept and install, (c):Change domain or IP, (q):Quit installer? " yn
             case $yn in
                 [Yy]* ) break;;
                 [Nn]* ) continue;;
@@ -292,7 +301,7 @@ echo "Sentora core version $SENTORA_CORE_VERSION"
 echo "Sentora preconf version $SENTORA_PRECONF_VERSION"
 echo ""
 echo "Installing Sentora $SENTORA_CORE_VERSION at http://$PANEL_FQDN and ip $PUBLIC_IP"
-echo "on server under: $OS  $VER  $BITS"
+echo "on server under: $OS  $VER  $ARCH"
 uname -a
 
 # Function to disable a file by appending its name with _disabled
@@ -317,11 +326,7 @@ fi
 echo -e "\n-- Updating repositories and packages sources"
 if [[ "$OS" = "CentOs" ]]; then
     #EPEL Repo Install
-    archi="$BIT"
-    if [[ "$archi" != "x86_64" ]]; then
-        archi="i386"
-    fi
-    EPEL_BASE_URL="http://dl.fedoraproject.org/pub/epel/$VER/$archi";
+    EPEL_BASE_URL="http://dl.fedoraproject.org/pub/epel/$VER/$ARCH";
     if  [[ "$VER" = "7" ]]; then
         EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL/e/" | grep -oP '(?<=href=")epel-release.*(?=">)')
         wget "$EPEL_BASE_URL/e/$EPEL_FILE"
@@ -339,8 +344,8 @@ if [[ "$OS" = "CentOs" ]]; then
 
     #check if the machine and on openvz
     if [ -f "/etc/yum.repos.d/vz.repo" ]; then
-        sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/centos-$VER|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/$VER/$archi/os/|" "/etc/yum.repos.d/vz.repo"
-        sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/updates-released-ce$VER|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/$VER/$archi/updates/|" "/etc/yum.repos.d/vz.repo"
+        sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/centos-$VER|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/$VER/$ARCH/os/|" "/etc/yum.repos.d/vz.repo"
+        sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/updates-released-ce$VER|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/$VER/$ARCH/updates/|" "/etc/yum.repos.d/vz.repo"
     fi
 
     #disable deposits that could result in installation errors
@@ -442,12 +447,12 @@ fi
 #--- Install utility packages required by the installer and/or Sentora.
 echo -e "\n-- Downloading and installing required tools..."
 if [[ "$OS" = "CentOs" ]]; then
-    $PACKAGE_INSTALLER sudo vim make zip unzip git chkconfig bash-completion
+    $PACKAGE_INSTALLER sudo vim make zip unzip chkconfig bash-completion
     $PACKAGE_INSTALLER ld-linux.so.2 libbz2.so.1 libdb-4.7.so libgd.so.2 
     $PACKAGE_INSTALLER curl curl-devel perl-libwww-perl libxml2 libxml2-devel zip bzip2-devel gcc gcc-c++ at make
     $PACKAGE_INSTALLER redhat-lsb-core
 elif [[ "$OS" = "Ubuntu" ]]; then
-    $PACKAGE_INSTALLER sudo vim make zip unzip git debconf-utils at build-essential bash-completion
+    $PACKAGE_INSTALLER sudo vim make zip unzip debconf-utils at build-essential bash-completion
 fi
 
 #: <<'TO_BE_CHECKED'
@@ -845,14 +850,16 @@ if [[ "$OS" = "CentOs" || ( "$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then
     if [[ "$OS" = "Ubuntu" ]]; then
         $PACKAGE_INSTALLER php5-dev
     fi
-    git clone https://github.com/stefanesser/suhosin
-    cd suhosin
+    wget -nv -O suhosin.zip https://github.com/stefanesser/suhosin/archive/suhosin-0.9.36.zip
+    unzip -q suhosin.zip
+    rm -f suhosin.zip
+    cd suhosin-suhosin-0.9.36
     phpize &> /dev/null
     ./configure &> /dev/null
     make &> /dev/null
     make install 
     cd ..
-    rm -rf suhosin
+    rm -rf suhosin-suhosin-0.9.36
     if [[ "$OS" = "CentOs" ]]; then 
         echo 'extension=suhosin.so' > $PHP_EXT_PATH/suhosin.ini
     elif [[ "$OS" = "Ubuntu" ]]; then
