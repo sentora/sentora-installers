@@ -72,7 +72,7 @@ The other way in which you can contribute is to become an 'community maintainer'
 
 In most cases you'll simply be able to copy and paste our official installer and upgrade scripts and just make the required OS/distribution specific changes such as file/directory paths and operating system/distribution specific package configuration amendments.
 
-If you are interested in becoming an community maintainer please email [ballen@sentora.io](mailto:ballen@sentora.io) stating your interest in becoming a community maintainer and the OS/distribution that you wish to maintain.
+If you are interested in becoming an community maintainer please email [info@sentora.org](mailto:info@sentora.org) stating your interest in becoming a community maintainer and the OS/distribution that you wish to maintain.
 
 Please be aware that community supported install and upgrade scripts that we will host and promote must adhere to the following rules:
 
