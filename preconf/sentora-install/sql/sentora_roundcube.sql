@@ -5,6 +5,8 @@
 
 CREATE SCHEMA IF NOT EXISTS `sentora_roundcube`;
 USE sentora_roundcube;
+CREATE USER roundcube@localhost IDENTIFIED BY 'roundcube';
+GRANT ALL PRIVILEGES ON sentora_roundcube . * TO roundcube@localhost;
 
 -- Table structure for table `session`
 

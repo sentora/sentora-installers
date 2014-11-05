@@ -455,13 +455,13 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER sudo vim make zip unzip debconf-utils at build-essential bash-completion
 fi
 
-#: <<'TO_BE_CHECKED'
 #--- Prepare hostname
 old_hostname=$(cat /etc/hostname)
 # In file hostname
-echo "$PANEL_FQDN" /etc/hostnames
+echo "$PANEL_FQDN" > /etc/hostname
 
 # In file hosts
+sed -i "/127.0.1.1[\t ]*$old_hostname/d" /etc/hosts
 sed -i "s|$old_hostname|$PANEL_FQDN|" /etc/hosts
 
 # For current session
@@ -472,7 +472,6 @@ if [[ "$OS" = "CentOs" && "$VER" = "6" ]]; then
     sed -i "s|^\(HOSTNAME=\).*\$|HOSTNAME=$PANEL_FQDN|" /etc/sysconfig/network
     /etc/init.d/network restart
 fi
-#TO_BE_CHECKED
 
 #--- Download Sentora archive from GitHub
 echo -e "\n-- Downloading Sentora, Please wait, this may take several minutes, the installer will continue after this is complete!"
@@ -1052,15 +1051,25 @@ rm -rf $PANEL_PATH/panel/etc/apps/phpmyadmin/setup
 
 #--- Roundcube
 echo -e "\n-- Configuring Roundcube"
-roundcube_des_key=$(passwordgen 24);
+
+# Import roundcube default table
 mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_roundcube.sql
-sed -i "s|YOUR_MYSQL_ROOT_PASSWORD|$mysqlpassword|" $PANEL_CONF/roundcube/db.inc.php
-sed -i "s|#||" $PANEL_CONF/roundcube/db.inc.php
-sed -i "s|rcmail-!24ByteDESkey\*Str|$roundcube_des_key|" $PANEL_CONF/roundcube/main.inc.php
+
+# Create and configure mysql password for roundcube
+roundcubepassword=$(passwordgen);
+sed -i "s|!ROUNDCUBE_PASSWORD!|$roundcubepassword|" $PANEL_CONF/roundcube/db.inc.php
+mysql -u root -p"$mysqlpassword" -e "UPDATE mysql.user SET Password=PASSWORD('$roundcubepassword') WHERE User='roundcube' AND Host='localhost'";
+
+# Create and configure des key
+roundcube_des_key=$(passwordgen 24);
+sed -i "s|!ROUNDCUBE_DESKEY!|$roundcube_des_key|" $PANEL_CONF/roundcube/main.inc.php
+
+# Map config file in roundcube with symbolic links
 rm -rf $PANEL_PATH/panel/etc/apps/webmail/config/main.inc.php
 ln -s $PANEL_CONF/roundcube/main.inc.php $PANEL_PATH/panel/etc/apps/webmail/config/main.inc.php
 ln -s $PANEL_CONF/roundcube/config.inc.php $PANEL_PATH/panel/etc/apps/webmail/plugins/managesieve/config.inc.php
 ln -s $PANEL_CONF/roundcube/db.inc.php $PANEL_PATH/panel/etc/apps/webmail/config/db.inc.php
+
 
 #--- Webalizer
 echo -e "\n-- Configuring Webalizer"
@@ -1106,32 +1115,35 @@ service atd restart
 
 #--- Store the passwords for user reference
 {
-    echo "Server IP address      : $PUBLIC_IP"
-    echo "Panel URL              : http://$PANEL_FQDN"
-    echo "zadmin Password        : $zadminpassword"
+    echo "Server IP address : $PUBLIC_IP"
+    echo "Panel URL         : http://$PANEL_FQDN"
+    echo "zadmin Password   : $zadminpassword"
     echo ""
-    echo "MySQL Root Password    : $mysqlpassword"
-    echo "MySQL Postfix Password : $postfixpassword"
-    echo "MySQL ProFTPd Password : $proftpdpassword"
+    echo "MySQL Root Password      : $mysqlpassword"
+    echo "MySQL Postfix Password   : $postfixpassword"
+    echo "MySQL ProFTPd Password   : $proftpdpassword"
+    echo "MySQL Roundcube Password : $roundcubepassword"
 } >> /root/passwords.txt
 
 #--- Advise the admin that Sentora is now installed and accessible.
-echo "#########################################################" &>/dev/tty
-echo " Congratulations Sentora has now been installed on your"   &>/dev/tty
-echo " server. Please review the log file left in /root/ for "   &>/dev/tty
-echo " any errors encountered during installation."              &>/dev/tty
-echo ""                                                          &>/dev/tty
-echo " Login to Sentora at http://$PANEL_FQDN"                   &>/dev/tty
-echo " Sentora Username       : zadmin"                          &>/dev/tty
-echo " Sentora Password       : $zadminpassword"                 &>/dev/tty
-echo ""                                                          &>/dev/tty
-echo " MySQL Root Password    : $mysqlpassword"                  &>/dev/tty
-echo " MySQL Postfix Password : $postfixpassword"                &>/dev/tty
-echo " MySQL ProFTPd Password : $proftpdpassword"                &>/dev/tty
-echo "   (theses passwords are saved in /root/passwords.txt)"    &>/dev/tty
-echo ""                                                          &>/dev/tty
-echo "#########################################################" &>/dev/tty
-echo "" &>/dev/tty
+{
+echo "########################################################"
+echo " Congratulations Sentora has now been installed on your"
+echo " server. Please review the log file left in /root/ for "
+echo " any errors encountered during installation."
+echo ""
+echo " Login to Sentora at http://$PANEL_FQDN"
+echo " Sentora Username  : zadmin"
+echo " Sentora Password  : $zadminpassword"
+echo ""
+echo " MySQL Root Password      : $mysqlpassword"
+echo " MySQL Postfix Password   : $postfixpassword"
+echo " MySQL ProFTPd Password   : $proftpdpassword"
+echo " MySQL Roundcube Password : $roundcubepassword"
+echo "   (theses passwords are saved in /root/passwords.txt)"
+echo "########################################################"
+echo ""
+} &>/dev/tty
 
 # Wait until the user have read before restarts the server...
 if [[ "$INSTALL" != "auto" ]] ; then

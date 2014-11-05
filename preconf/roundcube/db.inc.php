@@ -1,7 +1,6 @@
 <?php
-
 $rcmail_config = array();
-$rcmail_config['db_dsnw'] = 'mysql://root:YOUR_MYSQL_ROOT_PASSWORD@localhost/sentora_roundcube';
+$rcmail_config['db_dsnw'] = 'mysql://roundcube:!ROUNDCUBE_PASSWORD!@localhost/sentora_roundcube';
 $rcmail_config['db_dsnr'] = '';
 $rcmail_config['db_max_length'] = 512000;
 $rcmail_config['db_persistent'] = FALSE;
