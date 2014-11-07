@@ -25,9 +25,9 @@
 #  all those who participated to this and to previous installers.
 #  Thanks to all.
 
-SENTORA_INSTALLER_VERSION="1.0.0-beta8"
-SENTORA_CORE_VERSION="1.0.0-beta9"
-SENTORA_PRECONF_VERSION="1.0.0-beta3"
+SENTORA_INSTALLER_VERSION="1.0.0-beta9"
+SENTORA_CORE_VERSION="1.0.0-beta10"
+SENTORA_PRECONF_VERSION="1.0.0-beta9"
 
 PANEL_PATH="/etc/sentora"
 PANEL_DATA="/var/sentora"
@@ -912,6 +912,12 @@ ln -s "$PANEL_CONF/proftpd/proftpd-mysql.conf" "$FTP_CONF_PATH"
 
 chmod -R 644 $PANEL_DATA/logs/proftpd
 
+# Correct bug from package in Ubutu14.04 which screw service proftpd restart
+# see https://bugs.launchpad.net/ubuntu/+source/proftpd-dfsg/+bug/1246245
+if [[ "$OS" = "Ubuntu" && "$VER" = "14.04" ]]; then
+   sed -i 's|\([ \t]*start-stop-daemon --stop --signal $SIGNAL \)\(--quiet --pidfile "$PIDFILE"\)$|\1--retry 1 \2|' /etc/init.d/proftpd
+fi
+
 # Register proftpd service for autostart and start it
 if [[ "$OS" = "CentOs" ]]; then
     if [[ "$VER" == "7" ]]; then
@@ -1088,9 +1094,15 @@ setzadmin --set "$zadminpassword";
 $PANEL_PATH/panel/bin/setso --set sentora_domain "$PANEL_FQDN"
 $PANEL_PATH/panel/bin/setso --set server_ip "$PUBLIC_IP"
 
+# if not release, set beta version in database
+if [[ $(echo "$SENTORA_CORE_VERSION" | sed  's|.*-\(beta\).$|\1|') = "beta"  ]] ; then
+    $PANEL_PATH/panel/bin/setso --set dbversion "$SENTORA_CORE_VERSION"
+fi
+
 # make the daemon to build vhosts file.
 $PANEL_PATH/panel/bin/setso --set apache_changed "true"
 php -q $PANEL_PATH/panel/bin/daemon.php
+
 
 #--- Firewall ?
 

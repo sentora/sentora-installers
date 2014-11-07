@@ -191,7 +191,7 @@ CREATE TABLE IF NOT EXISTS `sentora_core`.`x_dns_create` (
   `dc_type_vc` varchar(50) DEFAULT NULL,
   `dc_host_vc` varchar(100) DEFAULT NULL,
   `dc_ttl_in` int(30) DEFAULT NULL,
-  `dc_target_vc` varchar(100) DEFAULT NULL,
+  `dc_target_vc` varchar(255) DEFAULT NULL,
   `dc_priority_in` int(50) DEFAULT NULL,
   `dc_weight_in` int(50) DEFAULT NULL,
   `dc_port_in` int(50) DEFAULT NULL,
