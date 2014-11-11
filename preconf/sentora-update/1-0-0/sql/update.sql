@@ -57,5 +57,8 @@ UPDATE  `x_translations` SET `tr_en_tx` = 'SRV records can be used to encode the
 UPDATE  `x_translations` SET `tr_en_tx` = 'SPF records is used to store Sender Policy Framework details. Its target is a text string, e.g.<br>''v=spf1 a:192.168.1.1 include:example.com mx ptr -all'' (Click <a href="http://www.microsoft.com/mscorp/safety/content/technologies/senderid/wizard/" target="_blank">HERE</a> for the Microsoft SPF Wizard.)' WHERE `tr_en_tx` = 'SPF records is used to store Sender Policy Framework details. It''s target is a text string, e.g.<br>''v=spf1 a:192.168.1.1 include:example.com mx ptr -all'' (Click <a href="http://www.microsoft.com/mscorp/safety/content/technologies/senderid/wizard/" target="_blank">HERE</a> for the Microsoft SPF Wizard.)';
 UPDATE  `x_translations` SET `tr_en_tx` = 'Nameserver record. Specifies nameservers for a domain. Its target is a fully qualified domain name, e.g. ''ns1.example.com''. The records should match what the domain name has registered with the internet root servers.' WHERE `tr_en_tx` = 'Nameserver record. Specifies nameservers for a domain. It''s target is a fully qualified domain name, e.g. ''ns1.example.com''. The records should match what the domain name has registered with the internet root servers.';
 
-/** Removal of Perl/CGI support - Issue #47 (https://github.com/sentora/sentora-core/issues/74) */
+/* Removal of Perl/CGI support - Issue #47 (https://github.com/sentora/sentora-core/issues/74) */
 ALTER TABLE `x_packages` DROP `pk_enablecgi_in`;
+
+/* Disable user editing of the 'Icons per row' option in the Sentora Config in a bid to phase this out (depricated feature) */
+UPDATE `x_settings` SET `so_usereditable_en` = 'false' WHERE `so_name_vc` = 'module_icons_pr';
