@@ -78,7 +78,7 @@ Vagrant.configure("2") do |config|
         destination: "/tmp/"
 
       conf.vm.provision "shell",
-        inline: "chmod +x /tmp/install/sentora_install.sh && /tmp/install/sentora_install.sh -d panel.domain.com -i #{v[:ip]} -t America/New_York && rm -r /tmp/install"
+        inline: "chmod +x /tmp/install/install.sh && /tmp/install/install.sh -d panel.domain.com -i #{v[:ip]} -t America/New_York && rm -r /tmp/install"
     end
   end
 end
