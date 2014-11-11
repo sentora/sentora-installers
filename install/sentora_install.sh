@@ -1054,7 +1054,6 @@ ln -s $PANEL_CONF/phpmyadmin/config.inc.php $PANEL_PATH/panel/etc/apps/phpmyadmi
 # Remove phpMyAdmin's setup folder in case it was left behind
 rm -rf $PANEL_PATH/panel/etc/apps/phpmyadmin/setup
 
-
 #--- Roundcube
 echo -e "\n-- Configuring Roundcube"
 
