@@ -486,7 +486,6 @@ CREATE TABLE `x_packages` (
   `pk_name_vc` varchar(30) CHARACTER SET latin1 COLLATE latin1_general_ci DEFAULT NULL,
   `pk_reseller_fk` int(6) DEFAULT NULL,
   `pk_enablephp_in` int(1) DEFAULT '0',
-  `pk_enablecgi_in` int(1) DEFAULT '0',
   `pk_created_ts` int(30) DEFAULT NULL,
   `pk_deleted_ts` int(30) DEFAULT NULL,
   PRIMARY KEY (`pk_id_pk`)
@@ -494,8 +493,8 @@ CREATE TABLE `x_packages` (
 
 /*Data for the table `x_packages` */
 
-insert  into `x_packages`(`pk_id_pk`,`pk_name_vc`,`pk_reseller_fk`,`pk_enablephp_in`,`pk_enablecgi_in`,`pk_created_ts`,`pk_deleted_ts`) values (1,'Administration',1,1,1,NULL,NULL);
-insert  into `x_packages`(`pk_id_pk`,`pk_name_vc`,`pk_reseller_fk`,`pk_enablephp_in`,`pk_enablecgi_in`,`pk_created_ts`,`pk_deleted_ts`) values (2,'Demo',1,0,0,NULL,NULL);
+insert  into `x_packages`(`pk_id_pk`,`pk_name_vc`,`pk_reseller_fk`,`pk_enablephp_in`,`pk_created_ts`,`pk_deleted_ts`) values (1,'Administration',1,1,NULL,NULL);
+insert  into `x_packages`(`pk_id_pk`,`pk_name_vc`,`pk_reseller_fk`,`pk_enablephp_in`,`pk_created_ts`,`pk_deleted_ts`) values (2,'Demo',1,0,NULL,NULL);
 
 /*Table structure for table `x_permissions` */
 
