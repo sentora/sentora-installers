@@ -4,29 +4,29 @@ PANEL_NAME = "zpanel"
 Vagrant.configure("2") do |config|
 
 	# mount install scripts
-	config.vm.synced_folder "./install/", "/root/sentora/install/",
+	config.vm.synced_folder ".", "/root/sentora/install/",
         	:owner =>"root", :group => "root", :mount_options => ['dmode=777,fmode=777']
 	# mount uninstall scripts
-	config.vm.synced_folder "./uninstall/", "/root/sentora/uninstall/",
+	config.vm.synced_folder "uninstall/", "/root/sentora/uninstall/",
         	:owner =>"root", :group => "root", :mount_options => ['dmode=777,fmode=777']
 	# mount upgrade scripts
-	config.vm.synced_folder "./upgrade/", "/root/sentora/upgrade/",
-        	:owner =>"root", :group => "root", :mount_options => ['dmode=777,fmode=777']
+	#config.vm.synced_folder "upgrade/", "/root/sentora/upgrade/",
+        	#:owner =>"root", :group => "root", :mount_options => ['dmode=777,fmode=777']
 	
 
     # Mount Development Folders
     #ETC apache
-    config.vm.synced_folder "./Dev/Etc/apache2/", "/etc/apache2/",
+    config.vm.synced_folder "preconf/apache", "/etc/apache2/",
             	:owner =>"root", :group => "root", :mount_options => ['dmode=777,fmode=777']
     #ETC dovecot
-    config.vm.synced_folder "./Dev/Etc/dovecot/", "/etc/dovecot/",
+    config.vm.synced_folder "preconf/dovecot2", "/etc/dovecot/",
                	:owner =>"root", :group => "root", :mount_options => ['dmode=777,fmode=777']
     #ETC proftpd
-    config.vm.synced_folder "./Dev/Etc/proftpd/", "/etc/proftpd/",
+    config.vm.synced_folder "preconf/proftpd", "/etc/proftpd/",
                 :owner =>"root", :group => "root", :mount_options => ['dmode=777,fmode=777']
     #ETC panel
-    config.vm.synced_folder "./Dev/Etc/#{PANEL_NAME}/", "/etc/#{PANEL_NAME}/",
-                :owner =>"root", :group => "root", :mount_options => ['dmode=777,fmode=777']
+    #config.vm.synced_folder "preconf/#{PANEL_NAME}/", "/etc/#{PANEL_NAME}/",
+                #:owner =>"root", :group => "root", :mount_options => ['dmode=777,fmode=777']
 
 	config.vm.provider :virtualbox do |box|
   		box.gui = false
@@ -42,7 +42,7 @@ Vagrant.configure("2") do |config|
 		config.vm.box_url = "http://cloud-images.ubuntu.com/vagrant/precise/current/precise-server-cloudimg-i386-vagrant-disk1.box"
 		config.vm.provider :virtualbox do |vb|
 			# custom virtual machine setup
-        		vb.hostname = "sentora-32-ubuntu"
+        		config.vm.hostname = "sentora-32-ubuntu"
         		config.vm.boot_timeout = 800
     		end
 	end # end define
@@ -54,7 +54,7 @@ Vagrant.configure("2") do |config|
 		config.vm.box_url = "http://cloud-images.ubuntu.com/vagrant/precise/current/precise-server-cloudimg-amd64-vagrant-disk1.box"
 		config.vm.provider :virtualbox do |vb|
 			# custom virtual machine setup
-        		vb.hostname = "sentora-64-ubuntu"
+        		config.vm.hostname = "sentora-64-ubuntu"
     		end
 	end # end define
 
@@ -65,7 +65,7 @@ Vagrant.configure("2") do |config|
 		config.vm.box_url = "http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.4-i386-v20131103.box"
 		config.vm.provider :virtualbox do |vb|
 			# custom virtual machine setup
-        		vb.hostname = "sentora-32-centos"
+        		config.vm.hostname = "sentora-32-centos"
     		end
 	end # end define
 	# cento 6.4 64bit # IP : 192.168.33.13
@@ -75,7 +75,7 @@ Vagrant.configure("2") do |config|
 		config.vm.box_url = "http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.4-x86_64-v20130731.box"
 		config.vm.provider :virtualbox do |vb|
 			# custom virtual machine setup
-        		vb.hostname = "sentora-64-centos"
+        		config.vm.hostname = "sentora-64-centos"
     		end
 	end # end define
 ###################################################################
@@ -87,7 +87,7 @@ Vagrant.configure("2") do |config|
         config.vm.box_url = "http://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box"
         config.vm.provider :virtualbox do |vb|
         	# custom virtual machine setup
-            vb.hostname = "sentora-64-ubuntu"
+            config.vm.hostname = "sentora-64-ubuntu"
         end
     end # end config
 
