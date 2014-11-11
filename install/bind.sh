@@ -2,6 +2,8 @@
 
 sentora_init "bind"
 
+sentora_install "bind"
+
 mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$BIND_PATH' WHERE so_name_vc='bind_dir'"
 mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$BIND_SERVICE' WHERE so_name_vc='bind_service'"
 chmod -R 777 $PANEL_CONF/bind/zones/
