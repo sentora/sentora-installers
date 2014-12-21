@@ -2,7 +2,7 @@
 USE `sentora_core`;
 
 /* Update the sentora database version number */
-UPDATE  `sentora_core`.`x_settings` SET `so_value_tx` = '1.0.0' WHERE `so_name_vc` = 'dbversion';
+UPDATE `x_settings` SET `so_value_tx` = '1.0.0' WHERE `so_name_vc` = 'dbversion';
 
 /* Add new Protected Directories module */
 INSERT INTO `x_modules` (`mo_category_fk`,`mo_name_vc`,`mo_version_in`,`mo_folder_vc`,`mo_type_en`,`mo_desc_tx`,`mo_installed_ts`,`mo_enabled_en`,`mo_updatever_vc`,`mo_updateurl_tx`) VALUES (3,'Protected Directories',200,'protected_directories','user','Password protect your web applications and directories.',NULL,'true','','');
@@ -57,3 +57,7 @@ UPDATE  `x_translations` SET `tr_en_tx` = 'SRV records can be used to encode the
 UPDATE  `x_translations` SET `tr_en_tx` = 'SPF records is used to store Sender Policy Framework details. Its target is a text string, e.g.<br>''v=spf1 a:192.168.1.1 include:example.com mx ptr -all'' (Click <a href="http://www.microsoft.com/mscorp/safety/content/technologies/senderid/wizard/" target="_blank">HERE</a> for the Microsoft SPF Wizard.)' WHERE `tr_en_tx` = 'SPF records is used to store Sender Policy Framework details. It''s target is a text string, e.g.<br>''v=spf1 a:192.168.1.1 include:example.com mx ptr -all'' (Click <a href="http://www.microsoft.com/mscorp/safety/content/technologies/senderid/wizard/" target="_blank">HERE</a> for the Microsoft SPF Wizard.)';
 UPDATE  `x_translations` SET `tr_en_tx` = 'Nameserver record. Specifies nameservers for a domain. Its target is a fully qualified domain name, e.g. ''ns1.example.com''. The records should match what the domain name has registered with the internet root servers.' WHERE `tr_en_tx` = 'Nameserver record. Specifies nameservers for a domain. It''s target is a fully qualified domain name, e.g. ''ns1.example.com''. The records should match what the domain name has registered with the internet root servers.';
 
+
+
+/* Update for roundcube */
+ALTER TABLE `sentora_roundcube`.`users` CHANGE `preferences` `preferences` longtext;

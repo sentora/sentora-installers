@@ -64,13 +64,16 @@ else
     exit 1
 fi
 
-if [[ "$ARCH" == "i386" || "$ARCH" == "i486" || "$ARCH" == "i586" || "$ARCH" == "i686" ]]; then
-    ARCH="i386"
-elif [[ "$ARCH" != "x86_64" ]]; then
-    echo "Unexpected architecture name was returned ($ARCH ). :-("
-    echo "The installer have been designed for i[3-6]8- and x86_6' architectures. If you"
-    echo " think it may work on your, please report it to the Sentora forum or bugtracker."
-    exit 1
+# Centos uses repo directory that depends of architecture. Ensure it is compatible
+if [[ "$OS" = "CentOs" ]] ; then
+    if [[ "$ARCH" == "i386" || "$ARCH" == "i486" || "$ARCH" == "i586" || "$ARCH" == "i686" ]]; then
+        ARCH="i386"
+    elif [[ "$ARCH" != "x86_64" ]]; then
+        echo "Unexpected architecture name was returned ($ARCH ). :-("
+        echo "The installer have been designed for i[3-6]8- and x86_64' architectures. If you"
+        echo " think it may work on your, please report it to the Sentora forum or bugtracker."
+        exit 1
+    fi
 fi
 
 # Check if the user is 'root' before allowing installation to commence
@@ -80,10 +83,22 @@ if [ $UID -ne 0 ]; then
     exit 1
 fi
 
-# Select modules that will be checked before start
+# Check for some common control panels that we know will affect the installation/operating of Sentora.
+if [ -e /usr/local/cpanel ] || [ -e /usr/local/directadmin ] || [ -e /usr/local/solusvm/www ] || [ -e /usr/local/home/admispconfig ] || [ -e /usr/local/lxlabs/kloxo ] ; then
+    echo "It appears that a control panel is already installed on your server; This installer"
+    echo "is designed to install and configure Sentora on a clean OS installation only."
+    echo -e "\nPlease re-install your OS before attempting to install using this script."
+    exit 1
+fi
+
+# Check for some common packages that we know will affect the installation/operating of Sentora.
 if [[ "$OS" = "CentOs" ]] ; then
     PACKAGE_INSTALLER="yum -y -q install"
     PACKAGE_REMOVER="yum -y -q remove"
+
+    inst() {
+       rpm -q "$1" &> /dev/null
+    }
 
     if  [[ "$VER" = "7" ]]; then
         DB_PCKG="mariadb" &&  echo "DB server will be mariaDB"
@@ -96,6 +111,10 @@ if [[ "$OS" = "CentOs" ]] ; then
 elif [[ "$OS" = "Ubuntu" ]]; then
     PACKAGE_INSTALLER="apt-get -yqq install"
     PACKAGE_REMOVER="apt-get -yqq remove"
+
+    inst() {
+       dpkg -l "$1" 2> /dev/null | grep '^ii' &> /dev/null
+    }
     
     DB_PCKG="mysql-server"
     HTTP_PCKG="apache2"
@@ -103,26 +122,6 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     BIND_PCKG="bind9"
 fi
   
-# Check for some common control panels that we know will affect the installation/operating of Sentora.
-if [ -e /usr/local/cpanel ] || [ -e /usr/local/directadmin ] || [ -e /usr/local/solusvm/www ] || [ -e /usr/local/home/admispconfig ] || [ -e /usr/local/lxlabs/kloxo ] ; then
-    echo "It appears that a control panel is already installed on your server; This installer"
-    echo "is designed to install and configure Sentora on a clean OS installation only."
-    echo -e "\nPlease re-install your OS before attempting to install using this script."
-    exit 1
-fi
-
-# Check for some common packages that we know will affect the installation/operating of Sentora.
-# We expect a clean OS so no apache/mySQL/bind/postfix/php!
-if [[ "$OS" = "CentOs" ]] ; then
-    inst() {
-       rpm -q "$1" &> /dev/null
-    }
-elif [[ "$OS" = "Ubuntu" ]]; then
-    inst() {
-       dpkg -l "$1" 2> /dev/null | grep '^ii' &> /dev/null
-    }
-fi
-
 # Note : Postfix is installed by default on centos netinstall / minimum install.
 # The installer seems to work fine even if Postfix is already installed.
 # -> The check of postfix is removed, but this comment remains to remember
@@ -138,15 +137,20 @@ done
 # *************************************************
 #--- Prepare or query informations required to install
 
-# Install wget and util used to grab server IP, and get server IPs
-$PACKAGE_INSTALLER wget 
+# Update repositories and Install wget and util used to grab server IP
+echo -e "\n-- Installing wget ans dns utils required to manage inputs"
 if [[ "$OS" = "CentOs" ]]; then
+    yum -y update
     $PACKAGE_INSTALLER bind-utils
 elif [[ "$OS" = "Ubuntu" ]]; then
+    apt-get -yqq update   #ensure we can install
     $PACKAGE_INSTALLER dnsutils
 fi
+$PACKAGE_INSTALLER wget 
+
 extern_ip="$(wget -qO- http://api.sentora.org/ip.txt)"
-local_ip=$(ifconfig eth0 | sed -En 's|.*inet [^0-9]*(([0-9]*\.){3}[0-9]*).*$|\1|p')
+#local_ip=$(ifconfig eth0 | sed -En 's|.*inet [^0-9]*(([0-9]*\.){3}[0-9]*).*$|\1|p')
+local_ip=$(ip addr show | awk '$1 == "inet" && $3 == "brd" { sub (/\/.*/,""); print $2 }')
 
 # Enable parameters to be entered on commandline, required for vagrant install
 #   -d <panel-domain>
@@ -455,38 +459,30 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER sudo vim make zip unzip debconf-utils at build-essential bash-completion
 fi
 
-#--- Prepare hostname
-old_hostname=$(cat /etc/hostname)
-# In file hostname
-echo "$PANEL_FQDN" > /etc/hostname
-
-# In file hosts
-sed -i "/127.0.1.1[\t ]*$old_hostname/d" /etc/hosts
-sed -i "s|$old_hostname|$PANEL_FQDN|" /etc/hosts
-
-# For current session
-hostname "$PANEL_FQDN"
-
-# In network file
-if [[ "$OS" = "CentOs" && "$VER" = "6" ]]; then
-    sed -i "s|^\(HOSTNAME=\).*\$|HOSTNAME=$PANEL_FQDN|" /etc/sysconfig/network
-    /etc/init.d/network restart
-fi
-
 #--- Download Sentora archive from GitHub
 echo -e "\n-- Downloading Sentora, Please wait, this may take several minutes, the installer will continue after this is complete!"
 # Get latest sentora
-wget -nv -O sentora_core.zip https://github.com/sentora/sentora-core/archive/$SENTORA_CORE_VERSION.zip
+while true; do
+    wget -nv -O sentora_core.zip https://github.com/sentora/sentora-core/archive/$SENTORA_CORE_VERSION.zip
+    if [[ -f sentora_core.zip ]]; then
+        break;
+    else
+        echo "Failed to download sentora core from Github"
+        echo "If you quit now, you can run again the installer later."
+        read -e -p "Press r to retry or q to quit the installer? " resp
+        case $resp in
+            [Rr]* ) continue;;
+            [Qq]* ) exit 3;;
+        esac
+    fi 
+done
 mkdir -p $PANEL_PATH
 chown -R root:root $PANEL_PATH
 unzip -oq sentora_core.zip -d $PANEL_PATH
 mv "$PANEL_PATH/sentora-core-$SENTORA_CORE_VERSION" "$PANEL_PATH/panel"
 rm sentora_core.zip
 rm "$PANEL_PATH/panel/LICENSE.md" "$PANEL_PATH/panel/README.md" "$PANEL_PATH/panel/.gitignore"
-rm -rf "$PANEL_PATH/_delete_me"
-
-# Remove unusued build branch until it is also removed from github sentora-core master
-rm -rf "$PANEL_PATH/panel/etc/build"
+rm -rf "$PANEL_PATH/_delete_me" "$PANEL_PATH/.gitignore"
 
 #--- Set-up Sentora directories and configure permissions
 PANEL_CONF="$PANEL_PATH/configs"
@@ -514,7 +510,21 @@ chmod +x $PANEL_PATH/panel/bin/setzadmin
 ln -s $PANEL_PATH/panel/bin/setzadmin /usr/bin/setzadmin
 
 #--- Install preconfig
-wget -nv -O sentora_preconfig.zip https://github.com/sentora/sentora-installers/archive/$SENTORA_PRECONF_VERSION.zip
+while true; do
+    wget -nv -O sentora_preconfig.zip https://github.com/sentora/sentora-installers/archive/$SENTORA_PRECONF_VERSION.zip
+    if [[ -f sentora_preconfig.zip ]]; then
+        break;
+    else
+        echo "Failed to download sentora preconfig from Github"
+        echo "If you quit now, you can run again the installer later."
+        read -e -p "Press r to retry or q to quit the installer? " resp
+        case $resp in
+            [Rr]* ) continue;;
+            [Qq]* ) exit 3;;
+        esac
+    fi
+done
+
 unzip -oq sentora_preconfig.zip
 cp -rf sentora-installers-$SENTORA_PRECONF_VERSION/preconf/* $PANEL_CONF
 rm sentora_preconfig*
@@ -524,6 +534,24 @@ rm -rf sentora-*
 cc -o $PANEL_PATH/panel/bin/zsudo $PANEL_CONF/bin/zsudo.c
 sudo chown root $PANEL_PATH/panel/bin/zsudo
 chmod +s $PANEL_PATH/panel/bin/zsudo
+
+#--- Prepare hostname
+old_hostname=$(cat /etc/hostname)
+# In file hostname
+echo "$PANEL_FQDN" > /etc/hostname
+
+# In file hosts
+sed -i "/127.0.1.1[\t ]*$old_hostname/d" /etc/hosts
+sed -i "s|$old_hostname|$PANEL_FQDN|" /etc/hosts
+
+# For current session
+hostname "$PANEL_FQDN"
+
+# In network file
+if [[ "$OS" = "CentOs" && "$VER" = "6" ]]; then
+    sed -i "s|^\(HOSTNAME=\).*\$|HOSTNAME=$PANEL_FQDN|" /etc/sysconfig/network
+    /etc/init.d/network restart
+fi
 
 #--- Some functions used many times below
 # Random password generator function
@@ -600,7 +628,6 @@ fi
 
 #--- Postfix
 echo -e "\n-- Installing Postfix"
-postfixpassword=$(passwordgen);
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER postfix postfix-perl-scripts
     USR_LIB_PATH="/usr/libexec"
@@ -609,6 +636,7 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     USR_LIB_PATH="/usr/lib"
 fi
 
+postfixpassword=$(passwordgen);
 mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_postfix.sql
 mysql -u root -p"$mysqlpassword" -e "UPDATE mysql.user SET Password=PASSWORD('$postfixpassword') WHERE User='postfix' AND Host='localhost';";
 
@@ -808,7 +836,7 @@ if [[ "$OS" = "CentOs" ]]; then
     PHP_INI_PATH="/etc/php.ini"
     PHP_EXT_PATH="/etc/php.d"
 elif [[ "$OS" = "Ubuntu" ]]; then
-    $PACKAGE_INSTALLER libapache2-mod-php5 php5-common php5-cli php5-mysql php5-gd php5-mcrypt php5-curl php-pear php5-imap php5-xmlrpc php5-xsl
+    $PACKAGE_INSTALLER libapache2-mod-php5 php5-common php5-cli php5-mysql php5-gd php5-mcrypt php5-curl php-pear php5-imap php5-xmlrpc php5-xsl php5-intl
     if [ "$VER" = "14.04" ]; then
         php5enmod mcrypt  # missing in the package for Ubuntu 14!
     else
@@ -1063,18 +1091,22 @@ mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_round
 
 # Create and configure mysql password for roundcube
 roundcubepassword=$(passwordgen);
-sed -i "s|!ROUNDCUBE_PASSWORD!|$roundcubepassword|" $PANEL_CONF/roundcube/db.inc.php
+sed -i "s|!ROUNDCUBE_PASSWORD!|$roundcubepassword|" $PANEL_CONF/roundcube/roundcube_config.inc.php
 mysql -u root -p"$mysqlpassword" -e "UPDATE mysql.user SET Password=PASSWORD('$roundcubepassword') WHERE User='roundcube' AND Host='localhost'";
 
 # Create and configure des key
 roundcube_des_key=$(passwordgen 24);
-sed -i "s|!ROUNDCUBE_DESKEY!|$roundcube_des_key|" $PANEL_CONF/roundcube/main.inc.php
+sed -i "s|!ROUNDCUBE_DESKEY!|$roundcube_des_key|" $PANEL_CONF/roundcube/roundcube_config.inc.php
+
+# Create and configure specials directories and rights
+$ROUNDCUBE_PATH="$PANEL_PATH/panel/etc/apps/webmail"
+chown "$HTTP_USER:$HTTP_GROUP" "$ROUNDCUBE_PATH/temp"
+mkdir "$PANEL_DATA/logs/roundcube"
+chown "$HTTP_USER:$HTTP_GROUP" "$PANEL_DATA/logs/roundcube"
 
 # Map config file in roundcube with symbolic links
-rm -rf $PANEL_PATH/panel/etc/apps/webmail/config/main.inc.php
-ln -s $PANEL_CONF/roundcube/main.inc.php $PANEL_PATH/panel/etc/apps/webmail/config/main.inc.php
-ln -s $PANEL_CONF/roundcube/config.inc.php $PANEL_PATH/panel/etc/apps/webmail/plugins/managesieve/config.inc.php
-ln -s $PANEL_CONF/roundcube/db.inc.php $PANEL_PATH/panel/etc/apps/webmail/config/db.inc.php
+ln -s $PANEL_CONF/roundcube/roundcube_config.inc.php $PANEL_PATH/panel/etc/apps/webmail/config/config.inc.php
+ln -s $PANEL_CONF/roundcube/sieve_config.inc.php $PANEL_PATH/panel/etc/apps/webmail/plugins/managesieve/config.inc.php
 
 
 #--- Webalizer
