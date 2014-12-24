@@ -877,16 +877,16 @@ if [[ "$OS" = "CentOs" || ( "$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then
     if [[ "$OS" = "Ubuntu" ]]; then
         $PACKAGE_INSTALLER php5-dev
     fi
-    wget -nv -O suhosin.zip https://github.com/stefanesser/suhosin/archive/suhosin-0.9.36.zip
+    wget -nv -O suhosin.zip https://github.com/stefanesser/suhosin/archive/suhosin-0.9.37.zip
     unzip -q suhosin.zip
     rm -f suhosin.zip
-    cd suhosin-suhosin-0.9.36
+    cd suhosin-suhosin-0.9.37
     phpize &> /dev/null
     ./configure &> /dev/null
     make &> /dev/null
     make install 
     cd ..
-    rm -rf suhosin-suhosin-0.9.36
+    rm -rf suhosin-suhosin-0.9.37
     if [[ "$OS" = "CentOs" ]]; then 
         echo 'extension=suhosin.so' > $PHP_EXT_PATH/suhosin.ini
     elif [[ "$OS" = "Ubuntu" ]]; then
