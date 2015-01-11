@@ -1099,8 +1099,7 @@ roundcube_des_key=$(passwordgen 24);
 sed -i "s|!ROUNDCUBE_DESKEY!|$roundcube_des_key|" $PANEL_CONF/roundcube/roundcube_config.inc.php
 
 # Create and configure specials directories and rights
-$ROUNDCUBE_PATH="$PANEL_PATH/panel/etc/apps/webmail"
-chown "$HTTP_USER:$HTTP_GROUP" "$ROUNDCUBE_PATH/temp"
+chown "$HTTP_USER:$HTTP_GROUP" "$PANEL_PATH/panel/etc/apps/webmail/temp"
 mkdir "$PANEL_DATA/logs/roundcube"
 chown "$HTTP_USER:$HTTP_GROUP" "$PANEL_DATA/logs/roundcube"
 
