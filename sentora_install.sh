@@ -138,7 +138,7 @@ done
 #--- Prepare or query informations required to install
 
 # Update repositories and Install wget and util used to grab server IP
-echo -e "\n-- Installing wget ans dns utils required to manage inputs"
+echo -e "\n-- Installing wget and dns utils required to manage inputs"
 if [[ "$OS" = "CentOs" ]]; then
     yum -y update
     $PACKAGE_INSTALLER bind-utils
