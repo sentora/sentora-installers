@@ -1120,8 +1120,8 @@ fi
 
 #--- Set some Sentora database entries using. setso and setzadmin (require PHP)
 echo -e "\n-- Configuring Sentora"
-zadminpassword=$(passwordgen);
-setzadmin --set "$zadminpassword";
+read -e -p "Enter your Sentora panel root password (zadmin):" ZADMIN_PASSWORD
+setzadmin --set "$ZADMIN_PASSWORD";
 $PANEL_PATH/panel/bin/setso --set sentora_domain "$PANEL_FQDN"
 $PANEL_PATH/panel/bin/setso --set server_ip "$PUBLIC_IP"
 
@@ -1160,7 +1160,7 @@ service atd restart
 {
     echo "Server IP address : $PUBLIC_IP"
     echo "Panel URL         : http://$PANEL_FQDN"
-    echo "zadmin Password   : $zadminpassword"
+    echo "zadmin Password   : $ZADMIN_PASSWORD"
     echo ""
     echo "MySQL Root Password      : $mysqlpassword"
     echo "MySQL Postfix Password   : $postfixpassword"
@@ -1177,7 +1177,7 @@ echo " any errors encountered during installation."
 echo ""
 echo " Login to Sentora at http://$PANEL_FQDN"
 echo " Sentora Username  : zadmin"
-echo " Sentora Password  : $zadminpassword"
+echo "zadmin Password   : $ZADMIN_PASSWORD"
 echo ""
 echo " MySQL Root Password      : $mysqlpassword"
 echo " MySQL Postfix Password   : $postfixpassword"
