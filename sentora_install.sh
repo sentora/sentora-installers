@@ -25,7 +25,7 @@
 #  all those who participated to this and to previous installers.
 #  Thanks to all.
 
-SENTORA_INSTALLER_VERSION="1.0.0-RC1"
+SENTORA_INSTALLER_VERSION="1.0.0-RC2"
 SENTORA_CORE_VERSION="1.0.0-RC1"
 SENTORA_PRECONF_VERSION="1.0.0-RC1"
 
@@ -534,6 +534,9 @@ rm -rf sentora-*
 cc -o $PANEL_PATH/panel/bin/zsudo $PANEL_CONF/bin/zsudo.c
 sudo chown root $PANEL_PATH/panel/bin/zsudo
 chmod +s $PANEL_PATH/panel/bin/zsudo
+
+#--- Resolv.conf protect
+chattr +i /etc/resolv.conf
 
 #--- Prepare hostname
 old_hostname=$(cat /etc/hostname)
@@ -1136,6 +1139,9 @@ php -q $PANEL_PATH/panel/bin/daemon.php
 
 
 #--- Firewall ?
+
+#--- Resolv.conf deprotect
+chattr -i /etc/resolv.conf
 
 
 #--- Restart all services to capture output messages, if any
