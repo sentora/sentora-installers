@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS `ftpquotatallies` (
 CREATE TABLE IF NOT EXISTS `ftpuser` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `userid` varchar(32) NOT NULL DEFAULT '',
-  `passwd` varchar(32) NOT NULL DEFAULT '',
+  `passwd` varchar(50) NOT NULL DEFAULT '',
   `uid` smallint(6) NOT NULL DEFAULT '0',
   `gid` smallint(6) NOT NULL DEFAULT '0',
   `homedir` varchar(255) NOT NULL DEFAULT '',
