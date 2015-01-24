@@ -67,8 +67,10 @@ ALTER TABLE `x_packages` DROP `pk_enablecgi_in`;
 UPDATE `x_settings` SET `so_usereditable_en` = 'false' WHERE `so_name_vc` = 'module_icons_pr';
 
 /* Updates the ProFTPd password length - Issue #92 (https://github.com/sentora/sentora-core/issues/92) */
+ALTER TABLE `x_ftpaccounts` MODIFY `ft_user_vc` varchar(50);
 ALTER TABLE `x_ftpaccounts` MODIFY `ft_password_vc` varchar(50);
 USE `sentora_proftpd`; /* We need to make some changes to the ProFTPD DB schema also..*/
+ALTER TABLE `ftpuser` MODIFY `userid` varchar(50);
 ALTER TABLE `ftpuser` MODIFY `passwd` varchar(50);
 USE `sentora_core`; /* Now switch back for other updates... */
 
