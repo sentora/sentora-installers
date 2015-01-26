@@ -17,6 +17,7 @@ Vagrant.configure("2") do |config|
 	config.vm.define 'ubuntu64', primary: true do |config|
 		config.vm.box = 'ubuntu_14.04_64'
 		config.vm.network "public_network", ip: "192.168.1.18"
+		config.vm.network "private_network", ip: "192.168.33.18"
 		config.vm.box_url = "https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box"
 		config.vm.provider :virtualbox do |vb|
 			vb.name = "Sentora_ubuntu64"
@@ -27,6 +28,7 @@ Vagrant.configure("2") do |config|
 	config.vm.define 'centos6.5', autostart: false do |config|
 		config.vm.box = 'centos_6.5_x86_64'
 		config.vm.network "public_network", ip: "192.168.1.19"
+		config.vm.network "private_network", ip: "192.168.33.19"
 		config.vm.box_url = "https://github.com/2creatives/vagrant-centos/releases/download/v6.5.3/centos65-x86_64-20140116.box"
 		config.vm.provider :virtualbox do |vb|
 			vb.name = "Sentora_centos6.5"
