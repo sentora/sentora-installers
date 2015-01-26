@@ -7,25 +7,35 @@ Welcome to the Sentora Installation Script Git repository, this provides a centr
 
 __This common installer is in BETA-TEST__
 
-It supports CentOs 6 / 7 and Ubuntu 12.04 / 14.04
+Our installation script currently support the following operating systems/distributions:
+
+* CentOS 6 and 7
+* Ubuntu 12.04 and 14.04
   
-Preliminary install infos are on [Sentora Documentation](http://docs.sentora.org/index.php?node=7)
+Preliminary install information can be found here: [Sentora Documentation](http://docs.sentora.org/index.php?node=7)
 
  
-To install use:
+To install use the latest 'recommended' version:
 ```
 bash <(curl -L -Ss http://sentora.org/install-beta)
 ```
 
 Please report any errors that you may find to the [beta-test dedicated forum](http://forums.sentora.org/forumdisplay.php?fid=60).
-Thank you.
+
+Alternatively (and for testing purposes only) you can install the latest MASTER version like so:
+
+```
+bash <(curl -L -Ss https://raw.githubusercontent.com/sentora/sentora-installers/master/sentora_install.sh)
+```
+Please note that the MASTER branch installer above is ONLY recommended for developers and project staff!
+
 
   
-#### Upgraders and removers ####
+#### Upgrade and Uninstaller scripts ####
 
-Upgraders are still here only for later use or reference. They must NOT be used.
+Upgrade scripts are still available on this repository for later use and/or reference purposes only. At present we DO NOT recommend their use.
 
-Removers *may* work but their use is not recommended. They remove most of the packages but they are NOT leaving your OS in his initial state.
+Uninstaller scripts, much like the Upgrade scripts are not recommended for use at present but we also need to make it clear that although they remove most of the packages installed by the Sentora Installation scripts they will not leave your OS in his initial state given the large amount of customisations that our installation scripts make.
 
 
 * * *
@@ -60,17 +70,17 @@ vagrant ssh sentora_14.04ubuntu64
 
 ## Official maintainers ##
 
-The officially supported operating system installer and upgrade scripts are maintained internally by members of the official Sentora team.
+The officially supported operating system installer and upgrade scripts are maintained internally by [members of the official Sentora team](http://sentora.org/about/the-team).
 
-We do encourage third-party installation scripts of which we will happily host on this repository and promote the use of in the event that we get interest by community members. If you are interested in maintaining an installation and upgrade script for another OS/distribution please see the *Want to contribute* section below for more information.
+We encourage third-party installation scripts of which we will gladly host on this repository and promote the use of in the event that we get interest by community members. If you are interested in maintaining an installation and upgrade script for another OS/distribution please see the *Want to contribute* section below for more information.
 
 ## Want to contribute ##
 
 There are a couple of ways in which you can contribute, firstly you can make improvements or fix 'bugs' in the existing 'officially maintained' installers of which we feel will usually be minimal as we keep on top of these installer/upgrade scripts and frequently review them.
 
-The other way in which you can contribute is to become an 'community maintainer' this means that you are responsible for the creation and maintenance of installation and upgrade scripts for non-official supported OSes.
+The other way in which you can contribute is to become an 'community maintainer' this means that you are responsible for the creation and maintenance of installation and upgrade scripts for non-official supported operating systems/distributions.
 
-In most cases you'll simply be able to copy and paste our official installer and upgrade scripts and just make the required OS/distribution specific changes such as file/directory paths and operating system/distribution specific package configuration amendments.
+In most cases you will simply be able to copy and paste our official installer and upgrade scripts and just make the required OS/distribution specific changes such as file/directory paths and operating system/distribution specific package configuration amendments.
 
 If you are interested in becoming an community maintainer please email [info@sentora.org](mailto:info@sentora.org) stating your interest in becoming a community maintainer and the OS/distribution that you wish to maintain.
 
