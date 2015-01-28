@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS `ftpgroup` (
   `gid` smallint(6) NOT NULL DEFAULT '5500',
   `members` varchar(16) NOT NULL DEFAULT '',
   KEY `groupname` (`groupname`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COMMENT='ProFTP group table';
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='ProFTP group table';
 
 --
 -- Dumping data for table `ftpgroup`
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS `ftpquotalimits` (
   `files_in_avail` int(10) unsigned NOT NULL DEFAULT '0',
   `files_out_avail` int(10) unsigned NOT NULL DEFAULT '0',
   `files_xfer_avail` int(10) unsigned NOT NULL DEFAULT '0'
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS `ftpquotatallies` (
   `files_in_used` int(10) unsigned NOT NULL DEFAULT '0',
   `files_out_used` int(10) unsigned NOT NULL DEFAULT '0',
   `files_xfer_used` int(10) unsigned NOT NULL DEFAULT '0'
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS `ftpuser` (
   `modified` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`),
   UNIQUE KEY `userid` (`userid`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COMMENT='ProFTP user table' AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='ProFTP user table' AUTO_INCREMENT=1 ;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

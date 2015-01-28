@@ -35,7 +35,7 @@ CREATE TABLE `x_accounts` (
   `ac_created_ts` int(30) DEFAULT NULL,
   `ac_deleted_ts` int(30) DEFAULT NULL,
   PRIMARY KEY (`ac_id_pk`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 
 /*Data for the table `x_accounts` */
 
@@ -89,7 +89,7 @@ CREATE TABLE `x_aliases` (
   `al_created_ts` int(30) DEFAULT NULL,
   `al_deleted_ts` int(30) DEFAULT NULL,
   PRIMARY KEY (`al_id_pk`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `x_aliases` */
 
@@ -141,7 +141,7 @@ CREATE TABLE `x_distlists` (
   `dl_created_ts` int(30) DEFAULT NULL,
   `dl_deleted_ts` int(30) DEFAULT NULL,
   PRIMARY KEY (`dl_id_pk`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `x_distlists` */
 
@@ -156,7 +156,7 @@ CREATE TABLE `x_distlistusers` (
   `du_created_ts` int(30) DEFAULT NULL,
   `du_deleted_ts` int(30) DEFAULT NULL,
   PRIMARY KEY (`du_id_pk`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `x_distlistusers` */
 
@@ -180,7 +180,7 @@ CREATE TABLE `x_dns` (
   `dn_created_ts` int(30) DEFAULT NULL,
   `dn_deleted_ts` int(30) DEFAULT NULL,
   PRIMARY KEY (`dn_id_pk`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `x_dns` */
 
@@ -196,7 +196,7 @@ CREATE TABLE IF NOT EXISTS `sentora_core`.`x_dns_create` (
   `dc_weight_in` int(50) DEFAULT NULL,
   `dc_port_in` int(50) DEFAULT NULL,
   PRIMARY KEY (`dc_id_pk`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=10 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=10 ;
 
 /* Data for the table `x_dns_create` */
 INSERT INTO `sentora_core`.`x_dns_create` (`dc_id_pk`, `dc_acc_fk`, `dc_type_vc`, `dc_host_vc`, `dc_ttl_in`, `dc_target_vc`, `dc_priority_in`, `dc_weight_in`, `dc_port_in`) VALUES
@@ -223,7 +223,7 @@ CREATE TABLE `x_faqs` (
   `fq_created_ts` int(30) DEFAULT NULL,
   `fq_deleted_ts` int(30) DEFAULT NULL,
   PRIMARY KEY (`fq_id_pk`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8;
 
 /*Data for the table `x_faqs` */
 
@@ -255,7 +255,7 @@ CREATE TABLE `x_forwarders` (
   `fw_created_ts` int(30) DEFAULT NULL,
   `fw_deleted_ts` int(30) DEFAULT NULL,
   PRIMARY KEY (`fw_id_pk`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `x_forwarders` */
 
@@ -325,7 +325,7 @@ CREATE TABLE `x_logs` (
   `lg_stack_tx` text,
   `lg_when_ts` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`lg_id_pk`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `x_logs` */
 
@@ -341,7 +341,7 @@ CREATE TABLE `x_mailboxes` (
   `mb_created_ts` int(30) DEFAULT NULL,
   `mb_deleted_ts` int(30) DEFAULT NULL,
   PRIMARY KEY (`mb_id_pk`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `x_mailboxes` */
 
@@ -353,7 +353,7 @@ CREATE TABLE `x_modcats` (
   `mc_id_pk` int(6) unsigned NOT NULL AUTO_INCREMENT,
   `mc_name_vc` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`mc_id_pk`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
 
 /*Data for the table `x_modcats` */
 
@@ -384,7 +384,7 @@ CREATE TABLE `x_modules` (
   `mo_updatever_vc` varchar(10) DEFAULT NULL,
   `mo_updateurl_tx` text,
   PRIMARY KEY (`mo_id_pk`)
-) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8;
 
 /*Data for the table `x_modules` */
 
@@ -537,7 +537,7 @@ CREATE TABLE `x_profiles` (
   `ud_phone_vc` varchar(20) DEFAULT NULL,
   `ud_created_ts` int(30) DEFAULT NULL,
   PRIMARY KEY (`ud_id_pk`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 
 /*Data for the table `x_profiles` */
 
@@ -592,7 +592,7 @@ CREATE TABLE `x_settings` (
   `so_module_vc` varchar(50) DEFAULT NULL,
   `so_usereditable_en` enum('true','false') DEFAULT 'false',
   PRIMARY KEY (`so_id_pk`)
-) ENGINE=InnoDB AUTO_INCREMENT=115 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=115 DEFAULT CHARSET=utf8;
 
 /*Data for the table `x_settings` */
 
@@ -715,7 +715,7 @@ CREATE TABLE `x_translations` (
   `tr_en_tx` text,
   `tr_de_tx` text,
   PRIMARY KEY (`tr_id_pk`)
-) ENGINE=InnoDB AUTO_INCREMENT=125 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=125 DEFAULT CHARSET=utf8;
 
 /*Data for the table `x_translations` */
 
