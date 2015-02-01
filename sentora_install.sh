@@ -25,9 +25,9 @@
 #  all those who participated to this and to previous installers.
 #  Thanks to all.
 
-SENTORA_INSTALLER_VERSION="1.0.0-stable"
-SENTORA_CORE_VERSION="1.0.0-stable"
-SENTORA_PRECONF_VERSION="1.0.0-stable"
+SENTORA_INSTALLER_VERSION="1.0.0"
+SENTORA_CORE_VERSION="1.0.0"
+SENTORA_PRECONF_VERSION="1.0.0"
 
 PANEL_PATH="/etc/sentora"
 PANEL_DATA="/var/sentora"
