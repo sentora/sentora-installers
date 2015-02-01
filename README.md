@@ -5,22 +5,19 @@ Welcome to the Sentora Installation Script Git repository, this provides a centr
 
 ## How to install Sentora ##
 
-__This common installer is in BETA-TEST__
-
 Our installation script currently support the following operating systems/distributions:
 
 * CentOS 6 and 7
 * Ubuntu 12.04 and 14.04
   
 Preliminary install information can be found here: [Sentora Documentation](http://docs.sentora.org/index.php?node=7)
-
  
-To install use the latest 'recommended' version:
+To install use the latest 'stable' and officially supported version, please use the following command:
 ```
-bash <(curl -L -Ss http://sentora.org/install-beta)
+bash <(curl -L -Ss http://sentora.org/install)
 ```
 
-Please report any errors that you may find to the [beta-test dedicated forum](http://forums.sentora.org/forumdisplay.php?fid=60).
+Please report any errors that you may find with the installers to our [bug tracking system](https://github.com/sentora/sentora-installers/issues).
 
 Alternatively (and for testing purposes only) you can install the latest MASTER version like so:
 
