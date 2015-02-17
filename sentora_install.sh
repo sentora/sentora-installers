@@ -880,7 +880,7 @@ if [[ "$OS" = "CentOs" || ( "$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then
     if [[ "$OS" = "Ubuntu" ]]; then
         $PACKAGE_INSTALLER php5-dev
     fi
-    wget -nv -O suhosin.zip https://github.com/stefanesser/suhosin/archive/suhosin-0.9.37.zip
+    wget -nv -O suhosin.zip https://github.com/stefanesser/suhosin/archive/0.9.37.1.zip
     unzip -q suhosin.zip
     rm -f suhosin.zip
     cd suhosin-suhosin-0.9.37
