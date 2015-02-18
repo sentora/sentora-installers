@@ -1130,7 +1130,7 @@ $PANEL_PATH/panel/bin/setso --set sentora_domain "$PANEL_FQDN"
 $PANEL_PATH/panel/bin/setso --set server_ip "$PUBLIC_IP"
 
 # if not release, set beta version in database
-if [[ $(echo "$SENTORA_CORE_VERSION" | sed  's|.*-\(beta\).$|\1|') = "beta"  ]] ; then
+if [[ $(echo "$SENTORA_CORE_VERSION" | sed  's|.*-\(beta\).*$|\1|') = "beta"  ]] ; then
     $PANEL_PATH/panel/bin/setso --set dbversion "$SENTORA_CORE_VERSION"
 fi
 
