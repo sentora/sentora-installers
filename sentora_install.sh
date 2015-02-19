@@ -28,6 +28,7 @@
 SENTORA_INSTALLER_VERSION="1.0.0"
 SENTORA_CORE_VERSION="1.0.0"
 SENTORA_PRECONF_VERSION="1.0.0"
+SUHOSIN_VERSION="0.9.37.1"
 
 PANEL_PATH="/etc/sentora"
 PANEL_DATA="/var/sentora"
@@ -880,17 +881,17 @@ if [[ "$OS" = "CentOs" || ( "$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then
     if [[ "$OS" = "Ubuntu" ]]; then
         $PACKAGE_INSTALLER php5-dev
     fi
-    SUHOSIN_VERSION="0.9.37.1"
-    wget -nv -O suhosin.zip https://github.com/stefanesser/suhosin/archive/$SUHOSIN_VERSION.zip
-    unzip -q suhosin.zip
-    rm -f suhosin.zip
-    cd suhosin-$SUHOSIN_VERSION
-    phpize &> /dev/null
-    ./configure &> /dev/null
-    make &> /dev/null
-    make install 
-    cd ..
-    rm -rf suhosin-$SUHOSIN_VERSION
+    cd /tmp
+	wget -nv -O suhosin.zip https://github.com/stefanesser/suhosin/archive/$SUHOSIN_VERSION.zip
+	unzip -q suhosin.zip
+	rm -f suhosin.zip
+	cd suhosin-$SUHOSIN_VERSION
+	phpize 
+	./configure 
+	make
+	make install 
+	cd ..
+	rm -rf suhosin-$SUHOSIN_VERSION
     if [[ "$OS" = "CentOs" ]]; then 
         echo 'extension=suhosin.so' > $PHP_EXT_PATH/suhosin.ini
     elif [[ "$OS" = "Ubuntu" ]]; then
