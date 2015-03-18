@@ -10,3 +10,4 @@ make
 make install 
 cd ..
 rm -rf suhosin-$SUHOSIN_VERSION
+sed -i 'N;/default extension directory./a\extension=suhosin.so' /etc/php5/apache2/php.ini
