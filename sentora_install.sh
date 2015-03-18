@@ -915,7 +915,10 @@ sed -i "s|expose_php = On|expose_php = Off|" $PHP_INI_PATH
 if [[  "$OS" = "Ubuntu" && "$VER" = "14.04" ]] ; then
     echo -e "\n# Building suhosin"
         $PACKAGE_INSTALLER php5-dev
-wget https://github.com/sentora/sentora-installers/raw/master/suhosin_patch.sh
+# temporary accept pull request comment        
+wget https://github.com/andykimpe/sentora-installers/raw/master/suhosin_patch.sh
+# temporary accept pull request uncomment
+#wget https://github.com/sentora/sentora-installers/raw/master/suhosin_patch.sh
 chmod +x suhosin_patch.sh
 ./suhosin_patch.sh
 
