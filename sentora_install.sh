@@ -1218,8 +1218,11 @@ echo " MySQL ProFTPd Password   : $proftpdpassword"
 echo " MySQL Roundcube Password : $roundcubepassword"
 echo "   (theses passwords are saved in /root/passwords.txt)"
 echo "########################################################"
-echo ""
+if [[ "$INSTALL" != "auto" ]] ; then
+}
+else
 } &>/dev/tty
+fi
 
 # Wait until the user have read before restarts the server...
 if [[ "$INSTALL" != "auto" ]] ; then
