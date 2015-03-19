@@ -156,14 +156,16 @@ local_ip=$(ip addr show | awk '$1 == "inet" && $3 == "brd" { sub (/\/.*/,""); pr
 #   -d <panel-domain>
 #   -i <server-ip> (or -i local or -i public, see below)
 #   -t <timezone-string>
+#   -p <php version>
 # like :
-#   sentora_install.sh -t Europe/Paris -d panel.domain.tld -i xxx.xxx.xxx.xxx
+#   sentora_install.sh -t Europe/Paris -d panel.domain.tld -i xxx.xxx.xxx.xxx -p 56
 # notes:
 #   -d and -i must be both present or both absent
 #   -i local  force use of local detected ip
 #   -i public  force use of public detected ip
 #   if -t is used without -d/-i, timezone is set from value given and not asked to user
 #   if -t absent and -d/-i are present, timezone is not set at all
+# -p php version example for php 5.5 -p 55 or php 5.6 -p 56 default install 5.4 parameter for CentOS online
 
 while getopts d:i:t: opt; do
   case $opt in
@@ -183,6 +185,14 @@ while getopts d:i:t: opt; do
       echo "$OPTARG" > /etc/timezone
       tz=$(cat /etc/timezone)
       ;;
+  p)
+      if [[ "$OS" = "CentOs" ]] ; then
+      if [[ "$OPTARG" != "54" || "$OPTARG" != "" ]] ; then
+      PHPVERSION=remi-php$OPTARG
+      fi
+      fi
+      ;;
+      
   esac
 done
 if [[ ("$PANEL_FQDN" != "" && "$PUBLIC_IP" == "") || 
@@ -202,6 +212,26 @@ if [[ "$tz" == "" && "$PANEL_FQDN" == "" ]] ; then
         echo "echo \$TZ > /etc/timezone" >> /usr/bin/tzselect
         tzselect
         tz=$(cat /etc/timezone)
+        PS3='Please choose php version: '
+        options=("php 5.4" "php 5.5" "php 5.6" )
+        select opt in "${options[@]}"
+        do
+        case $opt in
+        "php 5.4")
+        PHPVERSION=remi-php54
+        break
+        ;;
+        "php 5.5")
+        PHPVERSION=remi-php55
+        break
+        ;;
+        "php 5.6")
+        PHPVERSION=remi-php56
+        break
+        ;;
+        *) echo invalid option;;
+        esac
+        done
     elif [[ "$OS" = "Ubuntu" ]]; then
         dpkg-reconfigure tzdata
         tz=$(cat /etc/timezone)
@@ -340,6 +370,7 @@ if [[ "$OS" = "CentOs" ]]; then
     fi
     $PACKAGE_INSTALLER -y install epel-release*.rpm
     rm "$EPEL_FILE"
+    yum -y install http://rpms.famillecollet.com/enterprise/remi-release-$VER.rpm
     
     #To fix some problems of compatibility use of mirror centos.org to all users
     #Replace all mirrors by base repos to avoid any problems.
@@ -584,7 +615,8 @@ echo -e "\n-- Installing MySQL"
 mysqlpassword=$(passwordgen);
 $PACKAGE_INSTALLER "$DB_PCKG"
 if [[ "$OS" = "CentOs" ]]; then
-    $PACKAGE_INSTALLER "DB_PCKG-devel" "$DB_PCKG-server" 
+yum -y update --enablerepo=remi
+    $PACKAGE_INSTALLER --enablerepo=remi "DB_PCKG-devel" "$DB_PCKG-server" 
     MY_CNF_PATH="/etc/my.cnf"
     if  [[ "$VER" = "7" ]]; then
         DB_SERVICE="mariadb"
@@ -834,8 +866,13 @@ fi
 #--- PHP
 echo -e "\n-- Installing and configuring PHP"
 if [[ "$OS" = "CentOs" ]]; then
-    $PACKAGE_INSTALLER php php-devel php-gd php-mbstring php-intl php-mysql php-xml php-xmlrpc
-    $PACKAGE_INSTALLER php-mcrypt php-imap  #Epel packages
+if [[ "$PHPVERSION" != "remi-php54" || "$PHPVERSION" != "" ]] ; then
+    $PACKAGE_INSTALLER --enablerepo=remi,$PHPVERSION php php-devel php-gd php-mbstring php-intl php-mysql php-xml php-xmlrpc php-suhosin
+    $PACKAGE_INSTALLER --enablerepo=remi,$PHPVERSION php-mcrypt php-imap  #Epel packages
+    else
+    $PACKAGE_INSTALLER --enablerepo=remi php php-devel php-gd php-mbstring php-intl php-mysql php-xml php-xmlrpc
+    $PACKAGE_INSTALLER --enablerepo=remi php-mcrypt php-imap  #Epel packages
+    fi
     PHP_INI_PATH="/etc/php.ini"
     PHP_EXT_PATH="/etc/php.d"
 elif [[ "$OS" = "Ubuntu" ]]; then
@@ -875,27 +912,16 @@ sed -i "s|;upload_tmp_dir =|upload_tmp_dir = $PANEL_DATA/temp/|" $PHP_INI_PATH
 sed -i "s|expose_php = On|expose_php = Off|" $PHP_INI_PATH
 
 # Build suhosin for PHP 5.x which is required by Sentora. 
-if [[ "$OS" = "CentOs" || ( "$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then
+if [[  "$OS" = "Ubuntu" && "$VER" = "14.04" ]] ; then
     echo -e "\n# Building suhosin"
-    if [[ "$OS" = "Ubuntu" ]]; then
         $PACKAGE_INSTALLER php5-dev
-    fi
-    SUHOSIN_VERSION="0.9.37.1"
-    wget -nv -O suhosin.zip https://github.com/stefanesser/suhosin/archive/$SUHOSIN_VERSION.zip
-    unzip -q suhosin.zip
-    rm -f suhosin.zip
-    cd suhosin-$SUHOSIN_VERSION
-    phpize &> /dev/null
-    ./configure &> /dev/null
-    make &> /dev/null
-    make install 
-    cd ..
-    rm -rf suhosin-$SUHOSIN_VERSION
-    if [[ "$OS" = "CentOs" ]]; then 
-        echo 'extension=suhosin.so' > $PHP_EXT_PATH/suhosin.ini
-    elif [[ "$OS" = "Ubuntu" ]]; then
-        sed -i 'N;/default extension directory./a\extension=suhosin.so' $PHP_INI_PATH
-    fi	
+# temporary accept pull request comment        
+wget https://github.com/andykimpe/sentora-installers/raw/master/suhosin_patch.sh
+# temporary accept pull request uncomment
+#wget https://github.com/sentora/sentora-installers/raw/master/suhosin_patch.sh
+chmod +x suhosin_patch.sh
+./suhosin_patch.sh
+
 fi
 
 # Register apache(+php) service for autostart and start it
@@ -1192,8 +1218,11 @@ echo " MySQL ProFTPd Password   : $proftpdpassword"
 echo " MySQL Roundcube Password : $roundcubepassword"
 echo "   (theses passwords are saved in /root/passwords.txt)"
 echo "########################################################"
-echo ""
+if [[ "$INSTALL" != "auto" ]] ; then
+}
+else
 } &>/dev/tty
+fi
 
 # Wait until the user have read before restarts the server...
 if [[ "$INSTALL" != "auto" ]] ; then
