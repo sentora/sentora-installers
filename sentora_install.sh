@@ -185,13 +185,13 @@ while getopts d:i:t: opt; do
       echo "$OPTARG" > /etc/timezone
       tz=$(cat /etc/timezone)
       ;;
-   if [[ "$OS" = "CentOs" ]] ; then   
   p)
+      if [[ "$OS" = "CentOs" ]] ; then
       if [[ "$OPTARG" != "54" || "$OPTARG" != "" ]] ; then
       PHPVERSION=remi-php$OPTARG
       fi
+      fi
       ;;
-   fi
       
   esac
 done
