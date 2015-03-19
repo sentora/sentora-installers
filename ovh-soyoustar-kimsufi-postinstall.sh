@@ -11,6 +11,7 @@ yum -y remove bind
 elif [ -f /etc/lsb-release ]; then
 apt-get update
 apt-get -y dist-upgrade
+fi
 ./sentora_install.sh -t Europe/Paris -d $(hostname) -i public -p 56
 echo "OK"
 exit
