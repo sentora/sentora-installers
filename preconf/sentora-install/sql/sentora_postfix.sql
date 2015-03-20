@@ -1,14 +1,14 @@
+CREATE USER postfix@localhost IDENTIFIED BY 'postfix';
+
 CREATE DATABASE `sentora_postfix` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 USE `sentora_postfix`;
 
-CREATE USER postfix@localhost IDENTIFIED BY 'postfix';
-
 GRANT ALL PRIVILEGES ON sentora_postfix . * TO postfix@localhost;
 
 CREATE TABLE `admin` (
-  `username` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL,
+  `username` varchar(200) NOT NULL,
+  `password` varchar(200) NOT NULL,
   `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `modified` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `active` tinyint(1) NOT NULL DEFAULT '1',
@@ -35,7 +35,7 @@ CREATE TABLE `alias_domain` (
   PRIMARY KEY (`alias_domain`),
   KEY `active` (`active`),
   KEY `target_domain` (`target_domain`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Postfix Admin - Domain Aliases';
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Postfix  - Domain Aliases';
 
 CREATE TABLE `config` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -43,7 +43,7 @@ CREATE TABLE `config` (
   `value` varchar(20) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='PostfixAdmin settings';
+) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='Postfix admin settings if used';
 
 CREATE TABLE `domain` (
   `domain` varchar(255) NOT NULL,
@@ -58,15 +58,15 @@ CREATE TABLE `domain` (
   `modified` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `active` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`domain`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Postfix Admin - Virtual Domains';
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Postfix - Virtual Domains';
 
 CREATE TABLE `domain_admins` (
-  `username` varchar(255) NOT NULL,
+  `username` varchar(200) NOT NULL,
   `domain` varchar(255) NOT NULL,
   `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `active` tinyint(1) NOT NULL DEFAULT '1',
   KEY `username` (`username`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Postfix Admin - Domain Admins';
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Postfix - Domain Admins - not used by sentora only for postfixADMIN use';
 
 CREATE TABLE `fetchmail` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -90,15 +90,15 @@ CREATE TABLE `fetchmail` (
 
 CREATE TABLE `log` (
   `timestamp` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `username` varchar(255) NOT NULL,
+  `username` varchar(200) NOT NULL,
   `domain` varchar(255) NOT NULL,
   `action` varchar(255) NOT NULL,
   `data` text NOT NULL,
   KEY `timestamp` (`timestamp`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Postfix Admin - Log';
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Postfix - Log';
 
 CREATE TABLE `mailbox` (
-  `username` varchar(255) NOT NULL,
+  `username` varchar(200) NOT NULL,
   `password` varchar(255) NOT NULL,
   `name` varchar(255) CHARACTER SET utf8 NOT NULL,
   `maildir` varchar(255) NOT NULL,
@@ -110,17 +110,17 @@ CREATE TABLE `mailbox` (
   `active` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`username`),
   KEY `domain` (`domain`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Postfix Admin - Virtual Mailboxes';
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Postfix - Virtual Mailboxes';
 
 CREATE TABLE `quota` (
-  `username` varchar(255) NOT NULL,
+  `username` varchar(200) NOT NULL,
   `path` varchar(100) NOT NULL,
   `current` bigint(20) DEFAULT NULL,
   PRIMARY KEY (`username`,`path`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 CREATE TABLE `quota2` (
-  `username` varchar(100) NOT NULL,
+  `username` varchar(200) NOT NULL,
   `bytes` bigint(20) NOT NULL DEFAULT '0',
   `messages` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`username`)
@@ -136,12 +136,27 @@ CREATE TABLE `vacation` (
   `active` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`email`),
   KEY `email` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Postfix Admin - Virtual Vacation';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Postfix - Virtual Vacation';
 
 CREATE TABLE `vacation_notification` (
-  `on_vacation` varchar(255) CHARACTER SET latin1 NOT NULL,
-  `notified` varchar(255) CHARACTER SET latin1 NOT NULL,
+  `on_vacation` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `notified` varchar(255) CHARACTER SET utf8 NOT NULL,
   `notified_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`on_vacation`,`notified`),
   CONSTRAINT `vacation_notification_pkey` FOREIGN KEY (`on_vacation`) REFERENCES `vacation` (`email`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Postfix Admin - Virtual Vacation Notifications';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Postfix - Virtual Vacation Notifications';
+
+CREATE TABLE `postfix_relocated` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  email varchar(255) NOT NULL DEFAULT '',
+  destination varchar(255) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Postfix relocated informations';
+
+CREATE TABLE `postfix_transport` (
+  `id` int(11)  NOT NULL AUTO_INCREMENT,
+  domain varchar(255) NOT NULL,
+  destination varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY domain (domain)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Postfix transport forwarding // postmap';
