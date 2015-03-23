@@ -25,7 +25,7 @@
 #  all those who participated to this and to previous installers.
 #  Thanks to all.
 
-SENTORA_INSTALLER_VERSION="1.0.1"
+SENTORA_INSTALLER_VERSION="1.0.2"
 SENTORA_CORE_VERSION="1.0.0"
 SENTORA_PRECONF_VERSION="1.0.0"
 
@@ -751,6 +751,13 @@ if [[ "$OS" = "CentOs" ]]; then
     else
         disable_file /etc/httpd/conf.d/welcome.conf
         disable_file /etc/httpd/conf.d/webalizer.conf
+		# Disable more extra modules in centos 6.x /etc/httpd/httpd.conf dav/ldap/cgi/proxy_ajp
+		sed -i "s|LoadModule suexec_module modules|#LoadModule suexec_module modules|" "$HTTP_CONF_PATH"
+		sed -i "s|LoadModule cgi_module modules|#LoadModule cgi_module modules|" "$HTTP_CONF_PATH"
+		sed -i "s|LoadModule dav_module modules|#LoadModule dav_module modules|" "$HTTP_CONF_PATH"
+		sed -i "s|LoadModule ldap_module modules|#LoadModule ldap_module modules|" "$HTTP_CONF_PATH"
+		sed -i "s|LoadModule dav_fs_module modules|#LoadModule dav_fs_module modules|" "$HTTP_CONF_PATH"
+		sed -i "s|LoadModule proxy_ajp_module modules|#LoadModule proxy_ajp_module modules|" "$HTTP_CONF_PATH"
     fi     
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER libapache2-mod-bw
