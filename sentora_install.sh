@@ -16,10 +16,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# Supported Operating Systems: CentOS 6.*/7.* Minimal, Ubuntu server 12.04/14.04, Debian server 7
+# Supported Operating Systems: CentOS 6.*/7.* Minimal, Ubuntu server 12.04/14.04, Debian 7 and 8
 #  32bit and 64bit
 #
 #  Author Pascal Peyremorte (ppeyremorte@sentora.org)
+#  AUTHOR(DEBIAN SUPPORT) Aleksandar Puharic (xZero707 [xzero@elite7hackers.net])
 #    (main merge of all installers, modularization, reworks and comments)
 #  With huge help and contributions from Mehdi Blagui, Kevin Andrews and 
 #  all those who participated to this and to previous installers.
