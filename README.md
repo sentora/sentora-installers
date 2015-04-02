@@ -11,9 +11,9 @@ Our installation script currently support the following operating systems/distri
 * Ubuntu 12.04 and 14.04
 * NEW! Debian 7 Support (Debian 8 support pending)
  
-Tested and working on Debian 7.8. It work on Debian 7.x
-Debian 6 or older are not supported as obsolete. 
-Debian 8 will be added later or as soon it becomes stable.
+Tested and working on Debian 7.8. It work on Debian 7.x<br/>
+Debian 6 or older are not supported as obsolete. <br/>
+Debian 8 will be added later or as soon it becomes stable.<br/>
   
 Preliminary install information can be found here: [Sentora Documentation](http://docs.sentora.org/index.php?node=7)
  
