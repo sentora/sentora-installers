@@ -16,8 +16,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# Supported Operating Systems: CentOS 6.*/7.* Minimal, Ubuntu server 12.04/14.04, Debian 7 and 8
-#  32bit and 64bit
+# Supported Operating Systems: CentOS 6.*/7.* Minimal, Ubuntu server 12.04/14.04, Debian 7
+#  32bit and 64bit (Debian 8 Jessie will come)
 #
 #  Author Pascal Peyremorte (ppeyremorte@sentora.org)
 #  AUTHOR(DEBIAN SUPPORT) Aleksandar Puharic (xZero707 [xzero@elite7hackers.net])
