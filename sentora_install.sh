@@ -127,7 +127,7 @@ elif [[ "$OS" = "Ubuntu" ]]; then
     HTTP_PCKG="apache2"
     PHP_PCKG="apache2-mod-php5"
     BIND_PCKG="bind9"
-elif [[ "$OS" = "debian" ]]; then
+elif [[ "$OS" = "debian" || "$VER" = "7" ]]; then
     PACKAGE_INSTALLER="apt-get -yqq install"
     PACKAGE_REMOVER="apt-get -yqq remove"
 
@@ -139,6 +139,20 @@ elif [[ "$OS" = "debian" ]]; then
     HTTP_PCKG="apache2 apache2.2-common apache2-doc apache2-mpm-prefork apache2-utils libexpat1 ssl-cert apache2-suexec"
     PHP_PCKG="libapache2-mod-php5 php5 php5-common php5-gd php5-mysql php5-imap phpmyadmin php5-cli php5-cgi libapache2-mod-fcgid php-pear php-auth php5-mcrypt mcrypt php5-imagick imagemagick libapache2-mod-suphp  libruby libapache2-mod-ruby libapache2-mod-python php5-curl php5-intl php5-memcache php5-memcached php5-ming php5-ps php5-pspell php5-recode php5-snmp php5-sqlite php5-tidy php5-xmlrpc php5-xsl memcached"
     BIND_PCKG="bind9"
+
+elif [[ "$OS" = "debian" || "$VER" = "8" ]]; then
+    PACKAGE_INSTALLER="apt-get -yqq install"
+    PACKAGE_REMOVER="apt-get -yqq remove"
+
+    inst() {
+       dpkg -l "$1" 2> /dev/null | grep '^ii' &> /dev/null
+    }
+    
+    DB_PCKG="mariadb-server"
+    HTTP_PCKG="apache2 apache2-doc apache2-mpm-prefork apache2-utils libexpat1 ssl-cert apache2-suexec"
+    PHP_PCKG="libapache2-mod-php5 php5 php5-common php5-gd php5-mysql php5-imap phpmyadmin php5-cli php5-cgi libapache2-mod-fcgid php-pear php-auth php5-mcrypt mcrypt php5-imagick imagemagick libapache2-mod-suphp  libruby libapache2-mod-ruby libapache2-mod-python php5-curl php5-intl php5-memcache php5-memcached php5-ming php5-ps php5-pspell php5-recode php5-snmp php5-sqlite php5-tidy php5-xmlrpc php5-xsl memcached"
+    BIND_PCKG="bind9"
+
    
 fi
   
@@ -428,14 +442,14 @@ deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc)-security main restricted
 deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc)-updates main restricted universe multiverse
 EOF
 
-elif [[ "$OS" = "debian" ]]; then
+elif [[ "$OS" = "debian" && "$VER" == "7" ]]; then
 cat > /etc/apt/sources.list <<EOF
 # Main
 deb http://ftp.debian.org/debian $(lsb_release -sc) main
 deb http://security.debian.org/ $(lsb_release -sc)/updates main
 # dotdeb repository - PHP 5.6 - is stable on Debian, no worry
-deb http://packages.dotdeb.org wheezy-php56 all
-deb-src http://packages.dotdeb.org wheezy-php56 all
+deb http://packages.dotdeb.org $(lsb_release -sc)-php56 all
+deb-src http://packages.dotdeb.org $(lsb_release -sc)-php56 all
 # MariaDB 10.0 repository list - http://mariadb.org/mariadb/repositories/
 deb http://lon1.mirrors.digitalocean.com/mariadb/repo/10.0/debian $(lsb_release -sc) main
 deb-src http://lon1.mirrors.digitalocean.com/mariadb/repo/10.0/debian $(lsb_release -sc) main
@@ -444,7 +458,13 @@ EOF
 wget http://www.dotdeb.org/dotdeb.gpg -O- |apt-key add -
 apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db
 
-
+elif [[ "$OS" = "debian" && "$VER" == "8" ]]; then
+# For Jessie, there is no need for extra repositories
+cat > /etc/apt/sources.list <<EOF
+# Main
+deb http://ftp.debian.org/debian $(lsb_release -sc) main
+deb http://security.debian.org/ $(lsb_release -sc)/updates main
+EOF
 
     else
         cat > /etc/apt/sources.list <<EOF
@@ -797,6 +817,13 @@ if [[ "$OS" = "CentOs" ]]; then
     else
         disable_file /etc/httpd/conf.d/welcome.conf
         disable_file /etc/httpd/conf.d/webalizer.conf
+              # Disable more extra modules in centos 6.x /etc/httpd/httpd.conf dav/ldap/cgi/proxy_ajp
+-		sed -i "s|LoadModule suexec_module modules|#LoadModule suexec_module modules|" "$HTTP_CONF_PATH"
+-		sed -i "s|LoadModule cgi_module modules|#LoadModule cgi_module modules|" "$HTTP_CONF_PATH"
+-		sed -i "s|LoadModule dav_module modules|#LoadModule dav_module modules|" "$HTTP_CONF_PATH"
+-		sed -i "s|LoadModule ldap_module modules|#LoadModule ldap_module modules|" "$HTTP_CONF_PATH"
+-		sed -i "s|LoadModule dav_fs_module modules|#LoadModule dav_fs_module modules|" "$HTTP_CONF_PATH"
+-		sed -i "s|LoadModule proxy_ajp_module modules|#LoadModule proxy_ajp_module modules|" "$HTTP_CONF_PATH"
     fi     
 elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     $PACKAGE_INSTALLER libapache2-mod-bw
@@ -805,6 +832,7 @@ elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     HTTP_SERVICE="apache2"
     HTTP_USER="www-data"
     HTTP_GROUP="www-data"
+    a2enmod rewrite
     a2enmod suexec rewrite ssl actions include
     a2enmod php5
     a2enmod dav_fs dav auth_digest
