@@ -9,10 +9,11 @@ Our installation script currently support the following operating systems/distri
 
 * CentOS 6 and 7
 * Ubuntu 12.04 and 14.04
-* NEW! Debian 7 and 8 (Not tested)
+* NEW! Debian 7 Support (Debian 8 support pending)
  
-Tested and working on Debian 7.8. It should work on Debian 7.x and Debian 8.
+Tested and working on Debian 7.8. It should work on Debian 7.x.
 Debian 6 or older are not supported as obsolete. 
+Debian 8 will be added later or as soon it becomes stable.
   
 Preliminary install information can be found here: [Sentora Documentation](http://docs.sentora.org/index.php?node=7)
  
