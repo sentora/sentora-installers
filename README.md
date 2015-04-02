@@ -11,7 +11,7 @@ Our installation script currently support the following operating systems/distri
 * Ubuntu 12.04 and 14.04
 * NEW! Debian 7 Support (Debian 8 support pending)
  
-Tested and working on Debian 7.8. It should work on Debian 7.x.
+Tested and working on Debian 7.8. It work on Debian 7.x
 Debian 6 or older are not supported as obsolete. 
 Debian 8 will be added later or as soon it becomes stable.
   
