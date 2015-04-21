@@ -366,11 +366,11 @@ if [[ "$OS" = "CentOs" ]]; then
     disablerepo "rpmfusion-free-updates-testing"
    
     # patch /etc/selinux/config not found
-    yum -y install selinux-policy-targeted
-
     # We need to disable SELinux...
+    if [ -f "/etc/selinux/config" ];then
     sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
     setenforce 0
+    fi
     
     # patch iptables and sendmail service not found
     yum -y install sendmail iptables
