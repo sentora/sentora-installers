@@ -318,9 +318,9 @@ if [[ "$OS" = "Ubuntu" ]]; then
     [ -f /etc/init.d/apparmor ]
     if [ $? = "0" ]; then
         echo -e "\n-- Disabling and removing AppArmor, please wait..."
-        /etc/init.d/apparmor stop &> /dev/null
+        /etc/init.d/apparmor kill &> /dev/null
         update-rc.d -f apparmor remove &> /dev/null
-        apt-get remove -y --purge apparmor* &> /dev/null
+        apt-get remove -y --purge apparmor apparmor-utils &> /dev/null
         disable_file /etc/init.d/apparmor &> /dev/null
         echo -e "AppArmor has been removed."
     fi
