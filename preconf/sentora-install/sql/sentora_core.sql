@@ -208,7 +208,8 @@ INSERT INTO `sentora_core`.`x_dns_create` (`dc_id_pk`, `dc_acc_fk`, `dc_type_vc`
 (6, 0, 'A', 'ns1', 172800, ':IP:', NULL, NULL, NULL),
 (7, 0, 'A', 'ns2', 172800, ':IP:', NULL, NULL, NULL),
 (8, 0, 'NS', '@', 172800, 'ns1.:DOMAIN:', NULL, NULL, NULL),
-(9, 0, 'NS', '@', 172800, 'ns2.:DOMAIN:', NULL, NULL, NULL);
+(9, 0, 'NS', '@', 172800, 'ns2.:DOMAIN:', NULL, NULL, NULL),
+(10, 0, 'SPF', '@', 172800, 'v=spf1 a mx ptr ip4::IP: mx:mail.:DOMAIN: ?all', NULL, NULL, NULL);
 
 /*Table structure for table `x_faqs` */
 
