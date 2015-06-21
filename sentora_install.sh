@@ -667,10 +667,8 @@ mysql -u root -p"$mysqlpassword" -e "DROP DATABASE IF EXISTS test";
 
 # secure SELECT "hacker-code" INTO OUTFILE
 # unsupported configuration for MariaDB 10
-if [[ $OS" = "Fedora" ]] ; then
-echo not edit $MY_CNF_PATH
-else
 # configuration for MySQL 5 and MariaDB 5
+if [[ $OS" = "CentOs" || "$OS" = "Ubuntu" ]] ; then
 sed -i "s|\[mysqld\]|&\nsecure-file-priv = /var/tmp|" $MY_CNF_PATH
 fi
 
