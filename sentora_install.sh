@@ -666,11 +666,7 @@ mysql -u root -p"$mysqlpassword" -e "FLUSH PRIVILEGES";
 mysql -u root -p"$mysqlpassword" -e "DROP DATABASE IF EXISTS test";
 
 # secure SELECT "hacker-code" INTO OUTFILE
-# unsupported configuration for MariaDB 10
-# configuration for MySQL 5 and MariaDB 5
-if  [[ "$OS" = "CentOs" || "$OS" = "Ubuntu" ]]; then
 sed -i "s|\[mysqld\]|&\nsecure-file-priv = /var/tmp|" $MY_CNF_PATH
-fi
 
 # setup sentora access and core database
 sed -i "s|YOUR_ROOT_MYSQL_PASSWORD|$mysqlpassword|" $PANEL_PATH/panel/cnf/db.php
