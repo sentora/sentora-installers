@@ -680,8 +680,8 @@ insert  into `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx
 (92,'apache_changed','Apache Changed','true','true|false','If set, Apache Config daemon hook will write the vhost config file changes.','Apache Config','false'),
 (94,'apache_allow_disabled','Allow Disabled','true','true|false','Allow webhosts to remain active even if a user has been disabled.','Apache Config','true'),
 (95,'apache_budir','VHost Backup Dir','/var/sentora/backups/',NULL,'Directory that vhost.conf backups are stored.','Apache Config','true'),
-(96,'apache_purgebu','Purge Backups','true','true|false','Old backups are deleted after the date set in Puge Date','Apache Config','true'),
-(97,'apache_purge_date','Purge Date','7',NULL,'Time in days that vhost backups are safe from deletion','Apache Config','true'),
+(96,'apache_purgebu','VHost Purge Backups','true','true|false','Old vhost backups are deleted after the date set in VHost Puge Date','Apache Config','true'),
+(97,'apache_purge_date','VHost Purge Date','7',NULL,'Time in days that vhost backups are safe from deletion','Apache Config','true'),
 (98,'apache_backup','VHost Backup','true','true|false','Backup vhost file before a new one is written','Apache Config','true'),
 (99,'zsudo','zsudo path','/etc/sentora/panel/bin/zsudo',NULL,'Path to the zsudo binary used by Apache to run system commands.','Sentora Config','true');
 insert  into `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx`,`so_defvalues_tx`,`so_desc_tx`,`so_module_vc`,`so_usereditable_en`) values 
