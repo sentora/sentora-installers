@@ -117,7 +117,7 @@ CREATE TABLE `quota` (
   `path` varchar(100) NOT NULL,
   `current` bigint(20) DEFAULT NULL,
   PRIMARY KEY (`username`,`path`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `quota2` (
   `username` varchar(100) NOT NULL,
