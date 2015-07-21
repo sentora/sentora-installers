@@ -25,9 +25,9 @@
 #  all those who participated to this and to previous installers.
 #  Thanks to all.
 
-SENTORA_INSTALLER_VERSION="1.0.2"
+SENTORA_INSTALLER_VERSION="1.0.3"
 SENTORA_CORE_VERSION="1.0.0"
-SENTORA_PRECONF_VERSION="1.0.0"
+SENTORA_PRECONF_VERSION="1.0.1"
 
 PANEL_PATH="/etc/sentora"
 PANEL_DATA="/var/sentora"
@@ -318,9 +318,9 @@ if [[ "$OS" = "Ubuntu" ]]; then
     [ -f /etc/init.d/apparmor ]
     if [ $? = "0" ]; then
         echo -e "\n-- Disabling and removing AppArmor, please wait..."
-        /etc/init.d/apparmor kill &> /dev/null
+        /etc/init.d/apparmor stop &> /dev/null
         update-rc.d -f apparmor remove &> /dev/null
-        apt-get remove -y --purge apparmor apparmor-utils &> /dev/null
+        apt-get remove -y --purge apparmor* &> /dev/null
         disable_file /etc/init.d/apparmor &> /dev/null
         echo -e "AppArmor has been removed."
     fi
@@ -483,6 +483,14 @@ mv "$PANEL_PATH/sentora-core-$SENTORA_CORE_VERSION" "$PANEL_PATH/panel"
 rm sentora_core.zip
 rm "$PANEL_PATH/panel/LICENSE.md" "$PANEL_PATH/panel/README.md" "$PANEL_PATH/panel/.gitignore"
 rm -rf "$PANEL_PATH/_delete_me" "$PANEL_PATH/.gitignore"
+
+# Temp patch
+wget -O hotfix_controller.ext.php "https://raw.githubusercontent.com/sentora/sentora-core/b176df0e29e52e14d778ca6cb47c5765cf3c4953/modules/ftp_management/code/controller.ext.php"
+mv /etc/sentora/panel/modules/ftp_management/code/controller.ext.php controller.ext.php_backup
+mv hotfix_controller.ext.php /etc/sentora/panel/modules/ftp_management/code/controller.ext.php
+chown root:root /etc/sentora/panel/modules/ftp_management/code/controller.ext.php
+chmod 777 /etc/sentora/panel/modules/ftp_management/code/controller.ext.php
+
 
 #--- Set-up Sentora directories and configure permissions
 PANEL_CONF="$PANEL_PATH/configs"
@@ -751,12 +759,13 @@ if [[ "$OS" = "CentOs" ]]; then
     else
         disable_file /etc/httpd/conf.d/welcome.conf
         disable_file /etc/httpd/conf.d/webalizer.conf
-		# Disable more extra modules in centos 6.x /etc/httpd/httpd.conf dav/ldap/cgi/proxy_ajp
-		sed -i "s|LoadModule suexec_module modules|#LoadModule suexec_module modules|" "$HTTP_CONF_PATH"
-		sed -i "s|LoadModule cgi_module modules|#LoadModule cgi_module modules|" "$HTTP_CONF_PATH"
-		sed -i "s|LoadModule dav_module modules|#LoadModule dav_module modules|" "$HTTP_CONF_PATH"
-		sed -i "s|LoadModule dav_fs_module modules|#LoadModule dav_fs_module modules|" "$HTTP_CONF_PATH"
-		sed -i "s|LoadModule proxy_ajp_module modules|#LoadModule proxy_ajp_module modules|" "$HTTP_CONF_PATH"
+        # Disable more extra modules in centos 6.x /etc/httpd/httpd.conf dav/ldap/cgi/proxy_ajp
+	    sed -i "s|LoadModule suexec_module modules|#LoadModule suexec_module modules|" "$HTTP_CONF_PATH"
+	    sed -i "s|LoadModule cgi_module modules|#LoadModule cgi_module modules|" "$HTTP_CONF_PATH"
+	    sed -i "s|LoadModule dav_module modules|#LoadModule dav_module modules|" "$HTTP_CONF_PATH"
+	    sed -i "s|LoadModule dav_fs_module modules|#LoadModule dav_fs_module modules|" "$HTTP_CONF_PATH"
+	    sed -i "s|LoadModule proxy_ajp_module modules|#LoadModule proxy_ajp_module modules|" "$HTTP_CONF_PATH"
+    
     fi     
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER libapache2-mod-bw
