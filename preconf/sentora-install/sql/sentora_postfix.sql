@@ -60,42 +60,6 @@ CREATE TABLE `domain` (
   PRIMARY KEY (`domain`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Postfix Admin - Virtual Domains';
 
-CREATE TABLE `domain_admins` (
-  `username` varchar(255) NOT NULL,
-  `domain` varchar(255) NOT NULL,
-  `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `active` tinyint(1) NOT NULL DEFAULT '1',
-  KEY `username` (`username`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Postfix Admin - Domain Admins';
-
-CREATE TABLE `fetchmail` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `mailbox` varchar(255) NOT NULL,
-  `src_server` varchar(255) NOT NULL,
-  `src_auth` enum('password','kerberos_v5','kerberos','kerberos_v4','gssapi','cram-md5','otp','ntlm','msn','ssh','any') DEFAULT NULL,
-  `src_user` varchar(255) NOT NULL,
-  `src_password` varchar(255) NOT NULL,
-  `src_folder` varchar(255) NOT NULL,
-  `poll_time` int(11) unsigned NOT NULL DEFAULT '10',
-  `fetchall` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `keep` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `protocol` enum('POP3','IMAP','POP2','ETRN','AUTO') DEFAULT NULL,
-  `usessl` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `extra_options` text,
-  `returned_text` text,
-  `mda` varchar(255) NOT NULL,
-  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE `log` (
-  `timestamp` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `username` varchar(255) NOT NULL,
-  `domain` varchar(255) NOT NULL,
-  `action` varchar(255) NOT NULL,
-  `data` text NOT NULL,
-  KEY `timestamp` (`timestamp`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Postfix Admin - Log';
 
 CREATE TABLE `mailbox` (
   `username` varchar(255) NOT NULL,
@@ -111,13 +75,6 @@ CREATE TABLE `mailbox` (
   PRIMARY KEY (`username`),
   KEY `domain` (`domain`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Postfix Admin - Virtual Mailboxes';
-
-CREATE TABLE `quota` (
-  `username` varchar(255) NOT NULL,
-  `path` varchar(100) NOT NULL,
-  `current` bigint(20) DEFAULT NULL,
-  PRIMARY KEY (`username`,`path`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 CREATE TABLE `quota2` (
   `username` varchar(100) NOT NULL,
