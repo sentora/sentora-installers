@@ -4,6 +4,12 @@ SENTORA_UPDATER_VERSION="1.0.2"
 PANEL_PATH="/etc/sentora"
 PANEL_DATA="/var/sentora"
 
+# Check if the user is 'root' before updating
+if [ $UID -ne 0 ]; then
+    echo "Install failed: you must be logged in as 'root' to install."
+    echo "Use command 'sudo -i', then enter root password and then try again."
+    exit 1
+fi
 # Ensure the OS is compatible with the launcher
 if [ -f /etc/centos-release ]; then
     OS="CentOs"
@@ -66,6 +72,21 @@ if [[ "$OS" = "CentOs" ]]; then
     fi
 fi
 
+#Suhosin patch for sentora 1.0.0
+
+SUHOSIN_VERSION="0.9.37.1"
+wget -nv -O suhosin.zip https://github.com/stefanesser/suhosin/archive/$SUHOSIN_VERSION.zip
+unzip -q suhosin.zip
+rm -f suhosin.zip
+cd suhosin-$SUHOSIN_VERSION
+phpize 
+./configure 
+make
+make install 
+cd ..
+rm -rf suhosin-$SUHOSIN_VERSION
+
+## SQL patch now
 # Postfix add missing tables apply only to centos 7 currently
 
 if [[ "$OS" = "CentOs" ]]; then
@@ -76,7 +97,7 @@ if [[ "$OS" = "CentOs" ]]; then
     read -p "Can't connect to mysql, please give root password or press ctrl-C to abort: " mysqlpassword
     done
     echo -e "Connection mysql ok"
-    wget -nv -O  patch_1.0.2.sql https://raw.githubusercontent.com/MBlagui/sentora-installers/1.0.2/patch_1.0.2.sql #need url
+    wget -nv -O  patch_1.0.2.sql https://raw.githubusercontent.com/sentora/sentora-installers/master/patch_1.0.2.sql #need url
     mysql -u root -p"$mysqlpassword" < patch_1.0.2.sql
     fi
 fi
