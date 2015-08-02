@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-SENTORA_UPDATER_VERSION="1.0.2"
+SENTORA_UPDATER_VERSION="1.0.3"
 PANEL_PATH="/etc/sentora"
 PANEL_DATA="/var/sentora"
 
