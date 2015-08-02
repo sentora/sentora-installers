@@ -17,6 +17,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Supported Operating Systems: CentOS 6.*/7.* Minimal, Ubuntu server 12.04/14.04 
+# béta Fedora 20 and 21
 #  32bit and 64bit
 #
 #  Author Pascal Peyremorte (ppeyremorte@sentora.org)
@@ -45,6 +46,10 @@ if [ -f /etc/centos-release ]; then
     OS="CentOs"
     VERFULL=$(sed 's/^.*release //;s/ (Fin.*$//' /etc/centos-release)
     VER=${VERFULL:0:1} # return 6 or 7
+elif [ -f /etc/fedora-release ]; then
+    OS="Fedora"
+    VERFULL=$(sed 's/^.*release //;s/ (Fin.*$//' /etc/fedora-release)
+    VER=${VERFULL:0:2} # return 20 or 21    
 elif [ -f /etc/lsb-release ]; then
     OS=$(grep DISTRIB_ID /etc/lsb-release | sed 's/^.*=//')
     VER=$(grep DISTRIB_RELEASE /etc/lsb-release | sed 's/^.*=//')
@@ -57,6 +62,7 @@ ARCH=$(uname -m)
 echo "Detected : $OS  $VER  $ARCH"
 
 if [[ "$OS" = "CentOs" && ("$VER" = "6" || "$VER" = "7" ) || 
+      "$OS" = "Fedora" && ("$VER" = "20" || "$VER" = "21" ) ||
       "$OS" = "Ubuntu" && ("$VER" = "12.04" || "$VER" = "14.04" ) ]] ; then 
     echo "Ok."
 else
@@ -65,7 +71,7 @@ else
 fi
 
 # Centos uses repo directory that depends of architecture. Ensure it is compatible
-if [[ "$OS" = "CentOs" ]] ; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]] ; then
     if [[ "$ARCH" == "i386" || "$ARCH" == "i486" || "$ARCH" == "i586" || "$ARCH" == "i686" ]]; then
         ARCH="i386"
     elif [[ "$ARCH" != "x86_64" ]]; then
@@ -92,7 +98,7 @@ if [ -e /usr/local/cpanel ] || [ -e /usr/local/directadmin ] || [ -e /usr/local/
 fi
 
 # Check for some common packages that we know will affect the installation/operating of Sentora.
-if [[ "$OS" = "CentOs" ]] ; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]  ; then
     PACKAGE_INSTALLER="yum -y -q install"
     PACKAGE_REMOVER="yum -y -q remove"
 
@@ -100,7 +106,7 @@ if [[ "$OS" = "CentOs" ]] ; then
        rpm -q "$1" &> /dev/null
     }
 
-    if  [[ "$VER" = "7" ]]; then
+    if  [[ "$VER" = "7" || "$VER" = "20" || "$VER" = "21" ]]; then
         DB_PCKG="mariadb" &&  echo "DB server will be mariaDB"
     else 
         DB_PCKG="mysql" && echo "DB server will be mySQL"
@@ -139,7 +145,7 @@ done
 
 # Update repositories and Install wget and util used to grab server IP
 echo -e "\n-- Installing wget and dns utils required to manage inputs"
-if [[ "$OS" = "CentOs" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]  ; then
     yum -y update
     $PACKAGE_INSTALLER bind-utils
 elif [[ "$OS" = "Ubuntu" ]]; then
@@ -197,7 +203,7 @@ if [[ "$tz" == "" && "$PANEL_FQDN" == "" ]] ; then
     echo "Preparing to select timezone, please wait a few seconds..."
     $PACKAGE_INSTALLER tzdata
     # setup server timezone
-    if [[ "$OS" = "CentOs" ]]; then
+    if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]  ; then
         # make tzselect to save TZ in /etc/timezone
         echo "echo \$TZ > /etc/timezone" >> /usr/bin/tzselect
         tzselect
@@ -271,6 +277,18 @@ if [[ "$PANEL_FQDN" == "" ]] ; then
         fi
       
         echo ""
+        # if Fedora beta warning
+        if [[ "$OS" = "Fedora" ]] ; then
+            echo -e -n "\e[1;31mWARNING: Fedora installer is still in beta version !\e[0m"
+            echo -e -n "\n Even if it is based on that of CentOS"
+            echo -e -n "\n it is possible that you encounter error during installation"
+            echo -e -n "\n want to install this beta release \n"
+            read -e -p "(y):Accept and install, (q):Quit installer? " yq
+            case $yn in
+                [Yy]* ) break;;
+                [Qq]* ) exit;;
+            esac
+         fi
         # if any warning, ask confirmation to continue or propose to change
         if [[ "$confirm" != "" ]] ; then
             echo "There are some warnings..."
@@ -330,16 +348,8 @@ fi
 echo -e "\n-- Updating repositories and packages sources"
 if [[ "$OS" = "CentOs" ]]; then
     #EPEL Repo Install
-    EPEL_BASE_URL="http://dl.fedoraproject.org/pub/epel/$VER/$ARCH";
-    if  [[ "$VER" = "7" ]]; then
-        EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL/e/" | grep -oP '(?<=href=")epel-release.*(?=">)')
-        wget "$EPEL_BASE_URL/e/$EPEL_FILE"
-    else 
-        EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL/" | grep -oP '(?<=href=")epel-release.*(?=">)')
-        wget "$EPEL_BASE_URL/$EPEL_FILE"
-    fi
-    $PACKAGE_INSTALLER -y install epel-release*.rpm
-    rm "$EPEL_FILE"
+    # for Centos 6 & 7 rpm epel-release include in centos extra
+    yum -y --enablerepo=extras install epel-release
     
     #To fix some problems of compatibility use of mirror centos.org to all users
     #Replace all mirrors by base repos to avoid any problems.
@@ -351,6 +361,20 @@ if [[ "$OS" = "CentOs" ]]; then
         sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/centos-$VER|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/$VER/$ARCH/os/|" "/etc/yum.repos.d/vz.repo"
         sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/updates-released-ce$VER|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/$VER/$ARCH/updates/|" "/etc/yum.repos.d/vz.repo"
     fi
+    fi
+
+if [[ "$OS" = "Fedora" ]]; then
+    #To fix some problems of compatibility use of mirror download.fedoraproject.org to all users
+    #Replace all mirrors by base repos to avoid any problems.
+    sed -i 's|metalink=https://mirrors.fedoraproject.org|#metalink=https://mirrors.fedoraproject.org|' "/etc/yum.repos.d/fedora.repo"
+    sed -i 's|#baseurl=http://download.fedoraproject.org|baseurl=http://download.fedoraproject.org|' "/etc/yum.repos.d/fedora.repo"
+    sed -i 's|metalink=https://mirrors.fedoraproject.org|#metalink=https://mirrors.fedoraproject.org|' "/etc/yum.repos.d/fedora-updates.repo"
+    sed -i 's|#baseurl=http://download.fedoraproject.org|baseurl=http://download.fedoraproject.org|' "/etc/yum.repos.d/fedora-updates.repo"
+    
+    # install iptables and iptables service
+    yum -y install iptables iptables-services
+    fi
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]  ; then
 
     #disable deposits that could result in installation errors
     disablerepo() {
@@ -364,6 +388,7 @@ if [[ "$OS" = "CentOs" ]]; then
     disablerepo "rpmforge"
     disablerepo "rpmfusion-free-updates"
     disablerepo "rpmfusion-free-updates-testing"
+    disablerepo "fedora-updates-testing"
 
     # We need to disable SELinux...
     sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
@@ -440,7 +465,7 @@ fi
 
 #--- Ensures that all packages are up to date
 echo -e "\n-- Updating+upgrading system, it may take some time..."
-if [[ "$OS" = "CentOs" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]  ; then
     yum -y update
     yum -y upgrade
 elif [[ "$OS" = "Ubuntu" ]]; then
@@ -450,7 +475,7 @@ fi
 
 #--- Install utility packages required by the installer and/or Sentora.
 echo -e "\n-- Downloading and installing required tools..."
-if [[ "$OS" = "CentOs" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]  ; then
     $PACKAGE_INSTALLER sudo vim make zip unzip chkconfig bash-completion
     $PACKAGE_INSTALLER ld-linux.so.2 libbz2.so.1 libdb-4.7.so libgd.so.2 
     $PACKAGE_INSTALLER curl curl-devel perl-libwww-perl libxml2 libxml2-devel zip bzip2-devel gcc gcc-c++ at make
@@ -591,10 +616,10 @@ fi
 echo -e "\n-- Installing MySQL"
 mysqlpassword=$(passwordgen);
 $PACKAGE_INSTALLER "$DB_PCKG"
-if [[ "$OS" = "CentOs" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]  ; then
     $PACKAGE_INSTALLER "DB_PCKG-devel" "$DB_PCKG-server" 
     MY_CNF_PATH="/etc/my.cnf"
-    if  [[ "$VER" = "7" ]]; then
+    if  [[ "$VER" = "7" || "$VER" = "20" || "$VER" = "21" ]]; then
         DB_SERVICE="mariadb"
     else 
         DB_SERVICE="mysqld"
@@ -628,8 +653,8 @@ sed -i "s|YOUR_ROOT_MYSQL_PASSWORD|$mysqlpassword|" $PANEL_PATH/panel/cnf/db.php
 mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_core.sql
 
 # Register mysql/mariadb service for autostart
-if [[ "$OS" = "CentOs" ]]; then
-    if [[ "$VER" == "7" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]  ; then
+    if  [[ "$VER" = "7" || "$VER" = "20" || "$VER" = "21" ]]; then
         systemctl enable "$DB_SERVICE".service
     else
         chkconfig "$DB_SERVICE" on
@@ -639,7 +664,7 @@ fi
 
 #--- Postfix
 echo -e "\n-- Installing Postfix"
-if [[ "$OS" = "CentOs" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]  ; then
     $PACKAGE_INSTALLER postfix postfix-perl-scripts
     USR_LIB_PATH="/usr/libexec"
 elif [[ "$OS" = "Ubuntu" ]]; then
@@ -691,8 +716,8 @@ sed -i '/virtual_mailbox_limit_maps/d' $PANEL_CONF/postfix/main.cf
 sed -i '/smtpd_bind_address/d' $PANEL_CONF/postfix/master.cf
 
 # Register postfix service for autostart (it is automatically started)
-if [[ "$OS" = "CentOs" ]]; then
-    if [[ "$VER" == "7" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]  ; then
+    if  [[ "$VER" = "7" || "$VER" = "20" || "$VER" = "21" ]]; then
         systemctl enable postfix.service
         # systemctl start postfix.service
     else
@@ -704,7 +729,7 @@ fi
 
 #--- Dovecot (includes Sieve)
 echo -e "\n-- Installing Dovecot"
-if [[ "$OS" = "CentOs" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]  ; then
     $PACKAGE_INSTALLER dovecot dovecot-mysql dovecot-pigeonhole 
     sed -i "s|#first_valid_uid = ?|first_valid_uid = $VMAIL_UID\n#last_valid_uid = $VMAIL_UID\n\nfirst_valid_gid = $MAIL_GID\n#last_valid_gid = $MAIL_GID|" $PANEL_CONF/dovecot2/dovecot.conf
 elif [[ "$OS" = "Ubuntu" ]]; then
@@ -731,8 +756,8 @@ chown vmail:mail /var/log/dovecot*
 chmod 660 /var/log/dovecot*
 
 # Register dovecot service for autostart and start it
-if [[ "$OS" = "CentOs" ]]; then
-    if [[ "$VER" == "7" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]  ; then
+    if  [[ "$VER" = "7" || "$VER" = "20" || "$VER" = "21" ]]; then
         systemctl enable dovecot.service
         systemctl start dovecot.service
     else
@@ -744,14 +769,14 @@ fi
 #--- Apache server
 echo -e "\n-- Installing and configuring Apache"
 $PACKAGE_INSTALLER "$HTTP_PCKG"
-if [[ "$OS" = "CentOs" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]  ; then
     $PACKAGE_INSTALLER "$HTTP_PCKG-devel"
     HTTP_CONF_PATH="/etc/httpd/conf/httpd.conf"
     HTTP_VARS_PATH="/etc/sysconfig/httpd"
     HTTP_SERVICE="httpd"
     HTTP_USER="apache"
     HTTP_GROUP="apache"
-    if [[ "$VER" = "7" ]]; then
+    if  [[ "$VER" = "7" || "$VER" = "20" || "$VER" = "21" ]]; then
         # Disable extra modules in centos 7
         disable_file /etc/httpd/conf.modules.d/01-cgi.conf
         disable_file /etc/httpd/conf.modules.d/00-lua.conf
@@ -803,7 +828,7 @@ if ! grep -q "umask 002" "$HTTP_VARS_PATH"; then
 fi
 
 # remove default virtual site to ensure Sentora is the default vhost
-if [[ "$OS" = "CentOs" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]  ; then
     sed -i "s|DocumentRoot \"/var/www/html\"|DocumentRoot $PANEL_PATH/panel|" "$HTTP_CONF_PATH"
 elif [[ "$OS" = "Ubuntu" ]]; then
     # disable completely sites-enabled/000-default.conf
@@ -815,7 +840,7 @@ elif [[ "$OS" = "Ubuntu" ]]; then
 fi
 
 # Comment "NameVirtualHost" and Listen directives that are handled in vhosts file
-if [[ "$OS" = "CentOs" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]  ; then
     sed -i "s|^\(NameVirtualHost .*$\)|#\1\n# NameVirtualHost is now handled in Sentora vhosts file|" "$HTTP_CONF_PATH"
     sed -i 's|^\(Listen .*$\)|#\1\n# Listen is now handled in Sentora vhosts file|' "$HTTP_CONF_PATH"
 elif [[ "$OS" = "Ubuntu" ]]; then
@@ -825,6 +850,8 @@ fi
 
 # adjustments for apache 2.4
 if [[ ("$OS" = "CentOs" && "$VER" = "7") || 
+      ("$OS" = "Fedora" && "$VER" = "20") ||0
+      ("$OS" = "Fedora" && "$VER" = "21") ||      
       ("$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then 
     # Order deny,allow / Deny from all   ->  Require all denied
     sed -i 's|Order deny,allow|Require all denied|I'  $PANEL_CONF/apache/httpd.conf
@@ -848,9 +875,9 @@ fi
 
 #--- PHP
 echo -e "\n-- Installing and configuring PHP"
-if [[ "$OS" = "CentOs" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]  ; then
     $PACKAGE_INSTALLER php php-devel php-gd php-mbstring php-intl php-mysql php-xml php-xmlrpc
-    $PACKAGE_INSTALLER php-mcrypt php-imap  #Epel packages
+    $PACKAGE_INSTALLER php-mcrypt php-imap  #Epel or Fedora packages
     PHP_INI_PATH="/etc/php.ini"
     PHP_EXT_PATH="/etc/php.d"
 elif [[ "$OS" = "Ubuntu" ]]; then
@@ -873,7 +900,7 @@ chown $HTTP_USER:$HTTP_GROUP "$PANEL_DATA/sessions"
 chmod 733 "$PANEL_DATA/sessions"
 chmod +t "$PANEL_DATA/sessions"
 
-if [[ "$OS" = "CentOs" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]  ; then
     # Remove session & php values from apache that cause override
     sed -i "/php_value/d" /etc/httpd/conf.d/php.conf
 elif [[ "$OS" = "Ubuntu" ]]; then
@@ -889,33 +916,47 @@ sed -i "s|;upload_tmp_dir =|upload_tmp_dir = $PANEL_DATA/temp/|" $PHP_INI_PATH
 # Disable php signature in headers to hide it from hackers
 sed -i "s|expose_php = On|expose_php = Off|" $PHP_INI_PATH
 
-# Build suhosin for PHP 5.x which is required by Sentora. 
-if [[ "$OS" = "CentOs" || ( "$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then
-    echo -e "\n# Building suhosin"
-    if [[ "$OS" = "Ubuntu" ]]; then
-        $PACKAGE_INSTALLER php5-dev
-    fi
-    SUHOSIN_VERSION="0.9.37.1"
-    wget -nv -O suhosin.zip https://github.com/stefanesser/suhosin/archive/$SUHOSIN_VERSION.zip
-    unzip -q suhosin.zip
-    rm -f suhosin.zip
-    cd suhosin-$SUHOSIN_VERSION
-    phpize &> /dev/null
-    ./configure &> /dev/null
-    make &> /dev/null
-    make install 
-    cd ..
-    rm -rf suhosin-$SUHOSIN_VERSION
-    if [[ "$OS" = "CentOs" ]]; then 
-        echo 'extension=suhosin.so' > $PHP_EXT_PATH/suhosin.ini
-    elif [[ "$OS" = "Ubuntu" ]]; then
-        sed -i 'N;/default extension directory./a\extension=suhosin.so' $PHP_INI_PATH
-    fi	
+# build suhosin for PHP 5.x which is required by Sentora. 
+#if [[ "$OS" = "CentOs" || "$OS" = "Fedora" || ( "$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then
+#    echo -e "\n# Building suhosin"
+#    if [[ "$OS" = "Ubuntu" ]]; then
+#        $PACKAGE_INSTALLER php5-dev
+#    fi
+#    SUHOSIN_VERSION="0.9.37.1"
+#    wget -nv -O suhosin.zip https://github.com/stefanesser/suhosin/archive/$SUHOSIN_VERSION.zip
+#    unzip -q suhosin.zip
+#    rm -f suhosin.zip
+#    cd suhosin-$SUHOSIN_VERSION
+#    phpize &> /dev/null
+#    ./configure &> /dev/null
+#    make &> /dev/null
+#    make install 
+#    cd ..
+#    rm -rf suhosin-$SUHOSIN_VERSION
+#    if [[ "$OS" = "CentOs" ]]; then 
+#        echo 'extension=suhosin.so' > $PHP_EXT_PATH/suhosin.ini
+#    elif [[ "$OS" = "Ubuntu" ]]; then
+#        sed -i 'N;/default extension directory./a\extension=suhosin.so' $PHP_INI_PATH
+#    fi	
+#fi
+
+# build suhosin for PHP 5.x which is required by Sentora.
+# use andykimpe opensuse build service repo
+# https://build.opensuse.org/project/show/home:andykimpe:suhosin
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
+wget http://download.opensuse.org/repositories/home:andykimpe:suhosin/"$OS"_"$VER"/home:andykimpe:suhosin.repo -P /etc/yum.repos.d/
+yum -y install php-suhosin
+elif [[ "$OS" = "Ubuntu"]]; then
+echo 'deb http://download.opensuse.org/repositories/home:/andykimpe:/suhosin/xUbuntu_"$VER"/ /' >> /etc/apt/sources.list.d/php5-suhosin.list
+wget http://download.opensuse.org/repositories/home:andykimpe:suhosin/xUbuntu_"$VER"/Release.key | apt-key add -
+apt-get update
+apt-get -y install php5-suhosin
 fi
 
+
 # Register apache(+php) service for autostart and start it
-if [[ "$OS" = "CentOs" ]]; then
-    if [[ "$VER" == "7" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
+    if  [[ "$VER" = "7" || "$VER" = "20" || "$VER" = "21" ]]; then
         systemctl enable "$HTTP_SERVICE.service"
         systemctl start "$HTTP_SERVICE.service"
     else
@@ -927,7 +968,7 @@ fi
 
 #--- ProFTPd
 echo -e "\n-- Installing ProFTPD"
-if [[ "$OS" = "CentOs" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
     $PACKAGE_INSTALLER proftpd proftpd-mysql 
     FTP_CONF_PATH='/etc/proftpd.conf'
     sed -i "s|nogroup|nobody|" $PANEL_CONF/proftpd/proftpd-mysql.conf
@@ -966,8 +1007,8 @@ if [[ "$OS" = "Ubuntu" && "$VER" = "14.04" ]]; then
 fi
 
 # Register proftpd service for autostart and start it
-if [[ "$OS" = "CentOs" ]]; then
-    if [[ "$VER" == "7" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
+    if  [[ "$VER" = "7" || "$VER" = "20" || "$VER" = "21" ]]; then
         systemctl enable proftpd.service
         systemctl start proftpd.service
     else
@@ -978,7 +1019,7 @@ fi
 
 #--- BIND
 echo -e "\n-- Installing and configuring Bind"
-if [[ "$OS" = "CentOs" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
     $PACKAGE_INSTALLER bind bind-utils bind-libs
     BIND_PATH="/etc/named/"
     BIND_FILES="/etc"
@@ -1002,7 +1043,7 @@ touch $PANEL_DATA/logs/bind/bind.log $PANEL_DATA/logs/bind/debug.log
 chown $BIND_USER $PANEL_DATA/logs/bind/bind.log $PANEL_DATA/logs/bind/debug.log
 chmod 660 $PANEL_DATA/logs/bind/bind.log $PANEL_DATA/logs/bind/debug.log
 
-if [[ "$OS" = "CentOs" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
     chmod 751 /var/named
     chmod 771 /var/named/data
     sed -i 's|bind/zones.rfc1918|named.rfc1912.zones|' $PANEL_CONF/bind/named.conf
@@ -1031,8 +1072,8 @@ cat $BIND_FILES/rndc.key $PANEL_CONF/bind/rndc.conf > $BIND_FILES/rndc.conf
 rm -f $BIND_FILES/rndc.key
 
 # Register Bind service for autostart and start it
-if [[ "$OS" = "CentOs" ]]; then
-    if [[ "$VER" == "7" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
+    if  [[ "$VER" = "7" || "$VER" = "20" || "$VER" = "21" ]]; then
         systemctl enable named.service
         systemctl start named.service
     else
@@ -1044,7 +1085,7 @@ fi
 
 #--- CRON and ATD
 echo -e "\n-- Installing and configuring cron tasks"
-if [[ "$OS" = "CentOs" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
     #cronie & crontabs may be missing
     $PACKAGE_INSTALLER crontabs
     CRON_DIR="/var/spool/cron"
@@ -1079,8 +1120,8 @@ chown -R $HTTP_USER:$HTTP_USER "$CRON_DIR"
 chmod 644 "$CRON_FILE"
 
 # Register cron and atd services for autostart and start them
-if [[ "$OS" = "CentOs" ]]; then
-    if [[ "$VER" == "7" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
+    if  [[ "$VER" = "7" || "$VER" = "20" || "$VER" = "21" ]]; then
         systemctl enable crond.service
         systemctl start crond.service
         systemctl start atd.service
@@ -1130,7 +1171,7 @@ ln -s $PANEL_CONF/roundcube/sieve_config.inc.php $PANEL_PATH/panel/etc/apps/webm
 #--- Webalizer
 echo -e "\n-- Configuring Webalizer"
 $PACKAGE_INSTALLER webalizer
-if [[ "$OS" = "CentOs" ]]; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
     rm -rf /etc/webalizer.conf
 elif [[ "$OS" = "Ubuntu" ]]; then
     rm -rf /etc/webalizer/webalizer.conf
@@ -1161,7 +1202,7 @@ chattr -i /etc/resolv.conf
 
 
 #--- Restart all services to capture output messages, if any
-if [[ "$OS" = "CentOs" && "$VER" == "7" ]]; then
+if [[ "$OS" = "CentOs" || "OS" = "Fedora" && "$VER" == "7" | "$VER" = "20" | "$VER" = "21" ]]; then
     # CentOs7 does not return anything except redirection to systemctl :-(
     service() {
        echo "Restarting $1"
