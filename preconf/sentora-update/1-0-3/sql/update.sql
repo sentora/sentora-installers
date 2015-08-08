@@ -1,6 +1,6 @@
 USE `sentora_postfix`;
 
-CREATE TABLE `vacation` (
+CREATE TABLE IF NOT EXISTS `vacation` (
   `email` varchar(255) NOT NULL,
   `subject` varchar(255) CHARACTER SET utf8 NOT NULL,
   `body` text CHARACTER SET utf8 NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE `vacation` (
   KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Postfix - Virtual Vacation/ autoresponder';
 
-CREATE TABLE `vacation_notification` (
+CREATE TABLE IF NOT EXISTS `vacation_notification` (
   `on_vacation` varchar(255) CHARACTER SET utf8 NOT NULL,
   `notified` varchar(255) CHARACTER SET utf8 NOT NULL,
   `notified_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,

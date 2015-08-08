@@ -87,18 +87,13 @@ cd ..
 rm -rf suhosin-$SUHOSIN_VERSION
 
 ## SQL patch now
-# Postfix add missing tables apply only to centos 7 currently
+# get mysql root password, check it works or ask it
+mysqlpassword=$(cat /etc/sentora/panel/cnf/db.php | grep "pass =" | sed -s "s|.*pass \= '\(.*\)';.*|\1|")
+while ! mysql -u root -p$mysqlpassword -e ";" ; do
+read -p "Can't connect to mysql, please give root password or press ctrl-C to abort: " mysqlpassword
+done
+echo -e "Connection mysql ok"
+wget -nv -O  update.sql https://raw.githubusercontent.com/sentora/sentora-installers/master/preconf/sentora-update/1-0-3/sql/update.sql #need url
+mysql -u root -p"$mysqlpassword" < update.sql
 
-if [[ "$OS" = "CentOs" ]]; then
-    if [[ "$VER" == "7" ]]; then
-    # get mysql root password, check it works or ask it
-    mysqlpassword=$(cat /etc/sentora/panel/cnf/db.php | grep "pass =" | sed -s "s|.*pass \= '\(.*\)';.*|\1|")
-    while ! mysql -u root -p$mysqlpassword -e ";" ; do
-    read -p "Can't connect to mysql, please give root password or press ctrl-C to abort: " mysqlpassword
-    done
-    echo -e "Connection mysql ok"
-    wget -nv -O  patch_1.0.2.sql https://raw.githubusercontent.com/sentora/sentora-installers/master/patch_1.0.2.sql #need url
-    mysql -u root -p"$mysqlpassword" < patch_1.0.2.sql
-    fi
-fi
 echo "We are done system patched updater $SENTORA_UPDATER_VERSION"
