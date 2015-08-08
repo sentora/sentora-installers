@@ -499,7 +499,6 @@ mkdir -p $PANEL_CONF
 mkdir -p $PANEL_PATH/docs
 chmod -R 777 $PANEL_PATH
 
-mkdir -p $PANEL_DATA/logs/proftpd
 mkdir -p $PANEL_DATA/backups
 chmod -R 777 $PANEL_DATA/
 
@@ -957,6 +956,8 @@ rm -f "$FTP_CONF_PATH"
 #echo "include $PANEL_CONF/proftpd/proftpd-mysql.conf" >> "$FTP_CONF_PATH";
 ln -s "$PANEL_CONF/proftpd/proftpd-mysql.conf" "$FTP_CONF_PATH"
 
+# setup proftpd log dir
+mkdir -p $PANEL_DATA/logs/proftpd
 chmod -R 644 $PANEL_DATA/logs/proftpd
 
 # Correct bug from package in Ubutu14.04 which screw service proftpd restart
