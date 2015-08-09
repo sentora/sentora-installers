@@ -125,14 +125,23 @@ fi
 # Note : Postfix is installed by default on centos netinstall / minimum install.
 # The installer seems to work fine even if Postfix is already installed.
 # -> The check of postfix is removed, but this comment remains to remember
+pkginst="n"
+pkginstlist=""
 for package in "$DB_PCKG" "dovecot-mysql" "$HTTP_PCKG" "$PHP_PCKG" "proftpd" "$BIND_PCKG" ; do
     if (inst "$package"); then
-        echo "It appears that package $package is already installed. This installer"
-        echo "is designed to install and configure Sentora on a clean OS installation only!"
-        echo -e "\nPlease re-install your OS before attempting to install using this script."
-        exit 1
+    	pkginst="y" # At least one package is installed
+    	pkginstlist="$package $pkginstlist"
     fi
 done
+if [ $pkginst = "y" ]; then
+    echo "It appears that the folowing package(s) are already installed:"
+    echo "$pkginstlist"
+    echo "This installer is designed to install and configure Sentora on a clean OS installation only!"
+    echo -e "\nPlease re-install your OS before attempting to install using this script."
+    exit 1
+fi
+unset pkginst
+unset pkginstlist
 
 # *************************************************
 #--- Prepare or query informations required to install
