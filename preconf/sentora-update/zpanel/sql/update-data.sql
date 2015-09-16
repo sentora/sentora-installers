@@ -22,9 +22,10 @@ INSERT INTO `zpanel_core`.`x_permissions` (`pe_id_pk`, `pe_group_fk`, `pe_module
 
 UPDATE `zpanel_core`.`x_quotas` SET `qt_domains_in` = '-1', `qt_subdomains_in` = '-1', `qt_parkeddomains_in` = '-1', `qt_mailboxes_in` = '-1', `qt_fowarders_in` = '-1', `qt_distlists_in` = '-1', `qt_ftpaccounts_in` = '-1', `qt_mysql_in` = '-1', `qt_diskspace_bi` = '0', `qt_bandwidth_bi` = '0' WHERE `qt_id_pk` = '1';
 
+/** Reloading the settings afresh for sentora as many have changed values or names */
 TRUNCATE `zpanel_core`.`x_settings`;
 
-INSERT  INTO `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx`,`so_defvalues_tx`,`so_desc_tx`,`so_module_vc`,`so_usereditable_en`) VALUES 
+INSERT  INTO zpanel_core.`x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx`,`so_defvalues_tx`,`so_desc_tx`,`so_module_vc`,`so_usereditable_en`) VALUES 
 (6,'dbversion','Sentora version','1.0.3',NULL,'Database Version','Sentora Config','false'),
 (7,'sentora_root','Sentora root path','/etc/sentora/panel/',NULL,'Sentora Web Root','Sentora Config','true'),
 (8,'module_icons_pr','Icons per Row','10',NULL,'Set the number of icons to display before beginning a new line.','Sentora Config','false'),
@@ -40,8 +41,10 @@ INSERT  INTO `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx
 (24,'disable_hostsen','Disable auto HOSTS file entry','false','true|false','Disable Host Entries','Sentora Config','false'),
 (25,'latestzpversion','Cached version of latest sentora version','1.0.0',NULL,'This is used for caching the latest version of Sentora.','Sentora Config','false'),
 (26,'logmode','Debug logging mode','db','db|file|email','The default mode to log all errors in.','Sentora Config','true'),
-(27,'logfile','Sentora Log file','/var/sentora/logs/sentora.log',NULL,'If logging is set to \'file\' mode this is the path to the log file that is to be used by Sentora.','Sentora Config','true'),
-(28,'apikey','XMWS API Key','ee8795c8c53bfdb3b2cc595186b68912',NULL,'The secret API key for the server.','Sentora Config','false'),
+(27,'logfile','Sentora Log file','/var/sentora/logs/sentora.log',NULL,'If logging is set to "file" mode this is the path to the log file that is to be used by Sentora.','Sentora Config','true'),
+(28,'apikey','XMWS API Key','ee8795c8c53bfdb3b2cc595186b68912',NULL,'The secret API key for the server.','Sentora Config','false');
+
+INSERT  INTO zpanel_core.`x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx`,`so_defvalues_tx`,`so_desc_tx`,`so_module_vc`,`so_usereditable_en`) VALUES 
 (29,'email_from_address','From Address','sentora@localhost',NULL,'The email address to appear in the From field of emails sent by Sentora.','Sentora Config','true'),
 (30,'email_from_name','From Name','Sentora Server',NULL,'The name to appear in the From field of emails sent by Sentora.','Sentora Config','true'),
 (31,'email_smtp','Use SMTP','false','true|false','Use SMTP server to send emails from. (true/false)','Sentora Config','true'),
@@ -50,11 +53,13 @@ INSERT  INTO `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx
 (34,'smtp_port','SMTP Port','465',NULL,'The port address of the SMTP server (usually 25)','Sentora Config','true'),
 (35,'smtp_username','SMTP User','',NULL,'Username for authentication on the SMTP server.','Sentora Config','true'),
 (36,'smtp_password','SMTP Pass','',NULL,'Password for authentication on the SMTP server.','Sentora Config','true'),
-(37,'smtp_secure','SMTP Auth method','false','false|ssl|tls','If specified will attempt to use encryption to connect to the server, if \'false\' this is disabled. Available options: false, ssl, tls','Sentora Config','true'),
+(37,'smtp_secure','SMTP Auth method','false','false|ssl|tls','If specified will attempt to use encryption to connect to the server, if "false" this is disabled. Available options: false, ssl, tls','Sentora Config','true'),
 (38,'daemon_lastrun','Daemon timeing cache','0',NULL,'Timestamp of when the daemon last ran.',NULL,'false'),
 (39,'daemon_dayrun','Daemon timeing cache','0',NULL,NULL,NULL,'false'),
 (40,'daemon_weekrun','Daemon timeing cache','0',NULL,NULL,NULL,'false'),
-(41,'daemon_monthrun','Daemon timeing cache','0',NULL,NULL,NULL,'false'),
+(41,'daemon_monthrun','Daemon timeing cache','0',NULL,NULL,NULL,'false');
+
+INSERT  INTO zpanel_core.`x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx`,`so_defvalues_tx`,`so_desc_tx`,`so_module_vc`,`so_usereditable_en`) VALUES 
 (42,'purge_bu','Purge Backups','true','true|false','Delete client backups after allotted time has elapsed to help save diskspace (true/false)','Backup Config','true'),
 (43,'purge_date','Purge Date','30',NULL,'Time in days backups are safe from being deleted. After days have elapsed, older backups will be deleted on Daemon Day Run','Backup Config','true'),
 (44,'disk_bu','Disk Backups','true','true|false','Allow users to create and save backups of their home directories to disk. (true/false)','Backup Config','true'),
@@ -63,7 +68,8 @@ INSERT  INTO `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx
 (47,'ftp_php','FTP PHP','proftpd.php',NULL,'Name of PHP to include when adding FTP data.','FTP Config','true'),
 (48,'ftp_service','FTP Service Name','proftpd',NULL,'The name of the FTP service','FTP Config','true'),
 (49,'ftp_service_root','FTP Service Root','/etc/init.d/',NULL,'The path to the service executable if applicable.','FTP Config','true');
-insert  into `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx`,`so_defvalues_tx`,`so_desc_tx`,`so_module_vc`,`so_usereditable_en`) values 
+
+INSERT INTO zpanel_core.`x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx`,`so_defvalues_tx`,`so_desc_tx`,`so_module_vc`,`so_usereditable_en`) VALUES 
 (50,'ftp_config_file','FTP Config File','',NULL,'The path to the configuration file if applicable.','FTP Config','true'),
 (51,'mailserver_db','Mailserver Database','sentora_postfix',NULL,'The name of the mail server database','Mail Config','true'),
 (52,'hmailserver_et','Hmail Encryption Type','2',NULL,'Type of encryption uses for hMailServer passwords','Mail Config','false'),
@@ -83,11 +89,13 @@ insert  into `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx
 (66,'allow_xfer','Allow Zone Transfers','trusted-servers',NULL,'Setting to restrict zone transfers in setting: allow-transfer {}; Default = all','DNS Config','true'),
 (67,'allowed_types','Allowed Record Types','A AAAA CNAME MX TXT SRV SPF NS',NULL,'Types of records allowed seperated by a space. Default = A AAAA CNAME MX TXT SRV SPF NS','DNS Config','true'),
 (68,'bind_log','Bind Log','/var/sentora/logs/bind/bind.log',NULL,'Path and name of the Bind Log','DNS Config','true'),
-(69,'hosted_dir','Vhosts Directory','/var/sentora/hostdata/',NULL,'Virtual host directory','Apache Config','true'),
+(69,'hosted_dir','Vhosts Directory','/var/sentora/hostdata/',NULL,'Virtual host directory','Apache Config','true');
+
+INSERT INTO zpanel_core.`x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx`,`so_defvalues_tx`,`so_desc_tx`,`so_module_vc`,`so_usereditable_en`) VALUES 
 (70,'disable_hostsen','Disable HOSTS file entries','false','true|false','Disable host entries','Apache Config','true'),
 (71,'apache_vhost','Apache VHOST Conf','/etc/sentora/configs/apache/httpd-vhosts.conf',NULL,'The full system path and filename of the Apache VHOST configuration name.','Apache Config','true'),
 (72,'php_handler','PHP Handler','AddType application/x-httpd-php .php3 .php',NULL,'The PHP Handler.','Apache Config','false'),
-(73,'cgi_handler','CGI Handler','ScriptAlias /cgi-bin/ \"/_cgi-bin/\"\r\n<location /cgi-bin>\r\nAddHandler cgi-script .cgi .pl\r\nOptions +ExecCGI -Indexes\r\n</location>',NULL,'The CGI Handler.','Apache Config','false'),
+(73,'cgi_handler','CGI Handler','ScriptAlias /cgi-bin/ "/_cgi-bin/"\r\n<location /cgi-bin>\r\nAddHandler cgi-script .cgi .pl\r\nOptions +ExecCGI -Indexes\r\n</location>',NULL,'The CGI Handler.','Apache Config','false'),
 (74,'global_vhcustom','Global VHost Entry',NULL,NULL,'Extra directives for all apache vhosts.','Apache Config','true'),
 (75,'static_dir','Static Pages Directory','/etc/sentora/panel/etc/static/',NULL,'The Sentora static directory, used for storing welcome pages etc. etc.','Apache Config','true'),
 (76,'parking_path','Vhost Parking Path','/etc/sentora/panel/etc/static/parking/',NULL,'The path to the parking website, this will be used by all clients.','Apache Config','true'),
@@ -95,7 +103,9 @@ insert  into `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx
 (79,'upload_temp_dir','Upload Temp Directory','/var/sentora/temp/',NULL,'The path to the Apache Upload directory (with trailing slash)','Apache Config','true'),
 (80,'apache_port','Apache Port','80',NULL,'Apache service port','Apache Config','true'),
 (81,'dir_index','Directory Indexes','DirectoryIndex index.html index.htm index.php index.asp index.aspx index.jsp index.jspa index.shtml index.shtm',NULL,'Directory Index','Apache Config','true'),
-(82,'suhosin_value','Suhosin Value','php_admin_value suhosin.executor.func.blacklist \"passthru, show_source, shell_exec, system, pcntl_exec, popen, pclose, proc_open, proc_nice, proc_terminate, proc_get_status, proc_close, leak, apache_child_terminate, posix_kill, posix_mkfifo, posix_setpgid, posix_setsid, posix_setuid, escapeshellcmd, escapeshellarg, exec\"',NULL,'Suhosin configuration for virtual host  blacklisting commands','Apache Config','true'),
+(82,'suhosin_value','Suhosin Value','php_admin_value suhosin.executor.func.blacklist "passthru, show_source, shell_exec, system, pcntl_exec, popen, pclose, proc_open, proc_nice, proc_terminate, proc_get_status, proc_close, leak, apache_child_terminate, posix_kill, posix_mkfifo, posix_setpgid, posix_setsid, posix_setuid, escapeshellcmd, escapeshellarg, exec"',NULL,'Suhosin configuration for virtual host  blacklisting commands','Apache Config','true');
+
+INSERT INTO zpanel_core.`x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx`,`so_defvalues_tx`,`so_desc_tx`,`so_module_vc`,`so_usereditable_en`) VALUES 
 (83,'openbase_seperator','Open Base Seperator',':',NULL,'Seperator flag used in open_base_directory setting','Apache Config','false'),
 (84,'openbase_temp','Open Base Temp Directory','/var/sentora/temp/',NULL,'Temp directory used in open_base_directory setting','Apache Config','true'),
 (85,'access_log_format','Access Log Format','combined','combined|common','Log format for the Apache access log','Apache Config','true'),
@@ -113,7 +123,7 @@ insert  into `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx
 (98,'apache_backup','VHost Backup','true','true|false','Backup vhost file before a new one is written','Apache Config','true'),
 (99,'zsudo','zsudo path','/etc/sentora/panel/bin/zsudo',NULL,'Path to the zsudo binary used by Apache to run system commands.','Sentora Config','true');
 
-insert  into `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx`,`so_defvalues_tx`,`so_desc_tx`,`so_module_vc`,`so_usereditable_en`) values 
+INSERT INTO zpanel_core.`x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx`,`so_defvalues_tx`,`so_desc_tx`,`so_module_vc`,`so_usereditable_en`) VALUES 
 (100,'apache_restart','Apache Restart Cmd','reload',NULL,'Command line arguments used after the restart service request when reloading Apache.','Apache Config','true'),
 (101,'httpd_exe','Apache Binary','',NULL,'Path to the Apache binary','Apache Config','true'),
 (102,'apache_sn','Apache Service Name','',NULL,'Service name used to handle Apache service control','Apache Config','true'),
@@ -166,4 +176,5 @@ UPDATE `zpanel_core`.`x_translations` SET `tr_en_tx` = 'Sentora Config', `tr_de_
 UPDATE `zpanel_core`.`x_translations` SET `tr_en_tx` = 'The backup manager module enables you to backup your entire hosting account including all your MySQL&reg; databases.', `tr_de_tx` = 'Der Backup-Manager-Modul ermöglicht es Ihnen, Ihre gesamte Hosting-Account inklusive aller Ihrer MySQL &reg; Datenbank-Backup.' WHERE `tr_id_pk` = '103';
 UPDATE `zpanel_core`.`x_translations`  WHERE `tr_id_pk` = '114';
 
-
+/* reset all users to new sentora theme */
+UPDATE `zpanel_core`.`x_accounts` SET `ac_usertheme_vc` = 'Sentora_Default';

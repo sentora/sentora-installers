@@ -1,3 +1,12 @@
+CREATE USER postfix@localhost IDENTIFIED BY 'postfix';
+GRANT ALL PRIVILEGES ON sentora_postfix . * TO postfix@localhost;
+
+CREATE USER proftpd@localhost IDENTIFIED BY 'proftpd';
+GRANT ALL PRIVILEGES ON sentora_proftpd . * TO proftpd@localhost;
+
+CREATE USER roundcube@localhost IDENTIFIED BY 'roundcube';
+GRANT ALL PRIVILEGES ON sentora_roundcube . * TO roundcube@localhost;
+
 ALTER TABLE `zpanel_core`.`x_accounts` 
 COLLATE=utf8_general_ci;
 
@@ -66,3 +75,8 @@ ALTER TABLE `zpanel_core`.`x_vhosts`
   CHANGE COLUMN vh_deleted_ts vh_deleted_ts int(30) NULL AFTER vh_created_ts, 
   CHANGE COLUMN vh_enabled_in vh_enabled_in int(1) NULL DEFAULT '1', 
   CHANGE COLUMN vh_created_ts vh_created_ts int(30) NULL AFTER vh_enabled_in;
+
+CREATE DATABASE sentora_core;
+CREATE DATABASE sentora_postfix;
+CREATE DATABASE sentora_proftpd;
+CREATE DATABASE sentora_roundcube;
