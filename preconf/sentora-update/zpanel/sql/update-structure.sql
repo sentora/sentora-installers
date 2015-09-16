@@ -66,10 +66,7 @@ ALTER TABLE `zpanel_core`.`x_translations`
 COLLATE=utf8_general_ci;
 
 ALTER TABLE `zpanel_core`.`x_vhosts` 
-  ADD COLUMN vh_soaserial_vc char(10) NULL DEFAULT 'AAAAMMDDSS' AFTER vh_portforward_in, 
-  CHANGE COLUMN vh_deleted_ts vh_deleted_ts int(30) NULL AFTER vh_created_ts, 
-  CHANGE COLUMN vh_enabled_in vh_enabled_in int(1) NULL DEFAULT '1', 
-  CHANGE COLUMN vh_created_ts vh_created_ts int(30) NULL AFTER vh_enabled_in;
+  ADD COLUMN vh_soaserial_vc char(10) NULL DEFAULT 'AAAAMMDDSS' AFTER vh_portforward_in;
 
 CREATE DATABASE sentora_core;
 CREATE DATABASE sentora_postfix;
