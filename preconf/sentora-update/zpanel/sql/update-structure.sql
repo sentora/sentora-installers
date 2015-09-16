@@ -1,11 +1,6 @@
-CREATE USER postfix@localhost IDENTIFIED BY 'postfix';
-GRANT ALL PRIVILEGES ON sentora_postfix . * TO postfix@localhost;
-
-CREATE USER proftpd@localhost IDENTIFIED BY 'proftpd';
-GRANT ALL PRIVILEGES ON sentora_proftpd . * TO proftpd@localhost;
-
-CREATE USER roundcube@localhost IDENTIFIED BY 'roundcube';
-GRANT ALL PRIVILEGES ON sentora_roundcube . * TO roundcube@localhost;
+GRANT ALL PRIVILEGES ON sentora_postfix .* TO 'postfix'@'localhost';
+GRANT ALL PRIVILEGES ON sentora_proftpd .* TO 'proftpd'@'localhost';
+GRANT ALL PRIVILEGES ON sentora_roundcube .* TO 'roundcube'@'localhost';
 
 ALTER TABLE `zpanel_core`.`x_accounts` 
 COLLATE=utf8_general_ci;
