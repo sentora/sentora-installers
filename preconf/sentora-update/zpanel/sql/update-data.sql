@@ -146,35 +146,16 @@ INSERT INTO zpanel_core.`x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`
 (120,'login_csfr','Remote Login Forms','false','false|true','Disables CSFR protection on the login form to enable remote login forms.','Sentora Config','true'),
 (121,'sentora_port','Sentora Apache Port','80',NULL,'Sentora Apache panel port (change will be pending until next daemon run)','Sentora Config','true');
 
-UPDATE `zpanel_core`.`x_translations`  WHERE `tr_id_pk` = '67';
+
 UPDATE `zpanel_core`.`x_translations` SET `tr_en_tx` = 'Check to see if there are any available updates to your version of the Sentora software.', `tr_de_tx` = 'Prüfen Sie, ob es irgendwelche verfügbaren Aktualisierungen für Ihre Version des Sentora Software.' WHERE `tr_id_pk` = '97';
 UPDATE `zpanel_core`.`x_translations` SET `tr_en_tx` = 'Sentora News', `tr_de_tx` = 'Sentora Aktuelles' WHERE `tr_id_pk` = '72';
-UPDATE `zpanel_core`.`x_translations`  WHERE `tr_id_pk` = '120';
-UPDATE `zpanel_core`.`x_translations`  WHERE `tr_id_pk` = '112';
 UPDATE `zpanel_core`.`x_translations` SET `tr_en_tx` = 'Welcome to the Package Manager, using this module enables you to create and manage existing reseller packages on your Sentora hosting account.', `tr_de_tx` = 'Willkommen auf der Paket-Manager, mit diesem Modul ermöglicht Ihnen die Erstellung und Verwaltung von bestehenden Reseller-Pakete auf Ihrem Sentora Hosting-Account.' WHERE `tr_id_pk` = '111';
-UPDATE `zpanel_core`.`x_translations`  WHERE `tr_id_pk` = '113';
-UPDATE `zpanel_core`.`x_translations`  WHERE `tr_id_pk` = '121';
-UPDATE `zpanel_core`.`x_translations`  WHERE `tr_id_pk` = '44';
 UPDATE `zpanel_core`.`x_translations` SET `tr_en_tx` = 'Find out all the latest news and information from the Sentora project.', `tr_de_tx` = 'Finden Sie heraus, alle Neuigkeiten und Informationen aus dem Sentora Projekt.' WHERE `tr_id_pk` = '96';
-UPDATE `zpanel_core`.`x_translations`  WHERE `tr_id_pk` = '108';
-UPDATE `zpanel_core`.`x_translations`  WHERE `tr_id_pk` = '56';
-UPDATE `zpanel_core`.`x_translations`  WHERE `tr_id_pk` = '117';
-UPDATE `zpanel_core`.`x_translations`  WHERE `tr_id_pk` = '102';
-UPDATE `zpanel_core`.`x_translations`  WHERE `tr_id_pk` = '100';
-UPDATE `zpanel_core`.`x_translations`  WHERE `tr_id_pk` = '107';
-UPDATE `zpanel_core`.`x_translations`  WHERE `tr_id_pk` = '106';
-UPDATE `zpanel_core`.`x_translations`  WHERE `tr_id_pk` = '110';
 UPDATE `zpanel_core`.`x_translations` SET `tr_en_tx` = 'phpMyAdmin is a web based tool that enables you to manage your Sentora MySQL databases via. the web.', `tr_de_tx` = 'phpMyAdmin ist ein webbasiertes Tool, das Sie zu Ihrem Sentora MySQL-Datenbanken via verwalten können. im Internet.' WHERE `tr_id_pk` = '99';
 UPDATE `zpanel_core`.`x_translations` SET `tr_en_tx` = 'If you have found a bug with Sentora you can report it here.', `tr_de_tx` = 'Did you mean: If you have found a bug with CPanel you can report it here.^M
 Wenn Sie einen Fehler mit Sentora gefunden haben, können Sie ihn hier melden.' WHERE `tr_id_pk` = '98';
-UPDATE `zpanel_core`.`x_translations`  WHERE `tr_id_pk` = '91';
-UPDATE `zpanel_core`.`x_translations`  WHERE `tr_id_pk` = '105';
-UPDATE `zpanel_core`.`x_translations`  WHERE `tr_id_pk` = '104';
-UPDATE `zpanel_core`.`x_translations`  WHERE `tr_id_pk` = '69';
-UPDATE `zpanel_core`.`x_translations`  WHERE `tr_id_pk` = '101';
 UPDATE `zpanel_core`.`x_translations` SET `tr_en_tx` = 'Sentora Config', `tr_de_tx` = 'Config Sentora' WHERE `tr_id_pk` = '71';
 UPDATE `zpanel_core`.`x_translations` SET `tr_en_tx` = 'The backup manager module enables you to backup your entire hosting account including all your MySQL&reg; databases.', `tr_de_tx` = 'Der Backup-Manager-Modul ermöglicht es Ihnen, Ihre gesamte Hosting-Account inklusive aller Ihrer MySQL &reg; Datenbank-Backup.' WHERE `tr_id_pk` = '103';
-UPDATE `zpanel_core`.`x_translations`  WHERE `tr_id_pk` = '114';
 
 /* reset all users to new sentora theme */
 UPDATE `zpanel_core`.`x_accounts` SET `ac_usertheme_vc` = 'Sentora_Default';
