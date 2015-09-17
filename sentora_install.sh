@@ -25,12 +25,13 @@
 #  all those who participated to this and to previous installers.
 #  Thanks to all.
 
-SENTORA_INSTALLER_VERSION="1.0.3"
+SENTORA_INSTALLER_VERSION="master"
 SENTORA_CORE_VERSION="1.0.1"
-SENTORA_PRECONF_VERSION="1.0.3"
+SENTORA_PRECONF_VERSION="master"
 
 PANEL_PATH="/etc/sentora"
 PANEL_DATA="/var/sentora"
+PANEL_UPGRADE=false
 
 #--- Display the 'welcome' splash/user warning info..
 echo ""
@@ -125,14 +126,17 @@ fi
 # Note : Postfix is installed by default on centos netinstall / minimum install.
 # The installer seems to work fine even if Postfix is already installed.
 # -> The check of postfix is removed, but this comment remains to remember
-for package in "$DB_PCKG" "dovecot-mysql" "$HTTP_PCKG" "$PHP_PCKG" "proftpd" "$BIND_PCKG" ; do
-    if (inst "$package"); then
-        echo "It appears that package $package is already installed. This installer"
-        echo "is designed to install and configure Sentora on a clean OS installation only!"
-        echo -e "\nPlease re-install your OS before attempting to install using this script."
-        exit 1
-    fi
+# only check for sentora installed systems zpanel can now upgrade using this script
+if [ -L "/etc/zpanel" ] && [ -d "/etc/zpanel"  ]; then
+    for package in "$DB_PCKG" "dovecot-mysql" "$HTTP_PCKG" "$PHP_PCKG" "proftpd" "$BIND_PCKG" ; do
+        if (inst "$package"); then
+            echo "It appears that package $package is already installed. This installer"
+            echo "is designed to install and configure Sentora on a clean OS installation only!"
+            echo -e "\nPlease re-install your OS before attempting to install using this script."
+            exit 1
+        fi
 done
+fi
 
 # *************************************************
 #--- Prepare or query informations required to install
@@ -476,20 +480,109 @@ while true; do
         esac
     fi 
 done
+
+
+###
+# Sentora Core Install 
+###
 mkdir -p $PANEL_PATH
+mkdir -p $PANEL_DATA
 chown -R root:root $PANEL_PATH
 unzip -oq sentora_core.zip -d $PANEL_PATH
-mv "$PANEL_PATH/sentora-core-$SENTORA_CORE_VERSION" "$PANEL_PATH/panel"
+
+###
+# ZPanel Upgrade - Clear down all old code (stops orphaned files)
+###
+if [ ! -L "/etc/zpanel" ] && [ -d "/etc/zpanel" ]; then
+
+    echo -e "Upgrading ZPanelCP 10.1.0 to Sentora 1.0.1";
+
+    PANEL_UPGRADE=true
+
+    mv /etc/zpanel/configs /root/zpanel_configs_backup
+
+    ## Move main directories to new sentora location ##
+    mv /etc/zpanel/* $PANEL_PATH
+    mv /var/zpanel/* $PANEL_DATA
+
+    rm -rf /etc/zpanel/
+    rm -rf /var/zpanel/
+
+    ## Removing core for upgrade
+    rm -rf $PANEL_PATH/panel/bin/
+    rm -rf $PANEL_PATH/panel/dryden/
+    rm -rf $PANEL_PATH/panel/etc/
+    rm -rf $PANEL_PATH/panel/inc/
+    rm -rf $PANEL_PATH/panel/index.php
+    rm -rf $PANEL_PATH/panel/LICENSE.md
+    rm -rf $PANEL_PATH/panel/README.md
+    rm -rf $PANEL_PATH/panel/robots.txt
+    rm -rf $PANEL_PATH/panel/modules/aliases
+    rm -rf $PANEL_PATH/panel/modules/apache_admin
+    rm -rf $PANEL_PATH/panel/modules/backup_admin
+    rm -rf $PANEL_PATH/panel/modules/backupmgr
+    rm -rf $PANEL_PATH/panel/modules/client_notices
+    rm -rf $PANEL_PATH/panel/modules/cron
+    rm -rf $PANEL_PATH/panel/modules/distlists
+    rm -rf $PANEL_PATH/panel/modules/dns_admin
+    rm -rf $PANEL_PATH/panel/modules/dns_manager
+    rm -rf $PANEL_PATH/panel/modules/domains
+    rm -rf $PANEL_PATH/panel/modules/faqs
+    rm -rf $PANEL_PATH/panel/modules/forwarders
+    rm -rf $PANEL_PATH/panel/modules/ftp_admin
+    rm -rf $PANEL_PATH/panel/modules/ftp_management
+    rm -rf $PANEL_PATH/panel/modules/mail_admin
+    rm -rf $PANEL_PATH/panel/modules/mailboxes
+    rm -rf $PANEL_PATH/panel/modules/manage_clients
+    rm -rf $PANEL_PATH/panel/modules/manage_groups
+    rm -rf $PANEL_PATH/panel/modules/moduleadmin
+    rm -rf $PANEL_PATH/panel/modules/my_account
+    rm -rf $PANEL_PATH/panel/modules/mysql_databases
+    rm -rf $PANEL_PATH/panel/modules/mysql_users
+    rm -rf $PANEL_PATH/panel/modules/news
+    rm -rf $PANEL_PATH/panel/modules/packages
+    rm -rf $PANEL_PATH/panel/modules/parked_domains
+    rm -rf $PANEL_PATH/panel/modules/password_assistant
+    rm -rf $PANEL_PATH/panel/modules/phpinfo
+    rm -rf $PANEL_PATH/panel/modules/phpmyadmin
+    rm -rf $PANEL_PATH/panel/modules/phpsysinfo
+    rm -rf $PANEL_PATH/panel/modules/services
+    rm -rf $PANEL_PATH/panel/modules/shadowing
+    rm -rf $PANEL_PATH/panel/modules/sub_domains
+    rm -rf $PANEL_PATH/panel/modules/theme_manager
+    rm -rf $PANEL_PATH/panel/modules/updates
+    rm -rf $PANEL_PATH/panel/modules/usage_viewer
+    rm -rf $PANEL_PATH/panel/modules/webalizer_stats
+    rm -rf $PANEL_PATH/panel/modules/webmail
+    rm -rf $PANEL_PATH/panel/modules/zpanelconfig
+    rm -rf $PANEL_PATH/panel/modules/zpx_core_module
+
+    ###
+    # Remove links and files created by installer
+    ###
+    rm -f /usr/bin/zppy
+    rm -f /usr/bin/setso
+    rm -f /usr/bin/setzadmin
+    
+    rm -f /etc/postfix/master.cf
+    rm -f /etc/postfix/main.cf
+    rm -f /var/spool/vacation/vacation.pl
+    rm -f /var/sentora/sieve/globalfilter.sieve
+    rm -f /etc/dovecot/dovecot.conf
+    rm -f /etc/proftpd.conf
+
+    mysqlpassword=$(cat /etc/sentora/panel/cnf/db.php | grep "pass" | cut -d \' -f 2);
+
+    ## Do NOT copy the new cnf directory
+    rm -rf "$PANEL_PATH/sentora-core-$SENTORA_CORE_VERSION/cnf"
+ 
+fi
+
+## cp can be aliased to stop overwriting of files in centos use full path to cp
+/bin/cp -rf "$PANEL_PATH/sentora-core-$SENTORA_CORE_VERSION/." "$PANEL_PATH/panel/"
 rm sentora_core.zip
 rm "$PANEL_PATH/panel/LICENSE.md" "$PANEL_PATH/panel/README.md" "$PANEL_PATH/panel/.gitignore"
 rm -rf "$PANEL_PATH/_delete_me" "$PANEL_PATH/.gitignore"
-
-# Temp patch
-wget -O hotfix_controller.ext.php "https://raw.githubusercontent.com/sentora/sentora-core/b176df0e29e52e14d778ca6cb47c5765cf3c4953/modules/ftp_management/code/controller.ext.php"
-mv /etc/sentora/panel/modules/ftp_management/code/controller.ext.php controller.ext.php_backup
-mv hotfix_controller.ext.php /etc/sentora/panel/modules/ftp_management/code/controller.ext.php
-chown root:root /etc/sentora/panel/modules/ftp_management/code/controller.ext.php
-chmod 777 /etc/sentora/panel/modules/ftp_management/code/controller.ext.php
 
 
 #--- Set-up Sentora directories and configure permissions
@@ -588,7 +681,6 @@ fi
 
 #--- MySQL
 echo -e "\n-- Installing MySQL"
-mysqlpassword=$(passwordgen);
 $PACKAGE_INSTALLER "$DB_PCKG"
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER "DB_PCKG-devel" "$DB_PCKG-server" 
@@ -608,8 +700,11 @@ elif [[ "$OS" = "Ubuntu" ]]; then
 fi
 service $DB_SERVICE start
 
-# setup mysql root password
-mysqladmin -u root password "$mysqlpassword"
+# setup mysql root password only if mysqlpassword is empty
+if [ -z "$mysqlpassword" ]; then
+    mysqlpassword=$(passwordgen);
+    mysqladmin -u root password "$mysqlpassword"
+fi
 
 # small cleaning of mysql access
 mysql -u root -p"$mysqlpassword" -e "DELETE FROM mysql.user WHERE User='root' AND Host != 'localhost'";
@@ -623,9 +718,22 @@ mysql -u root -p"$mysqlpassword" -e "DROP DATABASE IF EXISTS test";
 sed -i "s|\[mysqld\]|&\nsecure-file-priv = /var/tmp|" $MY_CNF_PATH
 
 # setup sentora access and core database
-sed -i "s|YOUR_ROOT_MYSQL_PASSWORD|$mysqlpassword|" $PANEL_PATH/panel/cnf/db.php
-mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_core.sql
+if [ $PANEL_UPGRADE == true ]; then
 
+    mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-update/zpanel/sql/update-structure.sql
+    mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-update/zpanel/sql/update-data.sql
+    
+    mysqldump -u root -p"$mysqlpassword" zpanel_core | mysql -u root -p"$mysqlpassword" -D sentora_core
+    mysqldump -u root -p"$mysqlpassword" zpanel_postfix | mysql -u root -p"$mysqlpassword" -D sentora_postfix
+    mysqldump -u root -p"$mysqlpassword" zpanel_proftpd | mysql -u root -p"$mysqlpassword" -D sentora_proftpd
+    mysqldump -u root -p"$mysqlpassword" zpanel_roundcube | mysql -u root -p"$mysqlpassword" -D sentora_roundcube
+
+    sed -i "s|zpanel_core|sentora_core|" $PANEL_PATH/panel/cnf/db.php
+
+else
+    sed -i "s|YOUR_ROOT_MYSQL_PASSWORD|$mysqlpassword|" $PANEL_PATH/panel/cnf/db.php
+    mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_core.sql
+fi
 # Register mysql/mariadb service for autostart
 if [[ "$OS" = "CentOs" ]]; then
     if [[ "$VER" == "7" ]]; then
@@ -647,8 +755,12 @@ elif [[ "$OS" = "Ubuntu" ]]; then
 fi
 
 postfixpassword=$(passwordgen);
-mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_postfix.sql
-mysql -u root -p"$mysqlpassword" -e "UPDATE mysql.user SET Password=PASSWORD('$postfixpassword') WHERE User='postfix' AND Host='localhost';";
+if [ $PANEL_UPGRADE == false ]; then
+    mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_postfix.sql
+fi
+
+## grant will also create users which don't exist and update existing users with password ##
+mysql -u root -p"$mysqlpassword" -e "GRANT ALL PRIVILEGES ON sentora_postfix .* TO 'postfix'@'localhost' identified by '$postfixpassword';";
 
 mkdir $PANEL_DATA/vmail
 useradd -r -g mail -d $PANEL_DATA/vmail -s /sbin/nologin -c "Virtual maildir" vmail
@@ -660,7 +772,7 @@ useradd -r -d /var/spool/vacation -s /sbin/nologin -c "Virtual vacation" vacatio
 chown -R vacation:vacation /var/spool/vacation
 chmod -R 770 /var/spool/vacation
 
-#Removed optionnal transport that was leaved empty, until it is fully handled.
+#Removed optional transport that was leaved empty, until it is fully handled.
 #ln -s $PANEL_CONF/postfix/transport /etc/postfix/transport
 #postmap /etc/postfix/transport
 
@@ -778,6 +890,10 @@ fi
 
 if ! grep -q "Include $PANEL_CONF/apache/httpd.conf" "$HTTP_CONF_PATH"; then
     echo "Include $PANEL_CONF/apache/httpd.conf" >> "$HTTP_CONF_PATH";
+    ## Remove old include
+    if [ $PANEL_UPGRADE == true ]; then
+        sed -i "s|Include /etc/zpanel/configs/apache/httpd.conf||" "$HTTP_CONF_PATH";
+    fi
 fi
 add_local_domain "$(hostname)"
 
@@ -936,12 +1052,13 @@ elif [[ "$OS" = "Ubuntu" ]]; then
 fi
 
 # Create and init proftpd database
-mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_proftpd.sql
-
+if [ $PANEL_UPGRADE == false ]; then
+    mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_proftpd.sql
+fi
 # Create and configure mysql password for proftpd
 proftpdpassword=$(passwordgen);
 sed -i "s|!SQL_PASSWORD!|$proftpdpassword|" $PANEL_CONF/proftpd/proftpd-mysql.conf
-mysql -u root -p"$mysqlpassword" -e "UPDATE mysql.user SET Password=PASSWORD('$proftpdpassword') WHERE User='proftpd' AND Host='localhost'";
+mysql -u root -p"$mysqlpassword" -e "GRANT ALL PRIVILEGES ON sentora_proftpd .* TO 'proftpd'@'localhost' identified by '$proftpdpassword';";
 
 # Assign httpd user and group to all users that will be created
 HTTP_UID=$(id -u "$HTTP_USER")
@@ -1107,12 +1224,13 @@ rm -rf $PANEL_PATH/panel/etc/apps/phpmyadmin/setup
 echo -e "\n-- Configuring Roundcube"
 
 # Import roundcube default table
-mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_roundcube.sql
-
+if [ $PANEL_UPGRADE == false ]; then
+    mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_roundcube.sql
+fi
 # Create and configure mysql password for roundcube
 roundcubepassword=$(passwordgen);
 sed -i "s|!ROUNDCUBE_PASSWORD!|$roundcubepassword|" $PANEL_CONF/roundcube/roundcube_config.inc.php
-mysql -u root -p"$mysqlpassword" -e "UPDATE mysql.user SET Password=PASSWORD('$roundcubepassword') WHERE User='roundcube' AND Host='localhost'";
+mysql -u root -p"$mysqlpassword" -e "GRANT ALL PRIVILEGES ON sentora_roundcube .* TO 'roundcube'@'localhost' identified by '$roundcubepassword';";
 
 # Create and configure des key
 roundcube_des_key=$(passwordgen 24);
