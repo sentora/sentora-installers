@@ -25,9 +25,13 @@
 #  all those who participated to this and to previous installers.
 #  Thanks to all.
 
+## 
+# SENTORA_CORE/INSTALLER_VERSION
+# master - latest unstable
+# 1.0.3 - example stable tag
+##
 SENTORA_INSTALLER_VERSION="master"
 SENTORA_CORE_VERSION="1.0.1"
-SENTORA_PRECONF_VERSION="master"
 
 PANEL_PATH="/etc/sentora"
 PANEL_DATA="/var/sentora"
@@ -306,7 +310,6 @@ exec 2>&1
 
 echo "Installer version $SENTORA_INSTALLER_VERSION"
 echo "Sentora core version $SENTORA_CORE_VERSION"
-echo "Sentora preconf version $SENTORA_PRECONF_VERSION"
 echo ""
 echo "Installing Sentora $SENTORA_CORE_VERSION at http://$PANEL_FQDN and ip $PUBLIC_IP"
 echo "on server under: $OS  $VER  $ARCH"
@@ -611,7 +614,7 @@ ln -s $PANEL_PATH/panel/bin/setzadmin /usr/bin/setzadmin
 
 #--- Install preconfig
 while true; do
-    wget -nv -O sentora_preconfig.zip https://github.com/sentora/sentora-installers/archive/$SENTORA_PRECONF_VERSION.zip
+    wget -nv -O sentora_preconfig.zip https://github.com/sentora/sentora-installers/archive/$SENTORA_INSTALLER_VERSION.zip
     if [[ -f sentora_preconfig.zip ]]; then
         break;
     else
@@ -626,7 +629,7 @@ while true; do
 done
 
 unzip -oq sentora_preconfig.zip
-cp -rf sentora-installers-$SENTORA_PRECONF_VERSION/preconf/* $PANEL_CONF
+/bin/cp -rf sentora-installers-$SENTORA_INSTALLER_VERSION/preconf/* $PANEL_CONF
 rm sentora_preconfig*
 rm -rf sentora-*
 
@@ -1164,10 +1167,11 @@ fi
 echo -e "\n-- Installing and configuring cron tasks"
 if [[ "$OS" = "CentOs" ]]; then
     #cronie & crontabs may be missing
-    $PACKAGE_INSTALLER crontabs
+    $PACKAGE_INSTALLER cronie crontabs
     CRON_DIR="/var/spool/cron"
     CRON_SERVICE="crond"
 elif [[ "$OS" = "Ubuntu" ]]; then
+    $PACKAGE_INSTALLER cron
     CRON_DIR="/var/spool/cron/crontabs"
     CRON_SERVICE="cron"
 fi
