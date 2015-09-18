@@ -463,7 +463,7 @@ if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER curl curl-devel perl-libwww-perl libxml2 libxml2-devel zip bzip2-devel gcc gcc-c++ at make
     $PACKAGE_INSTALLER redhat-lsb-core
 elif [[ "$OS" = "Ubuntu" ]]; then
-    $PACKAGE_INSTALLER sudo vim make zip unzip debconf-utils at build-essential bash-completion
+    $PACKAGE_INSTALLER sudo vim make zip unzip debconf-utils at build-essential bash-completion cron ca-certificates
 fi
 
 #--- Download Sentora archive from GitHub
