@@ -922,7 +922,7 @@ if [[ "$OS" = "CentOs" ]]; then
 	    sed -i "s|LoadModule proxy_ajp_module modules|#LoadModule proxy_ajp_module modules|" "$HTTP_CONF_PATH"
     
     fi     
-+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     $PACKAGE_INSTALLER libapache2-mod-bw
     HTTP_CONF_PATH="/etc/apache2/apache2.conf"
     HTTP_VARS_PATH="/etc/apache2/envvars"
