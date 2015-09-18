@@ -718,7 +718,7 @@ add_local_domain() {
 #-----------------------------------------------------------
 # Install all softwares and dependencies required by Sentora.
 
-if [[ "$OS" = "Ubuntu" ]]; then
+if [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     # Disable the DPKG prompts before we run the software install to enable fully automated install.
     export DEBIAN_FRONTEND=noninteractive
 fi
