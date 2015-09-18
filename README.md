@@ -9,6 +9,7 @@ Our installation script currently support the following operating systems/distri
 
 * CentOS 6 and 7
 * Ubuntu 12.04 and 14.04
+* Debian 7 and 8
   
 Preliminary install information can be found here: [Sentora Documentation](http://docs.sentora.org/index.php?node=7)
  
@@ -36,7 +37,7 @@ Uninstaller scripts, much like the Upgrade scripts are not recommended for use a
 
 
 * * *
-## ALL INFOS BELOW MAY BE INACURATE OR INCOMPLETE ##
+## ALL INFORMATION BELOW MAY BE INACCURATE OR INCOMPLETE ##
 * * *
 
 ## Vagrant installer/upgrader development & testing ##
