@@ -461,7 +461,7 @@ if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER sudo vim make zip unzip chkconfig bash-completion
     $PACKAGE_INSTALLER ld-linux.so.2 libbz2.so.1 libdb-4.7.so libgd.so.2 
     $PACKAGE_INSTALLER curl curl-devel perl-libwww-perl libxml2 libxml2-devel zip bzip2-devel gcc gcc-c++ at make
-    $PACKAGE_INSTALLER redhat-lsb-core
+    $PACKAGE_INSTALLER redhat-lsb-core ca-certificates
 elif [[ "$OS" = "Ubuntu" ]]; then
     $PACKAGE_INSTALLER sudo vim make zip unzip debconf-utils at build-essential bash-completion ca-certificates
 fi
