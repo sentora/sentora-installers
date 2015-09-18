@@ -96,7 +96,7 @@ CREATE TABLE `vacation` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Postfix Admin - Virtual Vacation';
 
 CREATE TABLE `vacation_notification` (
-  `on_vacation` varchar(255) CHARACTER SET latin1 NOT NULL,
+  `on_vacation` varchar(255) NOT NULL,
   `notified` varchar(255) CHARACTER SET latin1 NOT NULL,
   `notified_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`on_vacation`,`notified`),
