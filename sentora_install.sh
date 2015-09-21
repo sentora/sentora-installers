@@ -72,7 +72,7 @@ echo "Detected : $OS  $VER  $ARCH"
 
 if [[ "$OS" = "CentOs" && ("$VER" = "6" || "$VER" = "7" ) || 
       "$OS" = "Ubuntu" && ("$VER" = "12.04" || "$VER" = "14.04" ) || 
-      "$OS" = "debian" && ("$VER" = "7" || "$VER" = "8" ) ]] ; then
+      "$OS" = "Debian" && ("$VER" = "7" || "$VER" = "8" ) ]] ; then
     echo "Ok."
 else
     echo "Sorry, this OS is not supported by Sentora." 
@@ -123,7 +123,7 @@ if [[ "$OS" = "CentOs" ]] ; then
     HTTP_PCKG="httpd"
     PHP_PCKG="php"
     BIND_PCKG="bind"
-elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
     PACKAGE_INSTALLER="apt-get -yqq install"
     PACKAGE_REMOVER="apt-get -yqq remove"
 
@@ -169,7 +169,7 @@ echo -e "\n-- Installing wget and dns utils required to manage inputs"
 if [[ "$OS" = "CentOs" ]]; then
     yum -y update
     $PACKAGE_INSTALLER bind-utils
-elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
     apt-get -yqq update   #ensure we can install
     $PACKAGE_INSTALLER dnsutils
 fi
@@ -229,7 +229,7 @@ if [[ "$tz" == "" && "$PANEL_FQDN" == "" ]] ; then
         echo "echo \$TZ > /etc/timezone" >> /usr/bin/tzselect
         tzselect
         tz=$(cat /etc/timezone)
-    elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+    elif [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
         dpkg-reconfigure tzdata
         tz=$(cat /etc/timezone)
     fi
@@ -340,7 +340,7 @@ disable_file() {
 }
 
 #--- AppArmor must be disabled to avoid problems
-if [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+if [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
     [ -f /etc/init.d/apparmor ]
     if [ $? = "0" ]; then
         echo -e "\n-- Disabling and removing AppArmor, please wait..."
@@ -417,7 +417,7 @@ if [[ "$OS" = "CentOs" ]]; then
         $PACKAGE_REMOVER qpid-cpp-client
     fi
 
-elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then 
+elif [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then 
     # Update the enabled Aptitude repositories
     echo -ne "\nUpdating Aptitude Repos: " >/dev/tty
 
@@ -482,7 +482,7 @@ fi
 echo -e "\n-- Listing of all packages installed:"
 if [[ "$OS" = "CentOs" ]]; then
     rpm -qa | sort
-elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
     dpkg --get-selections
 fi
 
@@ -491,7 +491,7 @@ echo -e "\n-- Updating+upgrading system, it may take some time..."
 if [[ "$OS" = "CentOs" ]]; then
     yum -y update
     yum -y upgrade
-elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
     apt-get -yqq update
     apt-get -yqq upgrade
 fi
@@ -502,9 +502,9 @@ if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER sudo vim make zip unzip chkconfig bash-completion
     $PACKAGE_INSTALLER ld-linux.so.2 libbz2.so.1 libdb-4.7.so libgd.so.2 
     $PACKAGE_INSTALLER curl curl-devel perl-libwww-perl libxml2 libxml2-devel zip bzip2-devel gcc gcc-c++ at make
-    $PACKAGE_INSTALLER redhat-lsb-core ca-certificates
-elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
-    $PACKAGE_INSTALLER sudo vim make zip unzip debconf-utils at build-essential bash-completion ca-certificates
+    $PACKAGE_INSTALLER redhat-lsb-core ca-certificates e2fsprogs
+elif [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
+    $PACKAGE_INSTALLER sudo vim make zip unzip debconf-utils at build-essential bash-completion ca-certificates e2fslibs
 fi
 
 #--- Download Sentora archive from GitHub
@@ -718,7 +718,7 @@ add_local_domain() {
 #-----------------------------------------------------------
 # Install all softwares and dependencies required by Sentora.
 
-if [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+if [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
     # Disable the DPKG prompts before we run the software install to enable fully automated install.
     export DEBIAN_FRONTEND=noninteractive
 fi
@@ -734,7 +734,7 @@ if [[ "$OS" = "CentOs" ]]; then
     else 
         DB_SERVICE="mysqld"
     fi
-elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
     $PACKAGE_INSTALLER bsdutils libsasl2-modules-sql libsasl2-modules
     if [[ "$VER" = "12.04" || "$VER" = "7" ]]; then
         $PACKAGE_INSTALLER db4.7-util
@@ -862,7 +862,7 @@ echo -e "\n-- Installing Dovecot"
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER dovecot dovecot-mysql dovecot-pigeonhole 
     sed -i "s|#first_valid_uid = ?|first_valid_uid = $VMAIL_UID\n#last_valid_uid = $VMAIL_UID\n\nfirst_valid_gid = $MAIL_GID\n#last_valid_gid = $MAIL_GID|" $PANEL_CONF/dovecot2/dovecot.conf
-elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
     $PACKAGE_INSTALLER dovecot-mysql dovecot-imapd dovecot-pop3d dovecot-common dovecot-managesieved dovecot-lmtpd 
     sed -i "s|#first_valid_uid = ?|first_valid_uid = $VMAIL_UID\nlast_valid_uid = $VMAIL_UID\n\nfirst_valid_gid = $MAIL_GID\nlast_valid_gid = $MAIL_GID|" $PANEL_CONF/dovecot2/dovecot.conf
 fi
@@ -922,7 +922,7 @@ if [[ "$OS" = "CentOs" ]]; then
 	    sed -i "s|LoadModule proxy_ajp_module modules|#LoadModule proxy_ajp_module modules|" "$HTTP_CONF_PATH"
     
     fi     
-elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
     $PACKAGE_INSTALLER libapache2-mod-bw
     HTTP_CONF_PATH="/etc/apache2/apache2.conf"
     HTTP_VARS_PATH="/etc/apache2/envvars"
@@ -964,7 +964,7 @@ fi
 # remove default virtual site to ensure Sentora is the default vhost
 if [[ "$OS" = "CentOs" ]]; then
     sed -i "s|DocumentRoot \"/var/www/html\"|DocumentRoot $PANEL_PATH/panel|" "$HTTP_CONF_PATH"
-elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
     # disable completely sites-enabled/000-default.conf
     if [[ "$VER" = "14.04" || "$VER" = "8" ]]; then 
         sed -i "s|IncludeOptional sites-enabled|#&|" "$HTTP_CONF_PATH"
@@ -977,7 +977,7 @@ fi
 if [[ "$OS" = "CentOs" ]]; then
     sed -i "s|^\(NameVirtualHost .*$\)|#\1\n# NameVirtualHost is now handled in Sentora vhosts file|" "$HTTP_CONF_PATH"
     sed -i 's|^\(Listen .*$\)|#\1\n# Listen is now handled in Sentora vhosts file|' "$HTTP_CONF_PATH"
-elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
     sed -i "s|\(Include ports.conf\)|#\1\n# Ports are now handled in Sentora vhosts file|" "$HTTP_CONF_PATH"
     disable_file /etc/apache2/ports.conf
 fi
@@ -985,7 +985,7 @@ fi
 # adjustments for apache 2.4
 if [[ ("$OS" = "CentOs" && "$VER" = "7") || 
       ("$OS" = "Ubuntu" && "$VER" = "14.04") || 
-      ("$OS" = "debian" && "$VER" = "8") ]] ; then 
+      ("$OS" = "Debian" && "$VER" = "8") ]] ; then 
     # Order deny,allow / Deny from all   ->  Require all denied
     sed -i 's|Order deny,allow|Require all denied|I'  $PANEL_CONF/apache/httpd.conf
     sed -i '/Deny from all/d' $PANEL_CONF/apache/httpd.conf
@@ -1013,7 +1013,7 @@ if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER php-mcrypt php-imap  #Epel packages
     PHP_INI_PATH="/etc/php.ini"
     PHP_EXT_PATH="/etc/php.d"
-elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
     $PACKAGE_INSTALLER libapache2-mod-php5 php5-common php5-cli php5-mysql php5-gd php5-mcrypt php5-curl php-pear php5-imap php5-xmlrpc php5-xsl php5-intl
     if [ "$VER" = "14.04" ]; then
         php5enmod mcrypt  # missing in the package for Ubuntu 14, is this needed for debian 8 as well?
@@ -1036,7 +1036,7 @@ chmod +t "$PANEL_DATA/sessions"
 if [[ "$OS" = "CentOs" ]]; then
     # Remove session & php values from apache that cause override
     sed -i "/php_value/d" /etc/httpd/conf.d/php.conf
-elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
     sed -i "s|;session.save_path = \"/var/lib/php5\"|session.save_path = \"$PANEL_DATA/sessions\"|" $PHP_INI_PATH
 fi
 sed -i "/php_value/d" $PHP_INI_PATH
@@ -1050,9 +1050,9 @@ sed -i "s|;upload_tmp_dir =|upload_tmp_dir = $PANEL_DATA/temp/|" $PHP_INI_PATH
 sed -i "s|expose_php = On|expose_php = Off|" $PHP_INI_PATH
 
 # Build suhosin for PHP 5.x which is required by Sentora. 
-if [[ "$OS" = "CentOs" || "$OS" = "debian" || ( "$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then
+if [[ "$OS" = "CentOs" || "$OS" = "Debian" || ( "$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then
     echo -e "\n# Building suhosin"
-    if [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+    if [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
         $PACKAGE_INSTALLER php5-dev
     fi
     SUHOSIN_VERSION="0.9.37.1"
@@ -1068,7 +1068,7 @@ if [[ "$OS" = "CentOs" || "$OS" = "debian" || ( "$OS" = "Ubuntu" && "$VER" = "14
     rm -rf suhosin-$SUHOSIN_VERSION
     if [[ "$OS" = "CentOs" ]]; then 
         echo 'extension=suhosin.so' > $PHP_EXT_PATH/suhosin.ini
-    elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+    elif [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
         sed -i 'N;/default extension directory./a\extension=suhosin.so' $PHP_INI_PATH
     fi	
 fi
@@ -1091,7 +1091,7 @@ if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER proftpd proftpd-mysql 
     FTP_CONF_PATH='/etc/proftpd.conf'
     sed -i "s|nogroup|nobody|" $PANEL_CONF/proftpd/proftpd-mysql.conf
-elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
     $PACKAGE_INSTALLER proftpd-mod-mysql
     FTP_CONF_PATH='/etc/proftpd/proftpd.conf'
 fi
@@ -1147,7 +1147,7 @@ if [[ "$OS" = "CentOs" ]]; then
     BIND_FILES="/etc"
     BIND_SERVICE="named"
     BIND_USER="named"
-elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
     $PACKAGE_INSTALLER bind9 bind9utils
     BIND_PATH="/etc/bind/"
     BIND_FILES="/etc/bind"
@@ -1169,7 +1169,7 @@ if [[ "$OS" = "CentOs" ]]; then
     chmod 751 /var/named
     chmod 771 /var/named/data
     sed -i 's|bind/zones.rfc1918|named.rfc1912.zones|' $PANEL_CONF/bind/named.conf
-elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
     mkdir -p /var/named/dynamic
     touch /var/named/dynamic/managed-keys.bind
     chown -R bind:bind /var/named/
@@ -1212,7 +1212,7 @@ if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER cronie crontabs
     CRON_DIR="/var/spool/cron"
     CRON_SERVICE="crond"
-elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
     $PACKAGE_INSTALLER cron
     CRON_DIR="/var/spool/cron/crontabs"
     CRON_SERVICE="cron"
@@ -1297,7 +1297,7 @@ echo -e "\n-- Configuring Webalizer"
 $PACKAGE_INSTALLER webalizer
 if [[ "$OS" = "CentOs" ]]; then
     rm -rf /etc/webalizer.conf
-elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
     rm -rf /etc/webalizer/webalizer.conf
 fi
 
