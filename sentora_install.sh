@@ -535,7 +535,7 @@ chown -R root:root $PANEL_PATH
 unzip -oq sentora_core.zip -d $PANEL_PATH
 
 #
-# Remove PHPUnit module test files
+# Remove PHPUnit module test files (coming soon to the code base).
 #
 rm -rf $PANEL_PATH/panel/modules/*/tests/
 rm -rf $PANEL_PATH/composer.json
