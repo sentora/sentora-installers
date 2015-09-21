@@ -159,3 +159,13 @@ UPDATE `zpanel_core`.`x_translations` SET `tr_en_tx` = 'The backup manager modul
 
 /* reset all users to new sentora theme */
 UPDATE `zpanel_core`.`x_accounts` SET `ac_usertheme_vc` = 'Sentora_Default';
+
+ALTER TABLE `zpanel_roundcube`.`users` CHANGE `preferences` `preferences` longtext;
+
+/* Removal of Perl/CGI support - Issue #47 (https://github.com/sentora/sentora-core/issues/74) */
+ALTER TABLE `zpanel_core`.`x_packages` DROP `pk_enablecgi_in`;
+
+
+INSERT INTO `zpanel_core`.`x_permissions`(`pe_group_fk`,`pe_module_fk`) VALUES (1, (SELECT `mo_id_pk` FROM `zpanel_core`.`x_modules` WHERE `mo_folder_vc` = 'protected_directories' LIMIT 1));
+INSERT INTO `zpanel_core`.`x_permissions`(`pe_group_fk`,`pe_module_fk`) VALUES (2, (SELECT `mo_id_pk` FROM `zpanel_core`.`x_modules` WHERE `mo_folder_vc` = 'protected_directories' LIMIT 1));
+INSERT INTO `zpanel_core`.`x_permissions`(`pe_group_fk`,`pe_module_fk`) VALUES (3, (SELECT `mo_id_pk` FROM `zpanel_core`.`x_modules` WHERE `mo_folder_vc` = 'protected_directories' LIMIT 1));
