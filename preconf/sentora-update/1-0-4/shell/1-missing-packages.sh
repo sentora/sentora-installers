@@ -37,6 +37,7 @@ if [[ "$OS" = "CentOs" ]] ; then
 elif [[ "$OS" = "Ubuntu" || "$OS" = "Debian" ]]; then
     PACKAGE_INSTALLER="apt-get -yqq install"
     PACKAGE_REMOVER="apt-get -yqq remove"
+    export DEBIAN_FRONTEND=noninteractive
 fi
 
 if [[ "$OS" = "CentOs" ]] ; then
