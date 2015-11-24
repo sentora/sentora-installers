@@ -203,12 +203,14 @@ INSERT INTO `sentora_core`.`x_dns_create` (`dc_id_pk`, `dc_acc_fk`, `dc_type_vc`
 (1, 0, 'A', '@', 3600, ':IP:', NULL, NULL, NULL),
 (2, 0, 'CNAME', 'www', 3600, '@', NULL, NULL, NULL),
 (3, 0, 'CNAME', 'ftp', 3600, '@', NULL, NULL, NULL),
-(4, 0, 'A', 'mail', 86400, ':IP:', NULL, NULL, NULL),
+(4, 0, 'A', 'mail', 2419200, ':IP:', NULL, NULL, NULL),
 (5, 0, 'MX', '@', 86400, 'mail.:DOMAIN:', 10, NULL, NULL),
 (6, 0, 'A', 'ns1', 172800, ':IP:', NULL, NULL, NULL),
 (7, 0, 'A', 'ns2', 172800, ':IP:', NULL, NULL, NULL),
 (8, 0, 'NS', '@', 172800, 'ns1.:DOMAIN:', NULL, NULL, NULL),
-(9, 0, 'NS', '@', 172800, 'ns2.:DOMAIN:', NULL, NULL, NULL);
+(9, 0, 'NS', '@', 172800, 'ns2.:DOMAIN:', NULL, NULL, NULL),
+(10, 0, 'SPF', '@', 2419200, 'v=spf1 a mx ip4::IP:  mx:mail.:DOMAIN: ?all', NULL, NULL, NULL),
+(11, 0, 'TXT', '@', 2419200, 'v=spf1 a mx ip4::IP:  mx:mail.:DOMAIN: ?all', NULL, NULL, NULL);
 
 /*Table structure for table `x_faqs` */
 
