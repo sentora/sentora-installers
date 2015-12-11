@@ -56,12 +56,19 @@ if [ -f /etc/centos-release ]; then
     OS="CentOs"
     VERFULL=$(sed 's/^.*release //;s/ (Fin.*$//' /etc/centos-release)
     VER=${VERFULL:0:1} # return 6 or 7
+elif [ -f /etc/fedora-release ]; then
+    OS=Fedora
+    VER=$(rpm --query --queryformat %{VERSION} fedora-release)
 elif [ -f /etc/lsb-release ]; then
     OS=$(grep DISTRIB_ID /etc/lsb-release | sed 's/^.*=//')
     VER=$(grep DISTRIB_RELEASE /etc/lsb-release | sed 's/^.*=//')
+elif [ -f /etc/SuSE-release
+    OS=OpenSUSe
+    VER=$(rpm --query --queryformat %{VERSION} sles-release)
 elif [ -f /etc/os-release ]; then
-    OS=$(grep -w ID /etc/os-release | sed 's/^.*=//')
-    VER=$(grep VERSION_ID /etc/os-release | sed 's/^.*"\(.*\)"/\1/')
+    source /etc/os-release
+    OS=$ID
+    VER=$VERSION_ID
  else
     OS=$(uname -s)
     VER=$(uname -r)
