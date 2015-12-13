@@ -62,7 +62,7 @@ elif [ -f /etc/fedora-release ]; then
 elif [ -f /etc/lsb-release ]; then
     OS=$(grep DISTRIB_ID /etc/lsb-release | sed 's/^.*=//')
     VER=$(grep DISTRIB_RELEASE /etc/lsb-release | sed 's/^.*=//')
-elif [ -f /etc/SuSE-release
+elif [ -f /etc/SuSE-release ]; then
     OS=OpenSUSe
     VER=$(rpm --query --queryformat %{VERSION} sles-release)
 elif [ -f /etc/os-release ]; then
