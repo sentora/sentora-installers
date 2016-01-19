@@ -708,6 +708,18 @@ insert  into `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx
 (119,'cron_reload_user','Cron Reload User','',NULL,'Cron reload apache user in Linux','Cron Config','true'),
 (120,'login_csfr','Remote Login Forms','false','false|true','Disables CSFR protection on the login form to enable remote login forms.','Sentora Config','true'),
 (121,'sentora_port','Sentora Apache Port','80',NULL,'Sentora Apache panel port (change will be pending until next daemon run)','Sentora Config','true');
+(122,'welcome_message','Custom e-mail Welcome Message','Hi {{fullname}},
+
+We are pleased to inform you that your new hosting account is now active!
+You can access your web hosting control panel using this link: {{controlpanelurl}}
+
+Your username and password is as follows:
+Username: {{username}}
+Password: {{password}}
+
+Many thanks,
+
+The management',NULL,'Here you can edit the Welcme Message e-mail','Sentora Config','true');
 /*Table structure for table `x_translations` */
 
 DROP TABLE IF EXISTS `x_translations`;
