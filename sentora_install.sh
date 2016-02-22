@@ -1328,6 +1328,30 @@ php -q $PANEL_PATH/panel/bin/daemon.php
 
 #--- Firewall ?
 
+#--- Fail2ban
+
+#--- Logrotate
+#  Download and install logrotate
+echo -e "\n-- Installing Logrotate"
+$PACKAGE_INSTALLER logrotate
+
+#	Create and link the configfiles 
+touch /etc/logrotate.d/Sentora-apache /etc/logrotate.d/Sentora-postifx /etc/logrotate.d/Sentora-dovecot
+ln -s $PANEL_CONF/logrotate/Sentora-apache /etc/logrotate.d/Sentora-apache
+ln -s $PANEL_CONF/logrotate/Sentora-postifx /etc/logrotate.d/Sentora-postifx
+ln -s $PANEL_CONF/logrotate/Sentora-dovecot /etc/logrotate.d/Sentora-dovecot
+
+#	Configure the postrotatesyntax for different OS
+if [[ "$OS" = "CentOs" && "$VER" == "6" ]]; then
+	sed -i 's|systemctl reload httpd > /dev/null|service httpd reload > /dev/null|' $PANEL_CONF/logrotate/Sentora-apache 
+	sed -i 's|systemctl reload proftpd > /dev/null|service proftpd reload > /dev/null|' $PANEL_CONF/logrotate/Sentora-proftpd
+
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+	sed -i 's|systemctl reload httpd > /dev/null|/etc/init.d/apache2 reload > /dev/null|' $PANEL_CONF/logrotate/Sentora-apache
+	sed -i 's|systemctl reload proftpd > /dev/null|/etc/init.d/proftpd force-reload > /dev/null|' $PANEL_CONF/logrotate/Sentora-proftpd
+
+fi
+
 #--- Resolv.conf deprotect
 chattr -i /etc/resolv.conf
 
