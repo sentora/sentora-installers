@@ -1,0 +1,12 @@
+/var/sentora/logs/domains/*/*access.log /var/sentora/logs/domains/*/*error.log /var/sentora/logs/zpanel.log /var/sentora/logs/sentora*.log /var/sentora/logs/daemon*.log {
+       weekly
+       missingok
+       rotate 2
+       compress
+       delaycompress
+       create 640 apache apache
+       sharedscripts
+       postrotate
+               systemctl reload httpd > /dev/null
+       endscript
+}
