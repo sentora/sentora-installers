@@ -1,0 +1,13 @@
+/var/log/dovecot*.log {
+       weekly
+       missingok
+       rotate 2
+       compress
+       delaycompress
+       notifempty
+       create 666 vmail mail
+       sharedscripts
+       postrotate
+               doveadm log reopen
+       endscript
+}
