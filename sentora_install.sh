@@ -1335,10 +1335,9 @@ php -q $PANEL_PATH/panel/bin/daemon.php
 echo -e "\n-- Installing Logrotate"
 $PACKAGE_INSTALLER logrotate
 
-#	Create and link the configfiles 
-touch /etc/logrotate.d/Sentora-apache /etc/logrotate.d/Sentora-postifx /etc/logrotate.d/Sentora-dovecot
+#	Link the configfiles 
 ln -s $PANEL_CONF/logrotate/Sentora-apache /etc/logrotate.d/Sentora-apache
-ln -s $PANEL_CONF/logrotate/Sentora-postifx /etc/logrotate.d/Sentora-postifx
+ln -s $PANEL_CONF/logrotate/Sentora-proftpd /etc/logrotate.d/Sentora-proftpd
 ln -s $PANEL_CONF/logrotate/Sentora-dovecot /etc/logrotate.d/Sentora-dovecot
 
 #	Configure the postrotatesyntax for different OS
