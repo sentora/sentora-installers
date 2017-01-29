@@ -390,10 +390,20 @@ if [[ "$OS" = "CentOs" ]]; then
     disablerepo "rpmforge"
     disablerepo "rpmfusion-free-updates"
     disablerepo "rpmfusion-free-updates-testing"
-
+   
+    # patch /etc/selinux/config not found
     # We need to disable SELinux...
+    if [ -f "/etc/selinux/config" ];then
     sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
     setenforce 0
+    fi
+    
+    # patch iptables and sendmail service not found
+    yum -y install sendmail iptables
+    if  [[ "$VER" = "7" ]]; then
+    yum -y install iptables-services
+    fi
+    
 
     # Stop conflicting services and iptables to ensure all services will work
     service sendmail stop
