@@ -19,7 +19,7 @@
 # Supported Operating Systems: 
 # CentOS 6.*/7.* Minimal, 
 # Fedora 24/25 Minimal,
-# Ubuntu server 12.04/14.04 
+# Ubuntu server 12.04/14.04/16.04
 # Debian 7.*/8.* 
 # 32bit and 64bit
 #
@@ -38,9 +38,10 @@
 # master - latest unstable
 # 1.0.3 - example stable tag
 ##
-SENTORA_PRECONF_VERSION="1.0.3"
+
 SENTORA_INSTALLER_VERSION="master"
-SENTORA_CORE_VERSION="1.0.1"
+# SENTORA_CORE_VERSION="1.0.1"
+SENTORA_CORE_VERSION="1.0.3-bugfixes"
 
 PANEL_PATH="/etc/sentora"
 PANEL_DATA="/var/sentora"
@@ -78,7 +79,7 @@ ARCH=$(uname -m)
 echo "Detected : $OS  $VER  $ARCH"
 
 if [[ "$OS" = "CentOs" && ("$VER" = "6" || "$VER" = "7" ) || 
-      "$OS" = "Ubuntu" && ("$VER" = "12.04" || "$VER" = "14.04" ) || 
+      "$OS" = "Ubuntu" && ("$VER" = "12.04" || "$VER" = "14.04" || "$VER" = "16.04" ) || 
 	  "$OS" = "Fedora" && ("$VER" = "24" || "$VER" = "25" ) || 
       "$OS" = "debian" && ("$VER" = "7" || "$VER" = "8" ) ]] ; then
     echo "Ok."
@@ -159,7 +160,6 @@ elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     PHP_PCKG="apache2-mod-php5"
     BIND_PCKG="bind9"
 fi
-
 
 # Note : Postfix is installed by default on centos netinstall / minimum install.
 # The installer seems to work fine even if Postfix is already installed.
@@ -544,14 +544,14 @@ elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     rm -rf "/etc/apt/sources.list/*"
     cp "/etc/apt/sources.list" "/etc/apt/sources.list.save"
 
-    if [ "$VER" = "14.04" ]; then
+    if [[ "$VER" == "14.04" || "$VER" == "16.04" ]]; then
         cat > /etc/apt/sources.list <<EOF
 #Depots main restricted
 deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main restricted universe multiverse
 deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc)-security main restricted universe multiverse
 deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc)-updates main restricted universe multiverse
 EOF
-    elif [ "$VER" = "8"  ]; then
+    elif [[ "$VER" = "8"  ]]; then
         cat > /etc/apt/sources.list <<EOF
 deb http://httpredir.debian.org/debian $(lsb_release -sc) main
 deb-src http://httpredir.debian.org/debian $(lsb_release -sc) main
@@ -560,7 +560,7 @@ deb-src http://httpredir.debian.org/debian $(lsb_release -sc)-updates main
 deb http://security.debian.org/ $(lsb_release -sc)/updates main
 deb-src http://security.debian.org/ $(lsb_release -sc)/updates main
 EOF
-    elif [ "$VER" = "7" ]; then
+    elif [[ "$VER" = "7" ]]; then
         cat > /etc/apt/sources.list <<EOF
 deb http://httpredir.debian.org/debian $(lsb_release -sc) main
 deb-src http://httpredir.debian.org/debian $(lsb_release -sc) main
@@ -839,6 +839,11 @@ passwordgen() {
     tr -dc A-Za-z0-9 < /dev/urandom | head -c ${l} | xargs
 }
 
+phpversion() { 
+	echo "$@" | gawk -F. '{ printf("%03d%03d%03d\n", $1,$2,$3); }'; 
+}
+
+
 # Add first parameter in hosts file as local IP domain
 add_local_domain() {
     if ! grep -q "127.0.0.1 $1" /etc/hosts; then
@@ -921,7 +926,6 @@ if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
     fi
 fi
 
-
 #--- Postfix
 echo -e "\n-- Installing Postfix"
 if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
@@ -941,6 +945,7 @@ if [ $PANEL_UPGRADE == false ]; then
 	mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_postfix.sql
 
 fi
+
 
 ## grant will also create users which don't exist and update existing users with password ##
 mysql -u root -p"$mysqlpassword" -e "GRANT ALL PRIVILEGES ON sentora_postfix .* TO 'postfix'@'localhost' identified by '$postfixpassword';";
@@ -994,7 +999,6 @@ if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
         # /etc/init.d/postfix start
     fi
 fi
-
 
 #--- Dovecot (includes Sieve)
 echo -e "\n-- Installing Dovecot"
@@ -1105,7 +1109,7 @@ if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
     sed -i "s|DocumentRoot \"/var/www/html\"|DocumentRoot $PANEL_PATH/panel|" "$HTTP_CONF_PATH"
 elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     # disable completely sites-enabled/000-default.conf
-    if [[ "$VER" = "14.04" || "$VER" = "8" ]]; then 
+    if [[ "$VER" != "12.04" || "$VER" = "8" ]]; then 
         sed -i "s|IncludeOptional sites-enabled|#&|" "$HTTP_CONF_PATH"
     else
         sed -i "s|Include sites-enabled|#&|" "$HTTP_CONF_PATH"
@@ -1124,7 +1128,7 @@ fi
 # adjustments for apache 2.4
 if [[ ("$OS" = "CentOs" && "$VER" = "7") ||
       ("$OS" = "Fedora") || 
-      ("$OS" = "Ubuntu" && "$VER" = "14.04") || 
+      ("$OS" = "Ubuntu" && "$VER" != "12.04") || 
       ("$OS" = "debian" && "$VER" = "8") ]] ; then 
     # Order deny,allow / Deny from all   ->  Require all denied
     sed -i 's|Order deny,allow|Require all denied|I'  $PANEL_CONF/apache/httpd.conf
@@ -1145,28 +1149,36 @@ if [[ ("$OS" = "CentOs" && "$VER" = "7") ||
     sed -i 's| FollowSymLinks [-]Indexes| +FollowSymLinks -Indexes|' $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
 fi
 
-
 #--- PHP
 echo -e "\n-- Installing and configuring PHP"
-if [[ "$OS" = "CentOs" || "$OS" = "Fedora" &&  "$VER" < "25" ]]; then
-    $PACKAGE_INSTALLER php php-devel php-gd php-mbstring php-intl php-mysql php-xml php-xmlrpc
-    $PACKAGE_INSTALLER php-mcrypt php-imap  #Epel packages
-    PHP_INI_PATH="/etc/php.ini"
-    PHP_EXT_PATH="/etc/php.d"
-elif [[ "$OS" = "Fedora" &&  "$VER" = "25"  ]]; then
-    $PACKAGE_INSTALLER php php-devel php-gd php-mbstring php-intl php-mysqlnd php-xml php-xmlrpc
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
+	if [[ "$VER" < "25" ]]; then
+		$PACKAGE_INSTALLER php php-devel php-gd php-mbstring php-intl php-mysql php-xml php-xmlrpc
+	else
+		$PACKAGE_INSTALLER php php-devel php-gd php-mbstring php-intl php-mysqlnd php-xml php-xmlrpc
+	fi
     $PACKAGE_INSTALLER php-mcrypt php-imap  #Epel packages
     PHP_INI_PATH="/etc/php.ini"
     PHP_EXT_PATH="/etc/php.d"
 elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
-    $PACKAGE_INSTALLER libapache2-mod-php5 php5-common php5-cli php5-mysql php5-gd php5-mcrypt php5-curl php-pear php5-imap php5-xmlrpc php5-xsl php5-intl
-    if [ "$VER" = "14.04" ]; then
+	if [[ "$VER" == "16.04" ]]; then
+		$PACKAGE_INSTALLER php php-dev php-mysql libapache2-mod-php php-common php-cli php-mysql php-gd php-mcrypt php-curl php-pear php-imap php-xmlrpc php-xsl php-intl php-mbstring
+	else
+		$PACKAGE_INSTALLER libapache2-mod-php5 php5-common php5-cli php5-mysql php5-gd php5-mcrypt php5-curl php-pear php5-imap php5-xmlrpc php5-xsl php5-intl
+	fi
+    if [[ "$VER" == "14.04" ]]; then
         php5enmod mcrypt  # missing in the package for Ubuntu 14, is this needed for debian 8 as well?
-    else
+    elif  [[ "$VER" == "12.04" || "$VER" == "7" ]]; then 
         $PACKAGE_INSTALLER php5-suhosin
     fi
-    PHP_INI_PATH="/etc/php5/apache2/php.ini"
+	if [[ "$VER" == "16.04" ]]; then
+		PHP_INI_PATH="/etc/php/7.0/apache2/php.ini"
+		# PHP_EXT_PATH="/etc/php/7.0/mods-available"
+	else
+		PHP_INI_PATH="/etc/php5/apache2/php.ini"
+	fi
 fi
+
 # Setup php upload dir
 mkdir -p $PANEL_DATA/temp
 chmod 1777 $PANEL_DATA/temp/
@@ -1191,39 +1203,52 @@ echo "session.save_path = $PANEL_DATA/sessions;">> $PHP_INI_PATH
 sed -i "s|;date.timezone =|date.timezone = $tz|" $PHP_INI_PATH
 sed -i "s|;upload_tmp_dir =|upload_tmp_dir = $PANEL_DATA/temp/|" $PHP_INI_PATH
 
+# Check the php version installed on the OS.
+# phpver=php -v |grep -Eow '^PHP [^ ]+' |gawk '{ print $2 }'
+phpver=`php -r 'echo PHP_VERSION;'`
+
+echo -e "\n-- Your current php Version installed is $phpver"
+
 # Disable php signature in headers to hide it from hackers
 sed -i "s|expose_php = On|expose_php = Off|" $PHP_INI_PATH
 
+
 # Build suhosin for PHP 5.x which is required by Sentora. 
-if [[ "$OS" = "CentOs" || "$OS" = "Fedora" || "$OS" = "debian" || ( "$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then
+if [[ "$OS" = "CentOs" || "$OS" = "Fedora" || "$OS" = "debian" || ( "$OS" = "Ubuntu" && "$VER" != "12.04") ]] ; then
     echo -e "\n# Building suhosin"
-    if [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+    if [[ ("$OS" = "Ubuntu" && "$VER" != "16.04") || "$OS" = "debian" ]]; then
         $PACKAGE_INSTALLER php5-dev
     fi
-	if [[ "$OS" = "Fedora" && "$VER" = "25" ]]; then
-		SUHOSIN_VERSION="master"
-		wget -nv -O suhosin.zip https://github.com/sektioneins/suhosin7/archive/$SUHOSIN_VERSION.zip
+
+	while true; do
+	if [[ "$(phpversion "$phpver")" < "$(phpversion "7.0.0")" ]]; then
+		read -e -p "Do you want to install Suhosin from the Sentora (O)riginal version or the (l)ast stable version? (O/L)" suh
 	else
-		while true; do
-		read -e -p "Do you want to install Suhosin, Sentora (O)riginal, the (l)ast stable version or Suhosin7 (A)lpha for php 7.x? (O/L/A)" suh 
-			case $suh in
-				[Oo]* )
-					SUHOSIN_VERSION="0.9.37.1"
-					wget -nv -O suhosin.zip https://github.com/stefanesser/suhosin/archive/$SUHOSIN_VERSION.zip			
-				break;;
-				[Ll]* ) 
-					SUHOSIN_VERSION="0.9.38"
-					wget -nv -O suhosin.zip https://github.com/sektioneins/suhosin/archive/$SUHOSIN_VERSION.zip	
-				break;;
-				[Aa]* )
-					SUHOSIN_VERSION="master"
-					wget -nv -O suhosin.zip https://github.com/sektioneins/suhosin7/archive/$SUHOSIN_VERSION.zip
-				break;;
-			esac
-		done
+		echo -e "-- Your current php Version installed is $phpver."
+		echo -e "-- Suhosin fon't support the $phpver version."
+		echo -e "-- You can install Suhosin7 with php $phpver support."
+		echo -e "-- WARNING: Suhosin7 IS PRE-ALPHA SOFTWARE. DO NOT ATTEMPT TO RUN IN PRODUCTION."
+		read -e -p "Do you want to install Suhosin, Sentora (O)riginal, the (l)ast stable version or Suhosin7 Pre-(A)lpha for php 7.x? (O/L/A)" suh
 	fi
+		case $suh in
+			[Oo]* )
+				SUHOSIN_VERSION="0.9.37.1"
+				wget -nv -O suhosin.zip https://github.com/stefanesser/suhosin/archive/$SUHOSIN_VERSION.zip			
+			break;;
+			[Ll]* ) 
+				SUHOSIN_VERSION="0.9.38"
+				wget -nv -O suhosin.zip https://github.com/sektioneins/suhosin/archive/$SUHOSIN_VERSION.zip	
+			break;;
+			[Aa]* )
+				SUHOSIN_VERSION="master"
+				wget -nv -O suhosin.zip https://github.com/sektioneins/suhosin7/archive/$SUHOSIN_VERSION.zip
+			break;;
+		esac
+	done
+
     unzip -q suhosin.zip
     rm -f suhosin.zip
+	
     if [[ "$SUHOSIN_VERSION" = "master" ]]; then
 		cd suhosin7-$SUHOSIN_VERSION
 	else
@@ -1245,7 +1270,7 @@ if [[ "$OS" = "CentOs" || "$OS" = "Fedora" || "$OS" = "debian" || ( "$OS" = "Ubu
 			echo 'extension=suhosin7.so' > $PHP_EXT_PATH/suhosin.ini
 		else
 			echo 'extension=suhosin.so' > $PHP_EXT_PATH/suhosin.ini
-		fi
+		fi 
     elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
 		if [[ "$SUHOSIN_VERSION" = "master" ]]; then
 			sed -i 'N;/default extension directory./a\extension=suhosin7.so' $PHP_INI_PATH
@@ -1281,8 +1306,8 @@ fi
 # Create and init proftpd database
 if [ $PANEL_UPGRADE == false ]; then
     mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_proftpd.sql
-
 fi
+
 # Create and configure mysql password for proftpd
 proftpdpassword=$(passwordgen);
 sed -i "s|!SQL_PASSWORD!|$proftpdpassword|" $PANEL_CONF/proftpd/proftpd-mysql.conf
@@ -1306,9 +1331,9 @@ ln -s "$PANEL_CONF/proftpd/proftpd-mysql.conf" "$FTP_CONF_PATH"
 mkdir -p $PANEL_DATA/logs/proftpd
 chmod -R 644 $PANEL_DATA/logs/proftpd
 
-# Correct bug from package in Ubutu14.04 which screw service proftpd restart
+# Correct bug from package in Ubutu  which screw service proftpd restart
 # see https://bugs.launchpad.net/ubuntu/+source/proftpd-dfsg/+bug/1246245
-if [[ "$OS" = "Ubuntu" && "$VER" = "14.04" ]]; then
+if [[ "$OS" = "Ubuntu" && "$VER" != "12.04" ]]; then
    sed -i 's|\([ \t]*start-stop-daemon --stop --signal $SIGNAL \)\(--quiet --pidfile "$PIDFILE"\)$|\1--retry 1 \2|' /etc/init.d/proftpd
 fi
 
@@ -1446,11 +1471,19 @@ fi
 #--- phpMyAdmin
 echo -e "\n-- Configuring phpMyAdmin"
 phpmyadminsecret=$(passwordgen 48);
-while true; do
-read -e -p "Do you want to keep the (O)riginal phpMyAdmin from Sentora or (U)pdate to the last stable version ? (O/U)" pma
+if [[ "$(phpversion "$phpver")" < "$(phpversion "5.5.0")" ]]; then
+	echo -e "\n-- Your current php Version installed is $phpver, you can't upgrade phpMyAdmin to the last stable version. You need php 5.5+ for upgrade."
+else
+	while true; do
+	read -e -p "Do you want to keep the (O)riginal phpMyAdmin from Sentora or (U)pdate to the last stable version ? (O/U)" pma
         case $pma in
                 [Uu]* )
-                        $PACKAGE_INSTALLER composer
+						if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
+							$PACKAGE_INSTALLER composer
+						elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+							$PACKAGE_INSTALLER curl php5-cli git
+							curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
+						fi
                         PHPMYADMIN_VERSION="STABLE"
                         cd  $PANEL_PATH/panel/etc/apps/
                         wget -nv -O phpmyadmin.zip https://github.com/phpmyadmin/phpmyadmin/archive/$PHPMYADMIN_VERSION.zip
@@ -1458,8 +1491,11 @@ read -e -p "Do you want to keep the (O)riginal phpMyAdmin from Sentora or (U)pda
                         mv phpmyadmin  phpmyadmin.old
                         mv phpmyadmin-$PHPMYADMIN_VERSION phpmyadmin
                         cd phpmyadmin
-                        sed -i "s/memory_limit = .*/memory_limit = 512M/" /etc/php.ini
-                        systemctl restart httpd
+                        sed -i "s/memory_limit = .*/memory_limit = 512M/" $PHP_INI_PATH
+						if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
+							echo 'suhosin.executor.include.whitelist = phar' >> $PHP_EXT_PATH/suhosin.ini
+							systemctl restart $HTTP_SERVICE
+						fi
                         php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
                         php -r "if (hash_file('SHA384', 'composer-setup.php') === '669656bab3166a7aff8a7506b8cb2d1c292f042046c5a994c43155c0be6190fa0355160742ab2e1c88d40d5be660b410') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
                         php composer-setup.php
@@ -1474,8 +1510,9 @@ read -e -p "Do you want to keep the (O)riginal phpMyAdmin from Sentora or (U)pda
                 [oO]* )
                 break;;
         esac
-done
-
+	done
+fi
+	
 chmod 644 $PANEL_CONF/phpmyadmin/config.inc.php
 sed -i "s|\$cfg\['blowfish_secret'\] \= 'SENTORA';|\$cfg\['blowfish_secret'\] \= '$phpmyadminsecret';|" $PANEL_CONF/phpmyadmin/config.inc.php
 ln -s $PANEL_CONF/phpmyadmin/config.inc.php $PANEL_PATH/panel/etc/apps/phpmyadmin/config.inc.php
@@ -1509,40 +1546,51 @@ chown "$HTTP_USER:$HTTP_GROUP" "$PANEL_DATA/logs/roundcube"
 ln -s $PANEL_CONF/roundcube/roundcube_config.inc.php $PANEL_PATH/panel/etc/apps/webmail/config/config.inc.php
 ln -s $PANEL_CONF/roundcube/sieve_config.inc.php $PANEL_PATH/panel/etc/apps/webmail/plugins/managesieve/config.inc.php
 
-while true; do
-read -e -p "Do you want to keep the (O)riginal RoundCube 1.0.4 from Sentora or (U)pdate to the version 1.2.x Compatible php 7? (O/U) " roc 
-	case $roc in
-		[uU]* )
-		    $PACKAGE_INSTALLER php-pear php-pear-Net-IDNA2 php-pear-Mail-mimeDecode php-pear-Net-SMTP
-			ROUNDCUBE_VERSION="release-1.2"
-			cd  $PANEL_PATH/panel/etc/apps/
-			wget -nv -O roundcube.zip https://github.com/roundcube/roundcubemail/archive/$ROUNDCUBE_VERSION.zip
-			unzip -q roundcube.zip
-			mv webmail webmail.old
-			mv roundcubemail-$ROUNDCUBE_VERSION webmail
-			cd webmail
-			echo 'suhosin.session.encrypt=disabled' >> $PHP_EXT_PATH/suhosin.ini
-			systemctl restart httpd
-			mv  composer.json-dist composer.json
-			php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-            php -r "if (hash_file('SHA384', 'composer-setup.php') === '669656bab3166a7aff8a7506b8cb2d1c292f042046c5a994c43155c0be6190fa0355160742ab2e1c88d40d5be660b410') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
-            php composer-setup.php
-            php -r "unlink('composer-setup.php');"
-			php composer.phar install --no-dev
-			ln -s $PANEL_CONF/roundcube/roundcube_config.inc.php $PANEL_PATH/panel/etc/apps/webmail/config/config.inc.php
-            ln -s $PANEL_CONF/roundcube/sieve_config.inc.php $PANEL_PATH/panel/etc/apps/webmail/plugins/managesieve/config.inc.php
-			./bin/update.sh
-			cd $PANEL_PATH/panel/etc/apps/
-			chmod -R 755 webmail
-			chown -R $HTTP_USER:$HTTP_USER webmail
-			rm -rf roundcube.zip
-			rm -rf roundcube.old
-		break;;
-		[oO]* ) 
-		break;;
-	esac
-done
-
+if [[ "$(phpversion "$phpver")" < "$(phpversion "5.5.0")" ]]; then
+	echo -e "\n-- Your current php Version installed is $phpver, you can't upgrade RoundCube to the version 1.2.x. You need php 5.5+ for upgrade."
+else
+	while true; do
+	read -e -p "Do you want to keep the (O)riginal RoundCube 1.0.4 from Sentora or (U)pdate to the version 1.2.x Compatible php 7? (O/U) " roc 
+		case $roc in
+			[uU]* )
+				if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
+					$PACKAGE_INSTALLER php-pear php-pear-Net-IDNA2 php-pear-Mail-mimeDecode php-pear-Net-SMTP
+				fi
+				ROUNDCUBE_VERSION="release-1.2"
+				cd  $PANEL_PATH/panel/etc/apps/
+				wget -nv -O roundcube.zip https://github.com/roundcube/roundcubemail/archive/$ROUNDCUBE_VERSION.zip
+				unzip -q roundcube.zip
+				mv webmail webmail.old
+				mv roundcubemail-$ROUNDCUBE_VERSION webmail
+				cd webmail
+				if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
+					echo 'suhosin.session.encrypt=disabled' >> $PHP_EXT_PATH/suhosin.ini
+				fi
+				if [[ "$OS" = "CentOs" || "$OS" = "Fedora" || "$VER" = "16.04" ]]; then
+					systemctl restart $HTTP_SERVICE
+				elif [[ "$VER" = "14.04" || "$VER" = "8" ]]; then
+					service $HTTP_SERVICE restart
+				fi
+				mv  composer.json-dist composer.json
+				php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+				php -r "if (hash_file('SHA384', 'composer-setup.php') === '669656bab3166a7aff8a7506b8cb2d1c292f042046c5a994c43155c0be6190fa0355160742ab2e1c88d40d5be660b410') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+				php composer-setup.php
+				php -r "unlink('composer-setup.php');"
+				php composer.phar install --no-dev
+				ln -s $PANEL_CONF/roundcube/roundcube_config.inc.php $PANEL_PATH/panel/etc/apps/webmail/config/config.inc.php
+				ln -s $PANEL_CONF/roundcube/sieve_config.inc.php $PANEL_PATH/panel/etc/apps/webmail/plugins/managesieve/config.inc.php
+				./bin/update.sh
+				cd $PANEL_PATH/panel/etc/apps/
+				chmod -R 755 webmail
+				chown -R $HTTP_USER:$HTTP_USER webmail
+				rm -rf roundcube.zip
+				rm -rf roundcube.old
+				break;;
+			[oO]* ) 
+			break;;
+		esac
+	done
+fi
 
 #-- Ask about update phpsysinfo
 echo -e "\n-- Configuring phpSysInfo"
