@@ -19,7 +19,7 @@
 # Supported Operating Systems: 
 # CentOS 6.*/7.* Minimal, 
 # Fedora 24/25 Minimal,
-# Ubuntu server 12.04/14.04/16.04
+# Ubuntu server 12.04/14.04
 # Debian 7.*/8.* 
 # 32bit and 64bit
 #
@@ -155,10 +155,15 @@ elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
        dpkg -l "$1" 2> /dev/null | grep '^ii' &> /dev/null
     }
     
-    DB_PCKG="mysql-server"
     HTTP_PCKG="apache2"
-    PHP_PCKG="apache2-mod-php5"
     BIND_PCKG="bind9"
+	if [[ "$VER" != "16.04" ]]; then
+		PHP_PCKG="apache2-mod-php5"
+		DB_PCKG="mysql-server"
+	else
+		PHP_PCKG="apache2-mod-php"
+		DB_PCKG="mysql-server"
+	fi
 fi
 
 # Note : Postfix is installed by default on centos netinstall / minimum install.
@@ -629,6 +634,9 @@ elif [[ "$OS" = "Fedora" ]]; then
 	$PACKAGE_INSTALLER php-pecl-zip.x86_64 openssl mod_ssl php-pecl-apcu.x86_64 git # Those are optionals, but very usefull for web hosting / owncloud and SSL setup	
 elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     $PACKAGE_INSTALLER sudo vim make zip unzip debconf-utils at build-essential bash-completion ca-certificates e2fslibs
+	if  [[ "$OS" = "debian" ]]; then
+		$PACKAGE_INSTALLER gawk
+	fi
 fi
 
 #--- Download Sentora archive from GitHub
@@ -935,7 +943,7 @@ if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
 		$PACKAGE_INSTALLER postfix-mysql
 	fi
     USR_LIB_PATH="/usr/libexec"
-elif [[ "$OS" = "Ubuntu" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     $PACKAGE_INSTALLER postfix postfix-mysql
     USR_LIB_PATH="/usr/lib"
 fi
