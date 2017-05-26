@@ -157,12 +157,11 @@ elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     
     HTTP_PCKG="apache2"
     BIND_PCKG="bind9"
-	if [[ "$VER" != "16.04" ]]; then
-		PHP_PCKG="apache2-mod-php5"
-		DB_PCKG="mysql-server"
+	DB_PCKG="mysql-server"
+	if [[ "$VER" = "16.04" ]]; then
+		PHP_PCKG="php"
 	else
-		PHP_PCKG="apache2-mod-php"
-		DB_PCKG="mysql-server"
+		PHP_PCKG="apache2-mod-php5"
 	fi
 fi
 
@@ -576,7 +575,7 @@ deb-src http://security.debian.org/ $(lsb_release -sc)/updates main
 EOF
     else
         cat > /etc/apt/sources.list <<EOF
-#Depots main restricted
+#Depots main restrictedsys
 deb http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc) main restricted
 deb http://security.ubuntu.com/ubuntu $(lsb_release -sc)-security main restricted
 deb http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc)-updates main restricted
@@ -847,7 +846,8 @@ passwordgen() {
     tr -dc A-Za-z0-9 < /dev/urandom | head -c ${l} | xargs
 }
 
-phpversion() { 
+#Version checker function dor Mysql & PHP
+versioncheck() { 
 	echo "$@" | gawk -F. '{ printf("%03d%03d%03d\n", $1,$2,$3); }'; 
 }
 
@@ -884,16 +884,71 @@ elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     if [[ "$VER" = "12.04" || "$VER" = "7" ]]; then
         $PACKAGE_INSTALLER db4.7-util
     fi
-    MY_CNF_PATH="/etc/mysql/my.cnf"
+	if [[ "$VER" = "16.04" ]]; then
+		MY_CNF_PATH="/etc/mysql/mysql.cnf"
+	else
+		MY_CNF_PATH="/etc/mysql/my.cnf"
+	fi
     DB_SERVICE="mysql"
 fi
 
-service $DB_SERVICE start
+if [[ "$VER" = "16.04" || "$VER" = "8" ]]; then
+	systemctl start $DB_SERVICE
+else
+	service $DB_SERVICE start
+fi
+
+mysqlversion=`mysql --version|awk '{ print $5 }'|awk -F\, '{ print $1 }'`
+patchroot="0"
+
+if [[ "$(versioncheck "$mysqlversion")" < "$(versioncheck "5.5.0")" ]]; then
+	echo -e "-- Your current Mysql Version installed is $mysqlversion."
+	echo -e "-- You don't need the user 'root' patch!"
+elif [[ "$VER" = "16.04" ]]; then
+	patchroot="1"
+else
+	while true; do	
+		echo -e "-- Your current Mysql Version installed is $mysqlversion."
+		echo -e "-- In some case, MySQL don't let the 'root' connect through the PHP."
+		echo -e "-- This can block Sentora after a MySQL update or that installation may not works."
+		echo -e "-- Do you want to create a (S)entoradmin Super user to connect the MySQL through PHP?."
+		echo -e "-- Doing this patch may cause others bugs, because that mode is under Alpha phase."
+		read -e -p "Or do you want to keep the '(R)oot' user to connect to the Mysql database through PHP? (S/R)" msu
+		case $msu in
+			[Rr]* )
+				patchroot="0"
+			break;;
+			[Ss]* ) 
+				patchroot="1"
+			break;;
+		esac
+	done
+fi
 
 # setup mysql root password only if mysqlpassword is empty
 if [ -z "$mysqlpassword" ]; then
     mysqlpassword=$(passwordgen);
     mysqladmin -u root password "$mysqlpassword"
+fi
+
+# Bug fix under some MySQL 5.7+ about the sql_mode for "NO_ZERO_IN_DATE,NO_ZERO_DATE"
+# Need to be considere on the next .sql build query version.
+if [[ "$VER" == "16.04" ]]; then
+	# sed '/\[mysqld]/a\sql_mode = "NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"' /etc/mysql/mysql.conf.d/mysqld.cnf
+	# sed 's/^\[mysqld\]/\[mysqld\]\sql_mode = "NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"/' /etc/mysql/mysql.conf.d/mysqld.cnf
+	# mysql -u root -p"$mysqlpassword" -e "SET sql_mode = 'NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'";
+	if ! grep -q "sql_mode" /etc/mysql/mysql.conf.d/mysqld.cnf; then
+        echo "sql_mode = 'NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'" >> /etc/mysql/mysql.conf.d/mysqld.cnf;
+		systemctl restart $DB_SERVICE
+    fi
+fi
+
+# Sentora Super User for MySQL 5.7+ (under Ubuntu)
+if [[ "$patchroot" == "1" ]]; then
+    sentorapassword=$(passwordgen);
+	mysql -u root -p"$mysqlpassword" -e "CREATE USER 'sentoradmin'@'localhost' IDENTIFIED BY '$sentorapassword'";
+	mysql -u root -p"$mysqlpassword" -e "GRANT ALL PRIVILEGES ON * . * TO 'sentoradmin'@'localhost'";
+	mysql -u root -p"$mysqlpassword" -e "GRANT PROXY ON ''@'%' TO 'sentoradmin'@'localhost' WITH GRANT OPTION";
 fi
 
 # small cleaning of mysql access
@@ -922,8 +977,14 @@ if [ $PANEL_UPGRADE == true ]; then
     sed -i "s|zpanel_core|sentora_core|" $PANEL_PATH/panel/cnf/db.php
 
 else
-    sed -i "s|YOUR_ROOT_MYSQL_PASSWORD|$mysqlpassword|" $PANEL_PATH/panel/cnf/db.php
-    mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_core.sql
+	if [[ "$patchroot" == "1" ]]; then
+		sed -i "s|root|sentoradmin|" $PANEL_PATH/panel/cnf/db.php
+		sed -i "s|YOUR_ROOT_MYSQL_PASSWORD|$sentorapassword|" $PANEL_PATH/panel/cnf/db.php
+		mysql -u sentoradmin -p"$sentorapassword" < $PANEL_CONF/sentora-install/sql/sentora_core.sql
+	else
+		sed -i "s|YOUR_ROOT_MYSQL_PASSWORD|$mysqlpassword|" $PANEL_PATH/panel/cnf/db.php
+		mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_core.sql
+	fi
 fi
 # Register mysql/mariadb service for autostart
 if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
@@ -951,7 +1012,6 @@ fi
 postfixpassword=$(passwordgen);
 if [ $PANEL_UPGRADE == false ]; then
 	mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_postfix.sql
-
 fi
 
 
@@ -1170,7 +1230,7 @@ if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
     PHP_EXT_PATH="/etc/php.d"
 elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
 	if [[ "$VER" == "16.04" ]]; then
-		$PACKAGE_INSTALLER php php-dev php-mysql libapache2-mod-php php-common php-cli php-mysql php-gd php-mcrypt php-curl php-pear php-imap php-xmlrpc php-xsl php-intl php-mbstring
+		$PACKAGE_INSTALLER php php-dev php-mysql libapache2-mod-php php-common php-cli php-mysql php-gd php-mcrypt php-curl php-pear php-imap php-xmlrpc php7.0-xml php-intl php-mbstring mcrypt
 	else
 		$PACKAGE_INSTALLER libapache2-mod-php5 php5-common php5-cli php5-mysql php5-gd php5-mcrypt php5-curl php-pear php5-imap php5-xmlrpc php5-xsl php5-intl
 	fi
@@ -1181,7 +1241,8 @@ elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     fi
 	if [[ "$VER" == "16.04" ]]; then
 		PHP_INI_PATH="/etc/php/7.0/apache2/php.ini"
-		# PHP_EXT_PATH="/etc/php/7.0/mods-available"
+		PHP_EXT_PATH="/etc/php/7.0/mods-available/"
+		PHP_EXT_LINK="/etc/php/7.0/apache2/conf.d"
 	else
 		PHP_INI_PATH="/etc/php5/apache2/php.ini"
 	fi
@@ -1229,14 +1290,14 @@ if [[ "$OS" = "CentOs" || "$OS" = "Fedora" || "$OS" = "debian" || ( "$OS" = "Ubu
     fi
 
 	while true; do
-	if [[ "$(phpversion "$phpver")" < "$(phpversion "7.0.0")" ]]; then
+	if [[ "$(versioncheck "$phpver")" < "$(versioncheck "7.0.0")" ]]; then
 		read -e -p "Do you want to install Suhosin from the Sentora (O)riginal version or the (l)ast stable version? (O/L)" suh
 	else
 		echo -e "-- Your current php Version installed is $phpver."
-		echo -e "-- Suhosin fon't support the $phpver version."
+		echo -e "-- Suhosin don't support the $phpver version."
 		echo -e "-- You can install Suhosin7 with php $phpver support."
 		echo -e "-- WARNING: Suhosin7 IS PRE-ALPHA SOFTWARE. DO NOT ATTEMPT TO RUN IN PRODUCTION."
-		read -e -p "Do you want to install Suhosin, Sentora (O)riginal, the (l)ast stable version or Suhosin7 Pre-(A)lpha for php 7.x? (O/L/A)" suh
+		read -e -p "Do you want to install Suhosin, Sentora (O)riginal, the (L)ast stable version or Suhosin7 Pre-(A)lpha for php 7.x? (O/L/A)" suh
 	fi
 		case $suh in
 			[Oo]* )
@@ -1341,8 +1402,11 @@ chmod -R 644 $PANEL_DATA/logs/proftpd
 
 # Correct bug from package in Ubutu  which screw service proftpd restart
 # see https://bugs.launchpad.net/ubuntu/+source/proftpd-dfsg/+bug/1246245
-if [[ "$OS" = "Ubuntu" && "$VER" != "12.04" ]]; then
+if [[ "$OS" = "Ubuntu" && "$VER" == "14.04" ]]; then
    sed -i 's|\([ \t]*start-stop-daemon --stop --signal $SIGNAL \)\(--quiet --pidfile "$PIDFILE"\)$|\1--retry 1 \2|' /etc/init.d/proftpd
+elif [[ "$OS" = "Ubuntu" && "$VER" == "16.04" ]]; then
+	systemctl start proftpd.service
+	systemctl start proftpd.service
 fi
 
 # Register proftpd service for autostart and start it
@@ -1479,7 +1543,7 @@ fi
 #--- phpMyAdmin
 echo -e "\n-- Configuring phpMyAdmin"
 phpmyadminsecret=$(passwordgen 48);
-if [[ "$(phpversion "$phpver")" < "$(phpversion "5.5.0")" ]]; then
+if [[ "$(versioncheck "$phpver")" < "$(versioncheck "5.5.0")" ]]; then
 	echo -e "\n-- Your current php Version installed is $phpver, you can't upgrade phpMyAdmin to the last stable version. You need php 5.5+ for upgrade."
 else
 	while true; do
@@ -1489,7 +1553,10 @@ else
 						if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
 							$PACKAGE_INSTALLER composer
 						elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
-							$PACKAGE_INSTALLER curl php5-cli git
+							if [[ "$VER" != "16.04" ]]; then
+								$PACKAGE_INSTALLER php5-cli
+							fi
+							$PACKAGE_INSTALLER curl git
 							curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
 						fi
                         PHPMYADMIN_VERSION="STABLE"
@@ -1554,7 +1621,7 @@ chown "$HTTP_USER:$HTTP_GROUP" "$PANEL_DATA/logs/roundcube"
 ln -s $PANEL_CONF/roundcube/roundcube_config.inc.php $PANEL_PATH/panel/etc/apps/webmail/config/config.inc.php
 ln -s $PANEL_CONF/roundcube/sieve_config.inc.php $PANEL_PATH/panel/etc/apps/webmail/plugins/managesieve/config.inc.php
 
-if [[ "$(phpversion "$phpver")" < "$(phpversion "5.5.0")" ]]; then
+if [[ "$(versioncheck "$phpver")" < "$(versioncheck "5.5.0")" ]]; then
 	echo -e "\n-- Your current php Version installed is $phpver, you can't upgrade RoundCube to the version 1.2.x. You need php 5.5+ for upgrade."
 else
 	while true; do
@@ -1573,11 +1640,14 @@ else
 				cd webmail
 				if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
 					echo 'suhosin.session.encrypt=disabled' >> $PHP_EXT_PATH/suhosin.ini
+				elif [[ "$OS" = "Ubuntu" && "$VER" = "16.04" ]]; then
+					echo 'suhosin.session.encrypt=disabled' >> $PHP_EXT_PATH/suhosin.ini
+					ln -s $PHP_EXT_PATH/suhosin.ini $PHP_EXT_LINK/suhosin.ini
 				fi
-				if [[ "$OS" = "CentOs" || "$OS" = "Fedora" || "$VER" = "16.04" ]]; then
-					systemctl restart $HTTP_SERVICE
-				elif [[ "$VER" = "14.04" || "$VER" = "8" ]]; then
+				if [[ "$VER" = "14.04" ]]; then
 					service $HTTP_SERVICE restart
+				else
+					systemctl restart $HTTP_SERVICE
 				fi
 				mv  composer.json-dist composer.json
 				php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
@@ -1706,6 +1776,9 @@ service atd restart
     echo "zadmin Password   : $zadminpassword"
     echo ""
     echo "MySQL Root Password      : $mysqlpassword"
+if [[ "$patchroot" == "1" ]]; then
+	echo "MySQL Sentoradmin Passwd : $sentorapassword"
+fi
     echo "MySQL Postfix Password   : $postfixpassword"
     echo "MySQL ProFTPd Password   : $proftpdpassword"
     echo "MySQL Roundcube Password : $roundcubepassword"
@@ -1723,6 +1796,9 @@ echo " Sentora Username  : zadmin"
 echo " Sentora Password  : $zadminpassword"
 echo ""
 echo " MySQL Root Password      : $mysqlpassword"
+if [[ "$patchroot" == "1" ]]; then
+echo " MySQL Sentoradmin Passwd : $sentorapassword"
+fi
 echo " MySQL Postfix Password   : $postfixpassword"
 echo " MySQL ProFTPd Password   : $proftpdpassword"
 echo " MySQL Roundcube Password : $roundcubepassword"
