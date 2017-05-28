@@ -19,7 +19,7 @@
 # Supported Operating Systems: 
 # CentOS 6.*/7.* Minimal, 
 # Fedora 24/25 Minimal,
-# Ubuntu server 12.04/14.04
+# Ubuntu server 14.04/16.04
 # Debian 7.*/8.* 
 # 32bit and 64bit
 #
@@ -79,7 +79,7 @@ ARCH=$(uname -m)
 echo "Detected : $OS  $VER  $ARCH"
 
 if [[ "$OS" = "CentOs" && ("$VER" = "6" || "$VER" = "7" ) || 
-      "$OS" = "Ubuntu" && ("$VER" = "12.04" || "$VER" = "14.04" || "$VER" = "16.04" ) || 
+      "$OS" = "Ubuntu" && ("$VER" = "14.04" || "$VER" = "16.04" ) || 
 	  "$OS" = "Fedora" && ("$VER" = "24" || "$VER" = "25" ) || 
       "$OS" = "debian" && ("$VER" = "7" || "$VER" = "8" ) ]] ; then
     echo "Ok."
@@ -908,11 +908,11 @@ elif [[ "$VER" = "16.04" ]]; then
 	patchroot="1"
 else
 	while true; do	
-		echo -e "-- Your current Mysql Version installed is $mysqlversion."
-		echo -e "-- In some case, MySQL don't let the 'root' connect through the PHP."
-		echo -e "-- This can block Sentora after a MySQL update or that installation may not works."
-		echo -e "-- Do you want to create a (S)entoradmin Super user to connect the MySQL through PHP?."
-		echo -e "-- Doing this patch may cause others bugs, because that mode is under Alpha phase."
+		echo -e "Your current Mysql Version installed is $mysqlversion."
+		echo -e "In some case, MySQL don't let the 'root' connect through the PHP."
+		echo -e "This can block Sentora after a MySQL update or that installation may not works."
+		echo -e "Do you want to create a (S)entoradmin Super user to connect the MySQL through PHP?."
+		echo -e "Doing this patch may cause others bugs, because that mode is under Alpha phase."
 		read -e -p "Or do you want to keep the '(R)oot' user to connect to the Mysql database through PHP? (S/R)" msu
 		case $msu in
 			[Rr]* )
@@ -936,7 +936,6 @@ fi
 if [[ "$VER" == "16.04" ]]; then
 	# sed '/\[mysqld]/a\sql_mode = "NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"' /etc/mysql/mysql.conf.d/mysqld.cnf
 	# sed 's/^\[mysqld\]/\[mysqld\]\sql_mode = "NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"/' /etc/mysql/mysql.conf.d/mysqld.cnf
-	# mysql -u root -p"$mysqlpassword" -e "SET sql_mode = 'NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'";
 	if ! grep -q "sql_mode" /etc/mysql/mysql.conf.d/mysqld.cnf; then
         echo "sql_mode = 'NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'" >> /etc/mysql/mysql.conf.d/mysqld.cnf;
 		systemctl restart $DB_SERVICE
@@ -1294,7 +1293,7 @@ if [[ "$OS" = "CentOs" || "$OS" = "Fedora" || "$OS" = "debian" || ( "$OS" = "Ubu
 		read -e -p "Do you want to install Suhosin from the Sentora (O)riginal version or the (l)ast stable version? (O/L)" suh
 	else
 		echo -e "-- Your current php Version installed is $phpver."
-		echo -e "-- Suhosin don't support the $phpver version."
+		echo -e "-- Suhosin doesn't support the $phpver version."
 		echo -e "-- You can install Suhosin7 with php $phpver support."
 		echo -e "-- WARNING: Suhosin7 IS PRE-ALPHA SOFTWARE. DO NOT ATTEMPT TO RUN IN PRODUCTION."
 		read -e -p "Do you want to install Suhosin, Sentora (O)riginal, the (L)ast stable version or Suhosin7 Pre-(A)lpha for php 7.x? (O/L/A)" suh
@@ -1539,26 +1538,40 @@ if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
     fi
 fi
 
+while true; do
+read -e -p "Do you want to update phpMyAdmin and/or Roundcube to a newer version? In this case you need to install Composer. (Y/N)" comp
+	case $comp in
+		[Yy]* )
+			if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
+				$PACKAGE_INSTALLER composer
+			elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+				if [[ "$VER" != "16.04" ]]; then
+					$PACKAGE_INSTALLER php5-cli
+				fi
+				$PACKAGE_INSTALLER curl git
+				curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
+			fi
+			update_apps="1"
+		break;;
+		[Nn]* )
+			update_apps="0"
+		break;;
+	esac
+done
+				
 
 #--- phpMyAdmin
 echo -e "\n-- Configuring phpMyAdmin"
 phpmyadminsecret=$(passwordgen 48);
-if [[ "$(versioncheck "$phpver")" < "$(versioncheck "5.5.0")" ]]; then
-	echo -e "\n-- Your current php Version installed is $phpver, you can't upgrade phpMyAdmin to the last stable version. You need php 5.5+ for upgrade."
-else
-	while true; do
-	read -e -p "Do you want to keep the (O)riginal phpMyAdmin from Sentora or (U)pdate to the last stable version ? (O/U)" pma
-        case $pma in
+
+if [[ "$update_apps" == "1" ]]; then
+	if [[ "$(versioncheck "$phpver")" < "$(versioncheck "5.5.0")" ]]; then
+		echo -e "\n-- Your current php Version installed is $phpver, you can't upgrade phpMyAdmin to the last stable version. You need php 5.5+ for upgrade."
+	else
+		while true; do
+		read -e -p "Do you want to keep the (O)riginal phpMyAdmin from Sentora or (U)pdate to the last stable version ? (O/U)" pma
+			case $pma in
                 [Uu]* )
-						if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
-							$PACKAGE_INSTALLER composer
-						elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
-							if [[ "$VER" != "16.04" ]]; then
-								$PACKAGE_INSTALLER php5-cli
-							fi
-							$PACKAGE_INSTALLER curl git
-							curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
-						fi
                         PHPMYADMIN_VERSION="STABLE"
                         cd  $PANEL_PATH/panel/etc/apps/
                         wget -nv -O phpmyadmin.zip https://github.com/phpmyadmin/phpmyadmin/archive/$PHPMYADMIN_VERSION.zip
@@ -1584,8 +1597,9 @@ else
                 break;;
                 [oO]* )
                 break;;
-        esac
-	done
+			esac
+		done
+	fi
 fi
 	
 chmod 644 $PANEL_CONF/phpmyadmin/config.inc.php
@@ -1621,54 +1635,58 @@ chown "$HTTP_USER:$HTTP_GROUP" "$PANEL_DATA/logs/roundcube"
 ln -s $PANEL_CONF/roundcube/roundcube_config.inc.php $PANEL_PATH/panel/etc/apps/webmail/config/config.inc.php
 ln -s $PANEL_CONF/roundcube/sieve_config.inc.php $PANEL_PATH/panel/etc/apps/webmail/plugins/managesieve/config.inc.php
 
-if [[ "$(versioncheck "$phpver")" < "$(versioncheck "5.5.0")" ]]; then
-	echo -e "\n-- Your current php Version installed is $phpver, you can't upgrade RoundCube to the version 1.2.x. You need php 5.5+ for upgrade."
-else
-	while true; do
-	read -e -p "Do you want to keep the (O)riginal RoundCube 1.0.4 from Sentora or (U)pdate to the version 1.2.x Compatible php 7? (O/U) " roc 
-		case $roc in
-			[uU]* )
-				if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
-					$PACKAGE_INSTALLER php-pear php-pear-Net-IDNA2 php-pear-Mail-mimeDecode php-pear-Net-SMTP
-				fi
-				ROUNDCUBE_VERSION="release-1.2"
-				cd  $PANEL_PATH/panel/etc/apps/
-				wget -nv -O roundcube.zip https://github.com/roundcube/roundcubemail/archive/$ROUNDCUBE_VERSION.zip
-				unzip -q roundcube.zip
-				mv webmail webmail.old
-				mv roundcubemail-$ROUNDCUBE_VERSION webmail
-				cd webmail
-				if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
-					echo 'suhosin.session.encrypt=disabled' >> $PHP_EXT_PATH/suhosin.ini
-				elif [[ "$OS" = "Ubuntu" && "$VER" = "16.04" ]]; then
-					echo 'suhosin.session.encrypt=disabled' >> $PHP_EXT_PATH/suhosin.ini
-					ln -s $PHP_EXT_PATH/suhosin.ini $PHP_EXT_LINK/suhosin.ini
-				fi
-				if [[ "$VER" = "14.04" ]]; then
-					service $HTTP_SERVICE restart
-				else
-					systemctl restart $HTTP_SERVICE
-				fi
-				mv  composer.json-dist composer.json
-				php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-				php -r "if (hash_file('SHA384', 'composer-setup.php') === '669656bab3166a7aff8a7506b8cb2d1c292f042046c5a994c43155c0be6190fa0355160742ab2e1c88d40d5be660b410') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
-				php composer-setup.php
-				php -r "unlink('composer-setup.php');"
-				php composer.phar install --no-dev
-				ln -s $PANEL_CONF/roundcube/roundcube_config.inc.php $PANEL_PATH/panel/etc/apps/webmail/config/config.inc.php
-				ln -s $PANEL_CONF/roundcube/sieve_config.inc.php $PANEL_PATH/panel/etc/apps/webmail/plugins/managesieve/config.inc.php
-				./bin/update.sh
-				cd $PANEL_PATH/panel/etc/apps/
-				chmod -R 755 webmail
-				chown -R $HTTP_USER:$HTTP_USER webmail
-				rm -rf roundcube.zip
-				rm -rf roundcube.old
+
+if [[ "$update_apps" == "1" ]]; then
+	if [[ "$(versioncheck "$phpver")" < "$(versioncheck "5.5.0")" ]]; then
+		echo -e "\n-- Your current php Version installed is $phpver, you can't upgrade RoundCube to the version 1.2.x. You need php 5.5+ for upgrade."
+	else
+		while true; do
+		read -e -p "Do you want to keep the (O)riginal RoundCube 1.0.4 from Sentora or (U)pdate to the version 1.2.x Compatible php 7? (O/U) " roc 
+			case $roc in
+				[uU]* )
+					if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
+						$PACKAGE_INSTALLER php-pear php-pear-Net-IDNA2 php-pear-Mail-mimeDecode php-pear-Net-SMTP
+					fi
+					ROUNDCUBE_VERSION="release-1.2"
+					cd  $PANEL_PATH/panel/etc/apps/
+					wget -nv -O roundcube.zip https://github.com/roundcube/roundcubemail/archive/$ROUNDCUBE_VERSION.zip
+					unzip -q roundcube.zip
+					mv webmail webmail.old
+					mv roundcubemail-$ROUNDCUBE_VERSION webmail
+					cd webmail
+					if [[ "$OS" = "CentOs" || "$OS" = "Fedora" ]]; then
+						echo 'suhosin.session.encrypt=disabled' >> $PHP_EXT_PATH/suhosin.ini
+					elif [[ "$OS" = "Ubuntu" && "$VER" = "16.04" ]]; then
+						echo 'suhosin.session.encrypt=disabled' >> $PHP_EXT_PATH/suhosin.ini
+						ln -s $PHP_EXT_PATH/suhosin.ini $PHP_EXT_LINK/suhosin.ini
+					fi
+					if [[ "$VER" = "14.04" ]]; then
+						service $HTTP_SERVICE restart
+					else
+						systemctl restart $HTTP_SERVICE
+					fi
+					mv  composer.json-dist composer.json
+					php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+					php -r "if (hash_file('SHA384', 'composer-setup.php') === '669656bab3166a7aff8a7506b8cb2d1c292f042046c5a994c43155c0be6190fa0355160742ab2e1c88d40d5be660b410') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+					php composer-setup.php
+					php -r "unlink('composer-setup.php');"
+					php composer.phar install --no-dev
+					ln -s $PANEL_CONF/roundcube/roundcube_config.inc.php $PANEL_PATH/panel/etc/apps/webmail/config/config.inc.php
+					ln -s $PANEL_CONF/roundcube/sieve_config.inc.php $PANEL_PATH/panel/etc/apps/webmail/plugins/managesieve/config.inc.php
+					./bin/update.sh
+					cd $PANEL_PATH/panel/etc/apps/
+					chmod -R 755 webmail
+					chown -R $HTTP_USER:$HTTP_USER webmail
+					rm -rf roundcube.zip
+					rm -rf webmail.old
 				break;;
-			[oO]* ) 
-			break;;
-		esac
-	done
+				[oO]* ) 
+				break;;
+			esac
+		done
+	fi
 fi
+
 
 #-- Ask about update phpsysinfo
 echo -e "\n-- Configuring phpSysInfo"
@@ -1774,6 +1792,13 @@ service atd restart
     echo "Server IP address : $PUBLIC_IP"
     echo "Panel URL         : http://$PANEL_FQDN"
     echo "zadmin Password   : $zadminpassword"
+if [[ "$patchroot" == "1" ]]; then
+	echo ""
+	echo "DON'T USE THE ROOT USER TO CONNECT TO THE MYSQL"
+	echo "DATABASE THROUGH PHPMYADMIN. USE sentoradmin"
+	echo "INSTEAD ONLY USE THE ROOT FOR THE MYSQL CLI"
+	echo "IN CASE OF TROUBLESOOTING. THANK YOU!"
+fi
     echo ""
     echo "MySQL Root Password      : $mysqlpassword"
 if [[ "$patchroot" == "1" ]]; then
@@ -1794,6 +1819,13 @@ echo ""
 echo " Login to Sentora at http://$PANEL_FQDN"
 echo " Sentora Username  : zadmin"
 echo " Sentora Password  : $zadminpassword"
+if [[ "$patchroot" == "1" ]]; then
+	echo ""
+	echo "DON'T USE THE ROOT USER TO CONNECT TO THE MYSQL"
+	echo "DATABASE THROUGH PHPMYADMIN. USE sentoradmin"
+	echo "INSTEAD. ONLY USE THE ROOT FOR THE MYSQL CLI"
+	echo "IN CASE OF TROUBLESOOTING. THANK YOU!"
+fi
 echo ""
 echo " MySQL Root Password      : $mysqlpassword"
 if [[ "$patchroot" == "1" ]]; then
