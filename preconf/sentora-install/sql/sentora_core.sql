@@ -736,7 +736,7 @@ CREATE TABLE `x_translations` (
 /*Data for the table `x_translations` */
 
 insert  into `x_translations`(`tr_id_pk`,`tr_en_tx`,`tr_de_tx`) values 
-(44,'Webmail is a convenient way for you to check your email accounts online without the need to configure an email client.','Webmail ist ein bequemer Weg fÃ¼r Sie, Ihre E-Mail-Konten online zu Ã¼berprÃ¼fen, ohne dass eine E-Mail-Client zu konfigurieren.'),
+(44,'Webmail is a convenient way for you to check your email accounts online without the need to configure an email client.','Webmail ist ein bequemer Weg für Sie, Ihre E-Mail-Konten online zu überprüfen, ohne dass eine E-Mail-Client zu konfigurieren.'),
 (45,'Launch Webmail','Starten Sie WebMail'),
 (56,'PHPInfo provides you with information regarding the version of PHP running on this system as well as installed PHP extentsions and configuration details.','PHPInfo bietet Ihnen Informationen über die PHP-Version auf dem System, sowie PHP installiert extentsions und Konfigurationsmöglichkeiten.'),
 (67,"From here you can shadow any of your client's accounts, this enables you to automatically login as the user which enables you to offer remote help by seeing what they see!",'Von hier aus können alle Ihre Kunden-Accounts können Schatten, ermöglicht Ihnen dies automatisch, wenn der Benutzer mit dem Sie remote helfen zu sehen, was sie sehen, anbieten zu können login!'),

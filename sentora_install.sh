@@ -1850,4 +1850,3 @@ if [[ "$INSTALL" != "auto" ]] ; then
     done
     shutdown -r now
 fi
-
