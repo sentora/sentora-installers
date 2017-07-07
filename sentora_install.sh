@@ -1384,6 +1384,7 @@ service atd restart
     echo "MySQL ProFTPd Password   : $proftpdpassword"
     echo "MySQL Roundcube Password : $roundcubepassword"
 } >> /root/passwords.txt
+chmod 600 /root/passwords.txt
 
 #--- Advise the admin that Sentora is now installed and accessible.
 {
