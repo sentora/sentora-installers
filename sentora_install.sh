@@ -18,7 +18,7 @@
 #
 # Supported Operating Systems: 
 # CentOS 6.*/7.* Minimal, 
-# Ubuntu server 12.04/14.04 
+# Ubuntu server 12.04/14.04/16.04
 # Debian 7.*/8.* 
 # 32bit and 64bit
 #
@@ -71,12 +71,16 @@ ARCH=$(uname -m)
 echo "Detected : $OS  $VER  $ARCH"
 
 if [[ "$OS" = "CentOs" && ("$VER" = "6" || "$VER" = "7" ) || 
-      "$OS" = "Ubuntu" && ("$VER" = "12.04" || "$VER" = "14.04" ) || 
+      "$OS" = "Ubuntu" && ("$VER" = "12.04" || "$VER" = "14.04" )  || "$VER" = "16.04" ) || 
       "$OS" = "debian" && ("$VER" = "7" || "$VER" = "8" ) ]] ; then
     echo "Ok."
 else
     echo "Sorry, this OS is not supported by Sentora." 
     exit 1
+fi
+
+if [ "$VER" = "16.04" ] ; then
+	VER=14.04
 fi
 
 # Centos uses repo directory that depends of architecture. Ensure it is compatible
@@ -346,7 +350,17 @@ if [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
         echo -e "\n-- Disabling and removing AppArmor, please wait..."
         /etc/init.d/apparmor stop &> /dev/null
         update-rc.d -f apparmor remove &> /dev/null
-        apt-get remove -y --purge apparmor* &> /dev/null
+	#cette ligne n'est pas forcment necessaire
+	#de plus elle provoque la désinstallation
+	#du paquet dbus qui et necessaire
+	#pour afficher les graphisme
+	#sur les version desktop
+	#this line is not necessarily necessary
+	#more it causes uninstallation
+	# Of the dbus package that needed
+	#to display graphics
+	# On desktop versions
+        #apt-get remove -y --purge apparmor* &> /dev/null
         disable_file /etc/init.d/apparmor &> /dev/null
         echo -e "AppArmor has been removed."
     fi
@@ -433,6 +447,16 @@ deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main restricted universe
 deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc)-security main restricted universe multiverse
 deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc)-updates main restricted universe multiverse
 EOF
+
+#add ppa php5 for ubuntu 14.04 and 16.04
+        cat > /etc/apt/sources.list.d/ondrej-php.list <<EOF
+#ppa php5 for ubuntu
+deb http://ppa.launchpad.net/ondrej/php/ubuntu $(lsb_release -sc) main
+deb-src http://ppa.launchpad.net/ondrej/php/ubuntu $(lsb_release -sc) main
+EOF
+
+apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 4F4EA0AAE5267A6C
+
     elif [ "$VER" = "8"  ]; then
         cat > /etc/apt/sources.list <<EOF
 deb http://httpredir.debian.org/debian $(lsb_release -sc) main
