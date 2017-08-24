@@ -18,7 +18,7 @@
 #
 # Supported Operating Systems: 
 # CentOS 6.*/7.* Minimal, 
-# Ubuntu server 12.04/14.04/16.04
+# Ubuntu server 14.04/16.04
 # Debian 7.*/8.* 
 # 32bit and 64bit
 #
@@ -71,7 +71,7 @@ ARCH=$(uname -m)
 echo "Detected : $OS  $VER  $ARCH"
 
 if [[ "$OS" = "CentOs" && ("$VER" = "6" || "$VER" = "7" ) || 
-      "$OS" = "Ubuntu" && ("$VER" = "12.04" || "$VER" = "14.04" )  || "$VER" = "16.04" ) || 
+      "$OS" = "Ubuntu" && ("$VER" = "14.04" || "$VER" = "16.04" ) || 
       "$OS" = "debian" && ("$VER" = "7" || "$VER" = "8" ) ]] ; then
     echo "Ok."
 else
@@ -80,7 +80,7 @@ else
 fi
 
 if [ "$VER" = "16.04" ] ; then
-	VER=14.04
+VER=14.04
 fi
 
 # Centos uses repo directory that depends of architecture. Ensure it is compatible
@@ -127,7 +127,7 @@ if [[ "$OS" = "CentOs" ]] ; then
     HTTP_PCKG="httpd"
     PHP_PCKG="php"
     BIND_PCKG="bind"
-elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+elif [[ "$OS" = "debian" ]]; then
     PACKAGE_INSTALLER="apt-get -yqq install"
     PACKAGE_REMOVER="apt-get -yqq remove"
 
@@ -139,6 +139,33 @@ elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     HTTP_PCKG="apache2"
     PHP_PCKG="apache2-mod-php5"
     BIND_PCKG="bind9"
+
+elif [ "$OS" = "Ubuntu" ]; then
+    PACKAGE_INSTALLER="apt-get -yqq install"
+    PACKAGE_REMOVER="apt-get -yqq remove"
+
+    inst() {
+       dpkg -l "$1" 2> /dev/null | grep '^ii' &> /dev/null
+    }
+    
+    DB_PCKG="mysql-server"
+    HTTP_PCKG="apache2"
+    PHP_PCKG="libapache2-mod-php5.6"
+    BIND_PCKG="bind9"
+    
+elif [ "$OS" = "Debian" ]; then
+    PACKAGE_INSTALLER="apt-get -yqq install"
+    PACKAGE_REMOVER="apt-get -yqq remove"
+
+    inst() {
+       dpkg -l "$1" 2> /dev/null | grep '^ii' &> /dev/null
+    }
+    
+    DB_PCKG="mysql-server"
+    HTTP_PCKG="apache2"
+    PHP_PCKG="apache2-mod-php"
+    BIND_PCKG="bind9"
+
 fi
   
 # Note : Postfix is installed by default on centos netinstall / minimum install.
@@ -440,7 +467,7 @@ elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     rm -rf "/etc/apt/sources.list/*"
     cp "/etc/apt/sources.list" "/etc/apt/sources.list.save"
 
-    if [ "$VER" = "14.04" ]; then
+    if [[ "$VER" = "14.04" || $VER" = "16.04" ]]; then
         cat > /etc/apt/sources.list <<EOF
 #Depots main restricted
 deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main restricted universe multiverse
@@ -448,14 +475,27 @@ deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc)-security main restricted
 deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc)-updates main restricted universe multiverse
 EOF
 
-#add ppa php5 for ubuntu 14.04 and 16.04
-        cat > /etc/apt/sources.list.d/ondrej-php.list <<EOF
-#ppa php5 for ubuntu
+#add ppa php for ubuntu 14.04 and 16.04
+cat > /etc/apt/sources.list.d/ondrej-php.list <<EOF
+#ppa php for ubuntu
 deb http://ppa.launchpad.net/ondrej/php/ubuntu $(lsb_release -sc) main
 deb-src http://ppa.launchpad.net/ondrej/php/ubuntu $(lsb_release -sc) main
 EOF
 
 apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 4F4EA0AAE5267A6C
+
+
+#add andy repo apache config for ubuntu 14.04 and 16.04
+cat > /etc/apt/sources.list.d/andykimpe-repo.list <<EOF
+#andykimpe repo for ubuntu
+
+deb http://94.23.251.178/ $(lsb_release -sc) main
+deb-src http://94.23.251.178/ $(lsb_release -sc) main
+EOF
+
+apt-key adv --recv-keys --keyserver keyserver.ubuntu.com A2D386B00F91A809
+
+
 
     elif [ "$VER" = "8"  ]; then
         cat > /etc/apt/sources.list <<EOF
@@ -1045,13 +1085,15 @@ if [[ "$OS" = "CentOs" ]]; then
     PHP_INI_PATH="/etc/php.ini"
     PHP_EXT_PATH="/etc/php.d"
 elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
-    $PACKAGE_INSTALLER libapache2-mod-php5 php5-common php5-cli php5-mysql php5-gd php5-mcrypt php5-curl php-pear php5-imap php5-xmlrpc php5-xsl php5-intl
     if [ "$VER" = "14.04" ]; then
+    $PACKAGE_INSTALLER libapache2-mod-php5.6 php5.6-common php5.6-cli php5.6-mysql php5-gd php5.6-mcrypt php5.6-curl php5.6-pear php5.6-imap php5.6-xmlrpc php5.6-xsl php5.6-intl
+PHP_INI_PATH="/etc/php5.6/apache2/php.ini"    
         php5enmod mcrypt  # missing in the package for Ubuntu 14, is this needed for debian 8 as well?
     else
-        $PACKAGE_INSTALLER php5-suhosin
+        $PACKAGE_INSTALLER libapache2-mod-php5 php5-common php5-cli php5-mysql php5-gd php5-mcrypt php5-curl php-pear php5-imap php5-xmlrpc php5-xsl php5-intl php5-suhosin
+PHP_INI_PATH="/etc/php5/apache2/php.ini"
     fi
-    PHP_INI_PATH="/etc/php5/apache2/php.ini"
+    
 fi
 # Setup php upload dir
 mkdir -p $PANEL_DATA/temp
@@ -1349,6 +1391,12 @@ fi
 $PANEL_PATH/panel/bin/setso --set apache_changed "true"
 php -q $PANEL_PATH/panel/bin/daemon.php
 
+if [[ "$VER" = "14.04" || $VER" = "16.04" ]]; then
+$PACKAGE_INSTALLER sentorahttpd
+$PANEL_PATH/panel/bin/setso --set apache_changed "true"
+php -q $PANEL_PATH/panel/bin/daemon.php
+fi
+
 
 #--- Firewall ?
 
@@ -1387,6 +1435,7 @@ if [[ "$OS" = "CentOs" && "$VER" == "7" ]]; then
        systemctl restart "$1.service"
     }
 fi
+
 
 service "$DB_SERVICE" restart
 service "$HTTP_SERVICE" restart
