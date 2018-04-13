@@ -199,18 +199,25 @@ CREATE TABLE IF NOT EXISTS `sentora_core`.`x_dns_create` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=10 ;
 
 /* Data for the table `x_dns_create` */
-INSERT INTO `sentora_core`.`x_dns_create` (`dc_id_pk`, `dc_acc_fk`, `dc_type_vc`, `dc_host_vc`, `dc_ttl_in`, `dc_target_vc`, `dc_priority_in`, `dc_weight_in`, `dc_port_in`) VALUES
+INSERT INTO `x_dns_create` (`dc_id_pk`, `dc_acc_fk`, `dc_type_vc`, `dc_host_vc`, `dc_ttl_in`, `dc_target_vc`, `dc_priority_in`, `dc_weight_in`, `dc_port_in`) VALUES
 (1, 0, 'A', '@', 3600, ':IP:', NULL, NULL, NULL),
 (2, 0, 'CNAME', 'www', 3600, '@', NULL, NULL, NULL),
 (3, 0, 'CNAME', 'ftp', 3600, '@', NULL, NULL, NULL),
-(4, 0, 'A', 'mail', 2419200, ':IP:', NULL, NULL, NULL),
-(5, 0, 'MX', '@', 86400, 'mail.:DOMAIN:', 10, NULL, NULL),
-(6, 0, 'A', 'ns1', 172800, ':IP:', NULL, NULL, NULL),
-(7, 0, 'A', 'ns2', 172800, ':IP:', NULL, NULL, NULL),
-(8, 0, 'NS', '@', 172800, 'ns1.:DOMAIN:', NULL, NULL, NULL),
-(9, 0, 'NS', '@', 172800, 'ns2.:DOMAIN:', NULL, NULL, NULL),
-(10, 0, 'SPF', '@', 2419200, 'v=spf1 a mx ip4::IP:  mx:mail.:DOMAIN: ?all', NULL, NULL, NULL),
-(11, 0, 'TXT', '@', 2419200, 'v=spf1 a mx ip4::IP:  mx:mail.:DOMAIN: ?all', NULL, NULL, NULL);
+(4, 0, 'CNAME', 'zpanel', 3600, '@', NULL, NULL, NULL),
+(5, 0, 'CNAME', 'webmail', 3600, '@', NULL, NULL, NULL),
+(6, 0, 'TXT', '_dmarc', 3600, 'v=DMARC1; p=none; sp=none; rua=mailto:spam-reports@:DOMAIN:; ruf=mailto:forensic@:DOMAIN:; rf=afrf; pct=100; ri=86400', NULL, NULL, NULL),
+(7, 0, 'TXT', '_domainkey', 3600, 't=y; o=~;', NULL, NULL, NULL),
+(8, 0, 'SPF', '@', 3600, 'v=spf1 a::IP: include::DOMAIN: mx ptr -all', NULL, NULL, NULL),
+(9, 0, 'PTR', '@', 3600, ':DOMAIN:.in-addr.arpa', NULL, NULL, NULL),
+(10, 0, 'MX', '@', 86400, 'mail.:DOMAIN:', 10, NULL, NULL),
+(11, 0, 'A', 'ns1', 172800, ':IP:', NULL, NULL, NULL),
+(12, 0, 'A', 'ns2', 172800, ':IP:', NULL, NULL, NULL),
+(13, 0, 'A', 'mail', 86400, ':IP:', NULL, NULL, NULL),
+(14, 0, 'A', 'pop3', 86400, ':IP:', NULL, NULL, NULL),
+(15, 0, 'A', 'imap', 86400, ':IP:', NULL, NULL, NULL),
+(16, 0, 'A', 'smtp', 86400, ':IP:', NULL, NULL, NULL),
+(17, 0, 'NS', '@', 172800, 'ns1.:DOMAIN:', NULL, NULL, NULL),
+(18, 0, 'NS', '@', 172800, 'ns2.:DOMAIN:', NULL, NULL, NULL);
 
 /*Table structure for table `x_faqs` */
 
