@@ -356,7 +356,8 @@ fi
 echo -e "\n-- Updating repositories and packages sources"
 if [[ "$OS" = "CentOs" ]]; then
     #EPEL Repo Install
-    EPEL_BASE_URL="http://dl.fedoraproject.org/pub/epel/$VER/$ARCH";
+    #EPEL_BASE_URL="http://dl.fedoraproject.org/pub/epel/$VER/$ARCH";
+    EPEL_BASE_URL="http://dl.fedoraproject.org/pub/epel/$VER/$ARCH/Packages";
     if  [[ "$VER" = "7" ]]; then
         EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL/e/" | grep -oP '(?<=href=")epel-release.*(?=">)')
         wget "$EPEL_BASE_URL/e/$EPEL_FILE"
