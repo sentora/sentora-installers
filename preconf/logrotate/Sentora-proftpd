@@ -1,0 +1,14 @@
+/var/sentora/logs/proftpd/access.log /var/sentora/logs/proftpd/auth.log /var/sentora/logs/proftpd/xferlog.www {
+       weekly
+       missingok
+       rotate 2
+       compress
+       delaycompress
+       notifempty
+       create 640 root adm
+       sharedscripts
+       postrotate
+               # reload could be not sufficient for all logs, a restart is saf$
+               systemctl reload proftpd /dev/null
+endscript
+}

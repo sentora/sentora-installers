@@ -16,21 +16,32 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# Supported Operating Systems: CentOS 6.*/7.* Minimal, Ubuntu server 12.04/14.04 
-#  32bit and 64bit
+# Supported Operating Systems: 
+# CentOS 6.*/7.* Minimal, 
+# Ubuntu server 12.04/14.04 
+# Debian 7.*/8.* 
+# 32bit and 64bit
 #
-#  Author Pascal Peyremorte (ppeyremorte@sentora.org)
-#    (main merge of all installers, modularization, reworks and comments)
-#  With huge help and contributions from Mehdi Blagui, Kevin Andrews and 
-#  all those who participated to this and to previous installers.
-#  Thanks to all.
+# Contributions from:
+#
+#   Pascal Peyremorte (ppeyremorte@sentora.org)
+#   Mehdi Blagui 
+#   Kevin Andrews (kevin@zvps.uk)
+#
+#   and all those who participated to this and to previous installers.
+#   Thanks to all.
 
-SENTORA_INSTALLER_VERSION="1.0.3"
-SENTORA_CORE_VERSION="1.0.0"
-SENTORA_PRECONF_VERSION="1.0.3"
+## 
+# SENTORA_CORE/INSTALLER_VERSION
+# master - latest unstable
+# 1.0.3 - example stable tag
+##
+SENTORA_INSTALLER_VERSION="master"
+SENTORA_CORE_VERSION="1.0.1"
 
 PANEL_PATH="/etc/sentora"
 PANEL_DATA="/var/sentora"
+PANEL_UPGRADE=false
 
 #--- Display the 'welcome' splash/user warning info..
 echo ""
@@ -48,7 +59,10 @@ if [ -f /etc/centos-release ]; then
 elif [ -f /etc/lsb-release ]; then
     OS=$(grep DISTRIB_ID /etc/lsb-release | sed 's/^.*=//')
     VER=$(grep DISTRIB_RELEASE /etc/lsb-release | sed 's/^.*=//')
-else
+elif [ -f /etc/os-release ]; then
+    OS=$(grep -w ID /etc/os-release | sed 's/^.*=//')
+    VER=$(grep VERSION_ID /etc/os-release | sed 's/^.*"\(.*\)"/\1/')
+ else
     OS=$(uname -s)
     VER=$(uname -r)
 fi
@@ -57,7 +71,8 @@ ARCH=$(uname -m)
 echo "Detected : $OS  $VER  $ARCH"
 
 if [[ "$OS" = "CentOs" && ("$VER" = "6" || "$VER" = "7" ) || 
-      "$OS" = "Ubuntu" && ("$VER" = "12.04" || "$VER" = "14.04" ) ]] ; then 
+      "$OS" = "Ubuntu" && ("$VER" = "12.04" || "$VER" = "14.04" ) || 
+      "$OS" = "debian" && ("$VER" = "7" || "$VER" = "8" ) ]] ; then
     echo "Ok."
 else
     echo "Sorry, this OS is not supported by Sentora." 
@@ -108,7 +123,7 @@ if [[ "$OS" = "CentOs" ]] ; then
     HTTP_PCKG="httpd"
     PHP_PCKG="php"
     BIND_PCKG="bind"
-elif [[ "$OS" = "Ubuntu" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     PACKAGE_INSTALLER="apt-get -yqq install"
     PACKAGE_REMOVER="apt-get -yqq remove"
 
@@ -125,14 +140,26 @@ fi
 # Note : Postfix is installed by default on centos netinstall / minimum install.
 # The installer seems to work fine even if Postfix is already installed.
 # -> The check of postfix is removed, but this comment remains to remember
-for package in "$DB_PCKG" "dovecot-mysql" "$HTTP_PCKG" "$PHP_PCKG" "proftpd" "$BIND_PCKG" ; do
-    if (inst "$package"); then
-        echo "It appears that package $package is already installed. This installer"
-        echo "is designed to install and configure Sentora on a clean OS installation only!"
+# only check for sentora installed systems zpanel can now upgrade using this script
+if [ -L "/etc/zpanel" ] && [ -d "/etc/zpanel"  ]; then
+    pkginst="n"
+    pkginstlist=""
+    for package in "$DB_PCKG" "dovecot-mysql" "$HTTP_PCKG" "$PHP_PCKG" "proftpd" "$BIND_PCKG" ; do
+        if (inst "$package"); then
+            pkginst="y" # At least one package is installed
+            pkginstlist="$package $pkginstlist"
+        fi
+    done
+    if [ $pkginst = "y" ]; then
+        echo "It appears that the folowing package(s) are already installed:"
+        echo "$pkginstlist"
+        echo "This installer is designed to install and configure Sentora on a clean OS installation only!"
         echo -e "\nPlease re-install your OS before attempting to install using this script."
         exit 1
     fi
-done
+    unset pkginst
+    unset pkginstlist
+fi
 
 # *************************************************
 #--- Prepare or query informations required to install
@@ -142,7 +169,7 @@ echo -e "\n-- Installing wget and dns utils required to manage inputs"
 if [[ "$OS" = "CentOs" ]]; then
     yum -y update
     $PACKAGE_INSTALLER bind-utils
-elif [[ "$OS" = "Ubuntu" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     apt-get -yqq update   #ensure we can install
     $PACKAGE_INSTALLER dnsutils
 fi
@@ -202,7 +229,7 @@ if [[ "$tz" == "" && "$PANEL_FQDN" == "" ]] ; then
         echo "echo \$TZ > /etc/timezone" >> /usr/bin/tzselect
         tzselect
         tz=$(cat /etc/timezone)
-    elif [[ "$OS" = "Ubuntu" ]]; then
+    elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
         dpkg-reconfigure tzdata
         tz=$(cat /etc/timezone)
     fi
@@ -302,7 +329,6 @@ exec 2>&1
 
 echo "Installer version $SENTORA_INSTALLER_VERSION"
 echo "Sentora core version $SENTORA_CORE_VERSION"
-echo "Sentora preconf version $SENTORA_PRECONF_VERSION"
 echo ""
 echo "Installing Sentora $SENTORA_CORE_VERSION at http://$PANEL_FQDN and ip $PUBLIC_IP"
 echo "on server under: $OS  $VER  $ARCH"
@@ -314,7 +340,7 @@ disable_file() {
 }
 
 #--- AppArmor must be disabled to avoid problems
-if [[ "$OS" = "Ubuntu" ]]; then
+if [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     [ -f /etc/init.d/apparmor ]
     if [ $? = "0" ]; then
         echo -e "\n-- Disabling and removing AppArmor, please wait..."
@@ -329,18 +355,18 @@ fi
 #--- Adapt repositories and packages sources
 echo -e "\n-- Updating repositories and packages sources"
 if [[ "$OS" = "CentOs" ]]; then
-    #EPEL Repo Install
-    EPEL_BASE_URL="http://dl.fedoraproject.org/pub/epel/$VER/$ARCH";
-    if  [[ "$VER" = "7" ]]; then
-        EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL/Packages/e/" | grep -oP '(?<=href=")epel-release.*(?=">)')
-        wget "$EPEL_BASE_URL/Packages/e/$EPEL_FILE"
-    else 
-        EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL/" | grep -oP '(?<=href=")epel-release.*(?=">)')
-        wget "$EPEL_BASE_URL/$EPEL_FILE"
-    fi
-    $PACKAGE_INSTALLER -y install epel-release*.rpm
-    rm "$EPEL_FILE"
-    
+#EPEL Repo Install
+  EPEL_BASE_URL="http://dl.fedoraproject.org/pub/epel/$VER/$ARCH";
+  if  [[ "$VER" = "7" ]]; then
+     EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL/Packages/e/" | grep -oP '(?<=href=")epel-release.*(?=">)')
+     wget "$EPEL_BASE_URL/Packages/e/$EPEL_FILE"
+  else
+     EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL/" | grep -oP '(?<=href=")epel-release.*(?=">)')
+     wget "$EPEL_BASE_URL/$EPEL_FILE"
+  fi
+  $PACKAGE_INSTALLER -y install epel-release*.rpm
+  rm "$EPEL_FILE"
+  
     #To fix some problems of compatibility use of mirror centos.org to all users
     #Replace all mirrors by base repos to avoid any problems.
     sed -i 's|mirrorlist=http://mirrorlist.centos.org|#mirrorlist=http://mirrorlist.centos.org|' "/etc/yum.repos.d/CentOS-Base.repo"
@@ -391,7 +417,7 @@ if [[ "$OS" = "CentOs" ]]; then
         $PACKAGE_REMOVER qpid-cpp-client
     fi
 
-elif [[ "$OS" = "Ubuntu" ]]; then 
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then 
     # Update the enabled Aptitude repositories
     echo -ne "\nUpdating Aptitude Repos: " >/dev/tty
 
@@ -406,6 +432,28 @@ elif [[ "$OS" = "Ubuntu" ]]; then
 deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main restricted universe multiverse
 deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc)-security main restricted universe multiverse
 deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc)-updates main restricted universe multiverse
+EOF
+    elif [ "$VER" = "8"  ]; then
+        cat > /etc/apt/sources.list <<EOF
+deb http://httpredir.debian.org/debian $(lsb_release -sc) main
+deb-src http://httpredir.debian.org/debian $(lsb_release -sc) main
+
+deb http://httpredir.debian.org/debian $(lsb_release -sc)-updates main
+deb-src http://httpredir.debian.org/debian $(lsb_release -sc)-updates main
+
+deb http://security.debian.org/ $(lsb_release -sc)/updates main
+deb-src http://security.debian.org/ $(lsb_release -sc)/updates main
+EOF
+    elif [ "$VER" = "7" ]; then
+        cat > /etc/apt/sources.list <<EOF
+deb http://httpredir.debian.org/debian $(lsb_release -sc) main
+deb-src http://httpredir.debian.org/debian $(lsb_release -sc) main
+
+deb http://httpredir.debian.org/debian $(lsb_release -sc)-updates main
+deb-src http://httpredir.debian.org/debian $(lsb_release -sc)-updates main
+
+deb http://security.debian.org/ $(lsb_release -sc)/updates main
+deb-src http://security.debian.org/ $(lsb_release -sc)/updates main
 EOF
     else
         cat > /etc/apt/sources.list <<EOF
@@ -434,7 +482,7 @@ fi
 echo -e "\n-- Listing of all packages installed:"
 if [[ "$OS" = "CentOs" ]]; then
     rpm -qa | sort
-elif [[ "$OS" = "Ubuntu" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     dpkg --get-selections
 fi
 
@@ -443,7 +491,7 @@ echo -e "\n-- Updating+upgrading system, it may take some time..."
 if [[ "$OS" = "CentOs" ]]; then
     yum -y update
     yum -y upgrade
-elif [[ "$OS" = "Ubuntu" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     apt-get -yqq update
     apt-get -yqq upgrade
 fi
@@ -454,9 +502,9 @@ if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER sudo vim make zip unzip chkconfig bash-completion
     $PACKAGE_INSTALLER ld-linux.so.2 libbz2.so.1 libdb-4.7.so libgd.so.2 
     $PACKAGE_INSTALLER curl curl-devel perl-libwww-perl libxml2 libxml2-devel zip bzip2-devel gcc gcc-c++ at make
-    $PACKAGE_INSTALLER redhat-lsb-core
-elif [[ "$OS" = "Ubuntu" ]]; then
-    $PACKAGE_INSTALLER sudo vim make zip unzip debconf-utils at build-essential bash-completion
+    $PACKAGE_INSTALLER redhat-lsb-core ca-certificates e2fsprogs
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+    $PACKAGE_INSTALLER sudo vim make zip unzip debconf-utils at build-essential bash-completion ca-certificates e2fslibs
 fi
 
 #--- Download Sentora archive from GitHub
@@ -476,20 +524,116 @@ while true; do
         esac
     fi 
 done
+
+
+###
+# Sentora Core Install 
+###
 mkdir -p $PANEL_PATH
+mkdir -p $PANEL_DATA
 chown -R root:root $PANEL_PATH
 unzip -oq sentora_core.zip -d $PANEL_PATH
-mv "$PANEL_PATH/sentora-core-$SENTORA_CORE_VERSION" "$PANEL_PATH/panel"
+
+#
+# Remove PHPUnit module test files (coming soon to the code base).
+#
+rm -rf $PANEL_PATH/panel/modules/*/tests/
+rm -rf $PANEL_PATH/composer.json
+rm -rf $PANEL_PATH/composer.lock
+
+###
+# ZPanel Upgrade - Clear down all old code (stops orphaned files)
+###
+if [ ! -L "/etc/zpanel" ] && [ -d "/etc/zpanel" ]; then
+
+    echo -e "Upgrading ZPanelCP 10.1.0 to Sentora 1.0.1";
+
+    PANEL_UPGRADE=true
+
+    mv /etc/zpanel/configs /root/zpanel_configs_backup
+
+    ## Move main directories to new sentora location ##
+    mv /etc/zpanel/* $PANEL_PATH
+    mv /var/zpanel/* $PANEL_DATA
+
+    rm -rf /etc/zpanel/
+    rm -rf /var/zpanel/
+
+    ## Removing core for upgrade
+    rm -rf $PANEL_PATH/panel/bin/
+    rm -rf $PANEL_PATH/panel/dryden/
+    rm -rf $PANEL_PATH/panel/etc/
+    rm -rf $PANEL_PATH/panel/inc/
+    rm -rf $PANEL_PATH/panel/index.php
+    rm -rf $PANEL_PATH/panel/LICENSE.md
+    rm -rf $PANEL_PATH/panel/README.md
+    rm -rf $PANEL_PATH/panel/robots.txt
+    rm -rf $PANEL_PATH/panel/modules/aliases
+    rm -rf $PANEL_PATH/panel/modules/apache_admin
+    rm -rf $PANEL_PATH/panel/modules/backup_admin
+    rm -rf $PANEL_PATH/panel/modules/backupmgr
+    rm -rf $PANEL_PATH/panel/modules/client_notices
+    rm -rf $PANEL_PATH/panel/modules/cron
+    rm -rf $PANEL_PATH/panel/modules/distlists
+    rm -rf $PANEL_PATH/panel/modules/dns_admin
+    rm -rf $PANEL_PATH/panel/modules/dns_manager
+    rm -rf $PANEL_PATH/panel/modules/domains
+    rm -rf $PANEL_PATH/panel/modules/faqs
+    rm -rf $PANEL_PATH/panel/modules/forwarders
+    rm -rf $PANEL_PATH/panel/modules/ftp_admin
+    rm -rf $PANEL_PATH/panel/modules/ftp_management
+    rm -rf $PANEL_PATH/panel/modules/mail_admin
+    rm -rf $PANEL_PATH/panel/modules/mailboxes
+    rm -rf $PANEL_PATH/panel/modules/manage_clients
+    rm -rf $PANEL_PATH/panel/modules/manage_groups
+    rm -rf $PANEL_PATH/panel/modules/moduleadmin
+    rm -rf $PANEL_PATH/panel/modules/my_account
+    rm -rf $PANEL_PATH/panel/modules/mysql_databases
+    rm -rf $PANEL_PATH/panel/modules/mysql_users
+    rm -rf $PANEL_PATH/panel/modules/news
+    rm -rf $PANEL_PATH/panel/modules/packages
+    rm -rf $PANEL_PATH/panel/modules/parked_domains
+    rm -rf $PANEL_PATH/panel/modules/password_assistant
+    rm -rf $PANEL_PATH/panel/modules/phpinfo
+    rm -rf $PANEL_PATH/panel/modules/phpmyadmin
+    rm -rf $PANEL_PATH/panel/modules/phpsysinfo
+    rm -rf $PANEL_PATH/panel/modules/services
+    rm -rf $PANEL_PATH/panel/modules/shadowing
+    rm -rf $PANEL_PATH/panel/modules/sub_domains
+    rm -rf $PANEL_PATH/panel/modules/theme_manager
+    rm -rf $PANEL_PATH/panel/modules/updates
+    rm -rf $PANEL_PATH/panel/modules/usage_viewer
+    rm -rf $PANEL_PATH/panel/modules/webalizer_stats
+    rm -rf $PANEL_PATH/panel/modules/webmail
+    rm -rf $PANEL_PATH/panel/modules/zpanelconfig
+    rm -rf $PANEL_PATH/panel/modules/zpx_core_module
+
+    ###
+    # Remove links and files created by installer
+    ###
+    rm -f /usr/bin/zppy
+    rm -f /usr/bin/setso
+    rm -f /usr/bin/setzadmin
+    
+    rm -f /etc/postfix/master.cf
+    rm -f /etc/postfix/main.cf
+    rm -f /var/spool/vacation/vacation.pl
+    rm -f /var/sentora/sieve/globalfilter.sieve
+    rm -f /etc/dovecot/dovecot.conf
+    rm -f /etc/proftpd.conf
+
+    mysqlpassword=$(cat /etc/sentora/panel/cnf/db.php | grep "pass" | cut -d \' -f 2);
+
+    ## Do NOT copy the new cnf directory
+    rm -rf "$PANEL_PATH/sentora-core-$SENTORA_CORE_VERSION/cnf"
+ 
+fi
+
+## cp can be aliased to stop overwriting of files in centos use full path to cp
+/bin/cp -rf "$PANEL_PATH/sentora-core-$SENTORA_CORE_VERSION/." "$PANEL_PATH/panel/"
 rm sentora_core.zip
 rm "$PANEL_PATH/panel/LICENSE.md" "$PANEL_PATH/panel/README.md" "$PANEL_PATH/panel/.gitignore"
 rm -rf "$PANEL_PATH/_delete_me" "$PANEL_PATH/.gitignore"
-
-# Temp patch
-wget -O hotfix_controller.ext.php "https://raw.githubusercontent.com/sentora/sentora-core/b176df0e29e52e14d778ca6cb47c5765cf3c4953/modules/ftp_management/code/controller.ext.php"
-mv /etc/sentora/panel/modules/ftp_management/code/controller.ext.php controller.ext.php_backup
-mv hotfix_controller.ext.php /etc/sentora/panel/modules/ftp_management/code/controller.ext.php
-chown root:root /etc/sentora/panel/modules/ftp_management/code/controller.ext.php
-chmod 777 /etc/sentora/panel/modules/ftp_management/code/controller.ext.php
 
 
 #--- Set-up Sentora directories and configure permissions
@@ -518,7 +662,7 @@ ln -s $PANEL_PATH/panel/bin/setzadmin /usr/bin/setzadmin
 
 #--- Install preconfig
 while true; do
-    wget -nv -O sentora_preconfig.zip https://github.com/sentora/sentora-installers/archive/$SENTORA_PRECONF_VERSION.zip
+    wget -nv -O sentora_preconfig.zip https://github.com/sentora/sentora-installers/archive/$SENTORA_INSTALLER_VERSION.zip
     if [[ -f sentora_preconfig.zip ]]; then
         break;
     else
@@ -533,7 +677,7 @@ while true; do
 done
 
 unzip -oq sentora_preconfig.zip
-cp -rf sentora-installers-$SENTORA_PRECONF_VERSION/preconf/* $PANEL_CONF
+/bin/cp -rf sentora-installers-$SENTORA_INSTALLER_VERSION/preconf/* $PANEL_CONF
 rm sentora_preconfig*
 rm -rf sentora-*
 
@@ -581,14 +725,13 @@ add_local_domain() {
 #-----------------------------------------------------------
 # Install all softwares and dependencies required by Sentora.
 
-if [[ "$OS" = "Ubuntu" ]]; then
+if [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     # Disable the DPKG prompts before we run the software install to enable fully automated install.
     export DEBIAN_FRONTEND=noninteractive
 fi
 
 #--- MySQL
 echo -e "\n-- Installing MySQL"
-mysqlpassword=$(passwordgen);
 $PACKAGE_INSTALLER "$DB_PCKG"
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER "DB_PCKG-devel" "$DB_PCKG-server" 
@@ -598,9 +741,9 @@ if [[ "$OS" = "CentOs" ]]; then
     else 
         DB_SERVICE="mysqld"
     fi
-elif [[ "$OS" = "Ubuntu" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     $PACKAGE_INSTALLER bsdutils libsasl2-modules-sql libsasl2-modules
-    if [ "$VER" = "12.04" ]; then
+    if [[ "$VER" = "12.04" || "$VER" = "7" ]]; then
         $PACKAGE_INSTALLER db4.7-util
     fi
     MY_CNF_PATH="/etc/mysql/my.cnf"
@@ -608,8 +751,11 @@ elif [[ "$OS" = "Ubuntu" ]]; then
 fi
 service $DB_SERVICE start
 
-# setup mysql root password
-mysqladmin -u root password "$mysqlpassword"
+# setup mysql root password only if mysqlpassword is empty
+if [ -z "$mysqlpassword" ]; then
+    mysqlpassword=$(passwordgen);
+    mysqladmin -u root password "$mysqlpassword"
+fi
 
 # small cleaning of mysql access
 mysql -u root -p"$mysqlpassword" -e "DELETE FROM mysql.user WHERE User='root' AND Host != 'localhost'";
@@ -623,9 +769,22 @@ mysql -u root -p"$mysqlpassword" -e "DROP DATABASE IF EXISTS test";
 sed -i "s|\[mysqld\]|&\nsecure-file-priv = /var/tmp|" $MY_CNF_PATH
 
 # setup sentora access and core database
-sed -i "s|YOUR_ROOT_MYSQL_PASSWORD|$mysqlpassword|" $PANEL_PATH/panel/cnf/db.php
-mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_core.sql
+if [ $PANEL_UPGRADE == true ]; then
 
+    mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-update/zpanel/sql/update-structure.sql
+    mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-update/zpanel/sql/update-data.sql
+    
+    mysqldump -u root -p"$mysqlpassword" zpanel_core | mysql -u root -p"$mysqlpassword" -D sentora_core
+    mysqldump -u root -p"$mysqlpassword" zpanel_postfix | mysql -u root -p"$mysqlpassword" -D sentora_postfix
+    mysqldump -u root -p"$mysqlpassword" zpanel_proftpd | mysql -u root -p"$mysqlpassword" -D sentora_proftpd
+    mysqldump -u root -p"$mysqlpassword" zpanel_roundcube | mysql -u root -p"$mysqlpassword" -D sentora_roundcube
+
+    sed -i "s|zpanel_core|sentora_core|" $PANEL_PATH/panel/cnf/db.php
+
+else
+    sed -i "s|YOUR_ROOT_MYSQL_PASSWORD|$mysqlpassword|" $PANEL_PATH/panel/cnf/db.php
+    mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_core.sql
+fi
 # Register mysql/mariadb service for autostart
 if [[ "$OS" = "CentOs" ]]; then
     if [[ "$VER" == "7" ]]; then
@@ -647,8 +806,12 @@ elif [[ "$OS" = "Ubuntu" ]]; then
 fi
 
 postfixpassword=$(passwordgen);
-mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_postfix.sql
-mysql -u root -p"$mysqlpassword" -e "UPDATE mysql.user SET Password=PASSWORD('$postfixpassword') WHERE User='postfix' AND Host='localhost';";
+if [ $PANEL_UPGRADE == false ]; then
+    mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_postfix.sql
+fi
+
+## grant will also create users which don't exist and update existing users with password ##
+mysql -u root -p"$mysqlpassword" -e "GRANT ALL PRIVILEGES ON sentora_postfix .* TO 'postfix'@'localhost' identified by '$postfixpassword';";
 
 mkdir $PANEL_DATA/vmail
 useradd -r -g mail -d $PANEL_DATA/vmail -s /sbin/nologin -c "Virtual maildir" vmail
@@ -660,7 +823,7 @@ useradd -r -d /var/spool/vacation -s /sbin/nologin -c "Virtual vacation" vacatio
 chown -R vacation:vacation /var/spool/vacation
 chmod -R 770 /var/spool/vacation
 
-#Removed optionnal transport that was leaved empty, until it is fully handled.
+#Removed optional transport that was leaved empty, until it is fully handled.
 #ln -s $PANEL_CONF/postfix/transport /etc/postfix/transport
 #postmap /etc/postfix/transport
 
@@ -706,7 +869,7 @@ echo -e "\n-- Installing Dovecot"
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER dovecot dovecot-mysql dovecot-pigeonhole 
     sed -i "s|#first_valid_uid = ?|first_valid_uid = $VMAIL_UID\n#last_valid_uid = $VMAIL_UID\n\nfirst_valid_gid = $MAIL_GID\n#last_valid_gid = $MAIL_GID|" $PANEL_CONF/dovecot2/dovecot.conf
-elif [[ "$OS" = "Ubuntu" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     $PACKAGE_INSTALLER dovecot-mysql dovecot-imapd dovecot-pop3d dovecot-common dovecot-managesieved dovecot-lmtpd 
     sed -i "s|#first_valid_uid = ?|first_valid_uid = $VMAIL_UID\nlast_valid_uid = $VMAIL_UID\n\nfirst_valid_gid = $MAIL_GID\nlast_valid_gid = $MAIL_GID|" $PANEL_CONF/dovecot2/dovecot.conf
 fi
@@ -766,7 +929,7 @@ if [[ "$OS" = "CentOs" ]]; then
 	    sed -i "s|LoadModule proxy_ajp_module modules|#LoadModule proxy_ajp_module modules|" "$HTTP_CONF_PATH"
     
     fi     
-elif [[ "$OS" = "Ubuntu" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     $PACKAGE_INSTALLER libapache2-mod-bw
     HTTP_CONF_PATH="/etc/apache2/apache2.conf"
     HTTP_VARS_PATH="/etc/apache2/envvars"
@@ -778,6 +941,10 @@ fi
 
 if ! grep -q "Include $PANEL_CONF/apache/httpd.conf" "$HTTP_CONF_PATH"; then
     echo "Include $PANEL_CONF/apache/httpd.conf" >> "$HTTP_CONF_PATH";
+    ## Remove old include
+    if [ $PANEL_UPGRADE == true ]; then
+        sed -i "s|Include /etc/zpanel/configs/apache/httpd.conf||" "$HTTP_CONF_PATH";
+    fi
 fi
 add_local_domain "$(hostname)"
 
@@ -804,9 +971,9 @@ fi
 # remove default virtual site to ensure Sentora is the default vhost
 if [[ "$OS" = "CentOs" ]]; then
     sed -i "s|DocumentRoot \"/var/www/html\"|DocumentRoot $PANEL_PATH/panel|" "$HTTP_CONF_PATH"
-elif [[ "$OS" = "Ubuntu" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     # disable completely sites-enabled/000-default.conf
-    if [[ "$VER" = "14.04" ]]; then 
+    if [[ "$VER" = "14.04" || "$VER" = "8" ]]; then 
         sed -i "s|IncludeOptional sites-enabled|#&|" "$HTTP_CONF_PATH"
     else
         sed -i "s|Include sites-enabled|#&|" "$HTTP_CONF_PATH"
@@ -817,14 +984,15 @@ fi
 if [[ "$OS" = "CentOs" ]]; then
     sed -i "s|^\(NameVirtualHost .*$\)|#\1\n# NameVirtualHost is now handled in Sentora vhosts file|" "$HTTP_CONF_PATH"
     sed -i 's|^\(Listen .*$\)|#\1\n# Listen is now handled in Sentora vhosts file|' "$HTTP_CONF_PATH"
-elif [[ "$OS" = "Ubuntu" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     sed -i "s|\(Include ports.conf\)|#\1\n# Ports are now handled in Sentora vhosts file|" "$HTTP_CONF_PATH"
     disable_file /etc/apache2/ports.conf
 fi
 
 # adjustments for apache 2.4
 if [[ ("$OS" = "CentOs" && "$VER" = "7") || 
-      ("$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then 
+      ("$OS" = "Ubuntu" && "$VER" = "14.04") || 
+      ("$OS" = "debian" && "$VER" = "8") ]] ; then 
     # Order deny,allow / Deny from all   ->  Require all denied
     sed -i 's|Order deny,allow|Require all denied|I'  $PANEL_CONF/apache/httpd.conf
     sed -i '/Deny from all/d' $PANEL_CONF/apache/httpd.conf
@@ -852,10 +1020,10 @@ if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER php-mcrypt php-imap  #Epel packages
     PHP_INI_PATH="/etc/php.ini"
     PHP_EXT_PATH="/etc/php.d"
-elif [[ "$OS" = "Ubuntu" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     $PACKAGE_INSTALLER libapache2-mod-php5 php5-common php5-cli php5-mysql php5-gd php5-mcrypt php5-curl php-pear php5-imap php5-xmlrpc php5-xsl php5-intl
     if [ "$VER" = "14.04" ]; then
-        php5enmod mcrypt  # missing in the package for Ubuntu 14!
+        php5enmod mcrypt  # missing in the package for Ubuntu 14, is this needed for debian 8 as well?
     else
         $PACKAGE_INSTALLER php5-suhosin
     fi
@@ -875,7 +1043,7 @@ chmod +t "$PANEL_DATA/sessions"
 if [[ "$OS" = "CentOs" ]]; then
     # Remove session & php values from apache that cause override
     sed -i "/php_value/d" /etc/httpd/conf.d/php.conf
-elif [[ "$OS" = "Ubuntu" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     sed -i "s|;session.save_path = \"/var/lib/php5\"|session.save_path = \"$PANEL_DATA/sessions\"|" $PHP_INI_PATH
 fi
 sed -i "/php_value/d" $PHP_INI_PATH
@@ -889,9 +1057,9 @@ sed -i "s|;upload_tmp_dir =|upload_tmp_dir = $PANEL_DATA/temp/|" $PHP_INI_PATH
 sed -i "s|expose_php = On|expose_php = Off|" $PHP_INI_PATH
 
 # Build suhosin for PHP 5.x which is required by Sentora. 
-if [[ "$OS" = "CentOs" || ( "$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then
+if [[ "$OS" = "CentOs" || "$OS" = "debian" || ( "$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then
     echo -e "\n# Building suhosin"
-    if [[ "$OS" = "Ubuntu" ]]; then
+    if [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
         $PACKAGE_INSTALLER php5-dev
     fi
     SUHOSIN_VERSION="0.9.37.1"
@@ -907,7 +1075,7 @@ if [[ "$OS" = "CentOs" || ( "$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then
     rm -rf suhosin-$SUHOSIN_VERSION
     if [[ "$OS" = "CentOs" ]]; then 
         echo 'extension=suhosin.so' > $PHP_EXT_PATH/suhosin.ini
-    elif [[ "$OS" = "Ubuntu" ]]; then
+    elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
         sed -i 'N;/default extension directory./a\extension=suhosin.so' $PHP_INI_PATH
     fi	
 fi
@@ -930,18 +1098,19 @@ if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER proftpd proftpd-mysql 
     FTP_CONF_PATH='/etc/proftpd.conf'
     sed -i "s|nogroup|nobody|" $PANEL_CONF/proftpd/proftpd-mysql.conf
-elif [[ "$OS" = "Ubuntu" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     $PACKAGE_INSTALLER proftpd-mod-mysql
     FTP_CONF_PATH='/etc/proftpd/proftpd.conf'
 fi
 
 # Create and init proftpd database
-mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_proftpd.sql
-
+if [ $PANEL_UPGRADE == false ]; then
+    mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_proftpd.sql
+fi
 # Create and configure mysql password for proftpd
 proftpdpassword=$(passwordgen);
 sed -i "s|!SQL_PASSWORD!|$proftpdpassword|" $PANEL_CONF/proftpd/proftpd-mysql.conf
-mysql -u root -p"$mysqlpassword" -e "UPDATE mysql.user SET Password=PASSWORD('$proftpdpassword') WHERE User='proftpd' AND Host='localhost'";
+mysql -u root -p"$mysqlpassword" -e "GRANT ALL PRIVILEGES ON sentora_proftpd .* TO 'proftpd'@'localhost' identified by '$proftpdpassword';";
 
 # Assign httpd user and group to all users that will be created
 HTTP_UID=$(id -u "$HTTP_USER")
@@ -985,7 +1154,7 @@ if [[ "$OS" = "CentOs" ]]; then
     BIND_FILES="/etc"
     BIND_SERVICE="named"
     BIND_USER="named"
-elif [[ "$OS" = "Ubuntu" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     $PACKAGE_INSTALLER bind9 bind9utils
     BIND_PATH="/etc/bind/"
     BIND_FILES="/etc/bind"
@@ -1007,7 +1176,7 @@ if [[ "$OS" = "CentOs" ]]; then
     chmod 751 /var/named
     chmod 771 /var/named/data
     sed -i 's|bind/zones.rfc1918|named.rfc1912.zones|' $PANEL_CONF/bind/named.conf
-elif [[ "$OS" = "Ubuntu" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     mkdir -p /var/named/dynamic
     touch /var/named/dynamic/managed-keys.bind
     chown -R bind:bind /var/named/
@@ -1047,10 +1216,11 @@ fi
 echo -e "\n-- Installing and configuring cron tasks"
 if [[ "$OS" = "CentOs" ]]; then
     #cronie & crontabs may be missing
-    $PACKAGE_INSTALLER crontabs
+    $PACKAGE_INSTALLER cronie crontabs
     CRON_DIR="/var/spool/cron"
     CRON_SERVICE="crond"
-elif [[ "$OS" = "Ubuntu" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+    $PACKAGE_INSTALLER cron
     CRON_DIR="/var/spool/cron/crontabs"
     CRON_SERVICE="cron"
 fi
@@ -1107,12 +1277,13 @@ rm -rf $PANEL_PATH/panel/etc/apps/phpmyadmin/setup
 echo -e "\n-- Configuring Roundcube"
 
 # Import roundcube default table
-mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_roundcube.sql
-
+if [ $PANEL_UPGRADE == false ]; then
+    mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_roundcube.sql
+fi
 # Create and configure mysql password for roundcube
 roundcubepassword=$(passwordgen);
 sed -i "s|!ROUNDCUBE_PASSWORD!|$roundcubepassword|" $PANEL_CONF/roundcube/roundcube_config.inc.php
-mysql -u root -p"$mysqlpassword" -e "UPDATE mysql.user SET Password=PASSWORD('$roundcubepassword') WHERE User='roundcube' AND Host='localhost'";
+mysql -u root -p"$mysqlpassword" -e "GRANT ALL PRIVILEGES ON sentora_roundcube .* TO 'roundcube'@'localhost' identified by '$roundcubepassword';";
 
 # Create and configure des key
 roundcube_des_key=$(passwordgen 24);
@@ -1133,7 +1304,7 @@ echo -e "\n-- Configuring Webalizer"
 $PACKAGE_INSTALLER webalizer
 if [[ "$OS" = "CentOs" ]]; then
     rm -rf /etc/webalizer.conf
-elif [[ "$OS" = "Ubuntu" ]]; then
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     rm -rf /etc/webalizer/webalizer.conf
 fi
 
@@ -1156,6 +1327,29 @@ php -q $PANEL_PATH/panel/bin/daemon.php
 
 
 #--- Firewall ?
+
+#--- Fail2ban
+
+#--- Logrotate
+#  Download and install logrotate
+echo -e "\n-- Installing Logrotate"
+$PACKAGE_INSTALLER logrotate
+
+#	Link the configfiles 
+ln -s $PANEL_CONF/logrotate/Sentora-apache /etc/logrotate.d/Sentora-apache
+ln -s $PANEL_CONF/logrotate/Sentora-proftpd /etc/logrotate.d/Sentora-proftpd
+ln -s $PANEL_CONF/logrotate/Sentora-dovecot /etc/logrotate.d/Sentora-dovecot
+
+#	Configure the postrotatesyntax for different OS
+if [[ "$OS" = "CentOs" && "$VER" == "6" ]]; then
+	sed -i 's|systemctl reload httpd > /dev/null|service httpd reload > /dev/null|' $PANEL_CONF/logrotate/Sentora-apache 
+	sed -i 's|systemctl reload proftpd > /dev/null|service proftpd reload > /dev/null|' $PANEL_CONF/logrotate/Sentora-proftpd
+
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+	sed -i 's|systemctl reload httpd > /dev/null|/etc/init.d/apache2 reload > /dev/null|' $PANEL_CONF/logrotate/Sentora-apache
+	sed -i 's|systemctl reload proftpd > /dev/null|/etc/init.d/proftpd force-reload > /dev/null|' $PANEL_CONF/logrotate/Sentora-proftpd
+
+fi
 
 #--- Resolv.conf deprotect
 chattr -i /etc/resolv.conf
@@ -1190,6 +1384,7 @@ service atd restart
     echo "MySQL ProFTPd Password   : $proftpdpassword"
     echo "MySQL Roundcube Password : $roundcubepassword"
 } >> /root/passwords.txt
+chmod 600 /root/passwords.txt
 
 #--- Advise the admin that Sentora is now installed and accessible.
 {

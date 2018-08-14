@@ -203,12 +203,14 @@ INSERT INTO `sentora_core`.`x_dns_create` (`dc_id_pk`, `dc_acc_fk`, `dc_type_vc`
 (1, 0, 'A', '@', 3600, ':IP:', NULL, NULL, NULL),
 (2, 0, 'CNAME', 'www', 3600, '@', NULL, NULL, NULL),
 (3, 0, 'CNAME', 'ftp', 3600, '@', NULL, NULL, NULL),
-(4, 0, 'A', 'mail', 86400, ':IP:', NULL, NULL, NULL),
+(4, 0, 'A', 'mail', 2419200, ':IP:', NULL, NULL, NULL),
 (5, 0, 'MX', '@', 86400, 'mail.:DOMAIN:', 10, NULL, NULL),
 (6, 0, 'A', 'ns1', 172800, ':IP:', NULL, NULL, NULL),
 (7, 0, 'A', 'ns2', 172800, ':IP:', NULL, NULL, NULL),
 (8, 0, 'NS', '@', 172800, 'ns1.:DOMAIN:', NULL, NULL, NULL),
-(9, 0, 'NS', '@', 172800, 'ns2.:DOMAIN:', NULL, NULL, NULL);
+(9, 0, 'NS', '@', 172800, 'ns2.:DOMAIN:', NULL, NULL, NULL),
+(10, 0, 'SPF', '@', 2419200, 'v=spf1 a mx ip4::IP:  mx:mail.:DOMAIN: ?all', NULL, NULL, NULL),
+(11, 0, 'TXT', '@', 2419200, 'v=spf1 a mx ip4::IP:  mx:mail.:DOMAIN: ?all', NULL, NULL, NULL);
 
 /*Table structure for table `x_faqs` */
 
@@ -660,7 +662,7 @@ insert  into `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx
 (71,'apache_vhost','Apache VHOST Conf','/etc/sentora/configs/apache/httpd-vhosts.conf',NULL,'The full system path and filename of the Apache VHOST configuration name.','Apache Config','true'),
 (72,'php_handler','PHP Handler','AddType application/x-httpd-php .php3 .php',NULL,'The PHP Handler.','Apache Config','false'),
 (73,'cgi_handler','CGI Handler','ScriptAlias /cgi-bin/ \"/_cgi-bin/\"\r\n<location /cgi-bin>\r\nAddHandler cgi-script .cgi .pl\r\nOptions +ExecCGI -Indexes\r\n</location>',NULL,'The CGI Handler.','Apache Config','false'),
-(74,'global_vhcustom','Global VHost Entry',NULL,NULL,'Extra directives for all apache vhost\'s.','Apache Config','true'),
+(74,'global_vhcustom','Global VHost Entry',NULL,NULL,"Extra directives for all apache vhost's.",'Apache Config','true'),
 (75,'static_dir','Static Pages Directory','/etc/sentora/panel/etc/static/',NULL,'The Sentora static directory, used for storing welcome pages etc. etc.','Apache Config','true'),
 (76,'parking_path','Vhost Parking Path','/etc/sentora/panel/etc/static/parking/',NULL,'The path to the parking website, this will be used by all clients.','Apache Config','true'),
 (78,'shared_domains','Shared Domains','no-ip,dyndns,autono,zphub',NULL,'Domains entered here can be shared across multiple accounts. Seperate domains with , example: no-ip,dyndns','Apache Config','true'),
@@ -706,6 +708,20 @@ insert  into `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx
 (119,'cron_reload_user','Cron Reload User','',NULL,'Cron reload apache user in Linux','Cron Config','true'),
 (120,'login_csfr','Remote Login Forms','false','false|true','Disables CSFR protection on the login form to enable remote login forms.','Sentora Config','true'),
 (121,'sentora_port','Sentora Apache Port','80',NULL,'Sentora Apache panel port (change will be pending until next daemon run)','Sentora Config','true');
+
+insert  into `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx`,`so_defvalues_tx`,`so_desc_tx`,`so_module_vc`,`so_usereditable_en`) values 
+(122,'welcome_message','Custom e-mail Welcome Message','Hi {{fullname}},
+
+We are pleased to inform you that your new hosting account is now active!
+You can access your web hosting control panel using this link: {{controlpanelurl}}
+
+Your username and password is as follows:
+Username: {{username}}
+Password: {{password}}
+
+Many thanks,
+
+The management',NULL,'Here you can edit the Welcme Message e-mail','Sentora Config','true');
 /*Table structure for table `x_translations` */
 
 DROP TABLE IF EXISTS `x_translations`;
@@ -720,10 +736,10 @@ CREATE TABLE `x_translations` (
 /*Data for the table `x_translations` */
 
 insert  into `x_translations`(`tr_id_pk`,`tr_en_tx`,`tr_de_tx`) values 
-(44,'Webmail is a convenient way for you to check your email accounts online without the need to configure an email client.','Webmail ist ein bequemer Weg fÃ¼r Sie, Ihre E-Mail-Konten online zu Ã¼berprÃ¼fen, ohne dass eine E-Mail-Client zu konfigurieren.'),
+(44,'Webmail is a convenient way for you to check your email accounts online without the need to configure an email client.','Webmail ist ein bequemer Weg für Sie, Ihre E-Mail-Konten online zu überprüfen, ohne dass eine E-Mail-Client zu konfigurieren.'),
 (45,'Launch Webmail','Starten Sie WebMail'),
 (56,'PHPInfo provides you with information regarding the version of PHP running on this system as well as installed PHP extentsions and configuration details.','PHPInfo bietet Ihnen Informationen über die PHP-Version auf dem System, sowie PHP installiert extentsions und Konfigurationsmöglichkeiten.'),
-(67,'From here you can shadow any of your client\'s accounts, this enables you to automatically login as the user which enables you to offer remote help by seeing what they see!','Von hier aus können alle Ihre Kunden-Accounts können Schatten, ermöglicht Ihnen dies automatisch, wenn der Benutzer mit dem Sie remote helfen zu sehen, was sie sehen, anbieten zu können login!'),
+(67,"From here you can shadow any of your client's accounts, this enables you to automatically login as the user which enables you to offer remote help by seeing what they see!",'Von hier aus können alle Ihre Kunden-Accounts können Schatten, ermöglicht Ihnen dies automatisch, wenn der Benutzer mit dem Sie remote helfen zu sehen, was sie sehen, anbieten zu können login!'),
 (68,'My Account','Meine Konto'),
 (69,'Change Password','Kennwort ändern'),
 (70,'Shadowing','Schatten'),
