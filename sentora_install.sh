@@ -48,7 +48,7 @@ PANEL_UPGRADE=false
 #--- Resolv.conf deprotect
 chattr -i /etc/resolv.conf
 echo "nameserver 1.1.1.1" > /etc/resolv.conf
-echo "nameserver 1.0.0.1" > /etc/resolv.conf
+echo "nameserver 1.0.0.1" >> /etc/resolv.conf
 #--- Resolv.conf protect
 chattr +i /etc/resolv.conf
 
