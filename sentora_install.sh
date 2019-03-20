@@ -43,6 +43,15 @@ PANEL_PATH="/etc/sentora"
 PANEL_DATA="/var/sentora"
 PANEL_UPGRADE=false
 
+resolv problems resolv.conf and dns ipv6
+#force use dns ipv4 server
+#--- Resolv.conf deprotect
+chattr -i /etc/resolv.conf
+echo "nameserver 1.1.1.1" > /etc/resolv.conf
+echo "nameserver 1.0.0.1" > /etc/resolv.conf
+#--- Resolv.conf protect
+chattr +i /etc/resolv.conf
+
 #--- Display the 'welcome' splash/user warning info..
 echo ""
 echo "############################################################"
@@ -686,8 +695,7 @@ cc -o $PANEL_PATH/panel/bin/zsudo $PANEL_CONF/bin/zsudo.c
 sudo chown root $PANEL_PATH/panel/bin/zsudo
 chmod +s $PANEL_PATH/panel/bin/zsudo
 
-#--- Resolv.conf protect
-chattr +i /etc/resolv.conf
+
 
 #--- Prepare hostname
 old_hostname=$(cat /etc/hostname)
@@ -1351,8 +1359,7 @@ elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
 
 fi
 
-#--- Resolv.conf deprotect
-chattr -i /etc/resolv.conf
+
 
 
 #--- Restart all services to capture output messages, if any
