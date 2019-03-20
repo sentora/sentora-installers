@@ -500,6 +500,20 @@ echo -e "\n-- Updating+upgrading system, it may take some time..."
 if [[ "$OS" = "CentOs" ]]; then
     yum -y update
     yum -y upgrade
+	#solve openssh server not installer
+	yum -y install openssh-server
+	service sshd start
+	service sshd restart
+	chkconfig sshd on
+	yum -y install /usr/bin/chattr
+	#resolv problems resolv.conf and dns ipv6
+	#force use dns ipv4 server
+	#--- Resolv.conf deprotect
+	chattr -i /etc/resolv.conf
+	echo "nameserver 1.1.1.1" > /etc/resolv.conf
+	echo "nameserver 1.0.0.1" >> /etc/resolv.conf
+	#--- Resolv.conf protect
+	chattr +i /etc/resolv.conf
 elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     apt-get -yqq update
     apt-get -yqq upgrade
