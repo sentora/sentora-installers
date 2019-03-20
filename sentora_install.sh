@@ -43,7 +43,7 @@ PANEL_PATH="/etc/sentora"
 PANEL_DATA="/var/sentora"
 PANEL_UPGRADE=false
 
-resolv problems resolv.conf and dns ipv6
+#resolv problems resolv.conf and dns ipv6
 #force use dns ipv4 server
 #--- Resolv.conf deprotect
 chattr -i /etc/resolv.conf
