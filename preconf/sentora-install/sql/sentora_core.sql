@@ -185,7 +185,7 @@ CREATE TABLE `x_dns` (
 /*Data for the table `x_dns` */
 
 /* Table structure for table `x_dns_create` */
-CREATE TABLE IF NOT EXISTS `sentora_core`.`x_dns_create` (
+CREATE TABLE IF NOT EXISTS `x_dns_create` (
   `dc_id_pk` int(6) unsigned NOT NULL AUTO_INCREMENT,
   `dc_acc_fk` int(6) DEFAULT NULL,
   `dc_type_vc` varchar(50) DEFAULT NULL,
