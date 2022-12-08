@@ -1,12 +1,35 @@
-/var/sentora/logs/domains/*/*access.log /var/sentora/logs/domains/*/*error.log /var/sentora/logs/zpanel.log /var/sentora/logs/sentora*.log /var/sentora/logs/daemon*.log {
+# Sentora Panel logs -
+/var/sentora/logs/sentora*.log /var/sentora/logs/daemon*.log 
+/var/zpanel/logs/zpanel*.log /var/zpanel/logs/daemon*.log
+
+{
+       su root root
        weekly
        missingok
        rotate 2
        compress
        delaycompress
-       create 640 apache apache
+       create 640 root root
        sharedscripts
        postrotate
-               systemctl reload httpd > /dev/null
+               /etc/init.d/apache2 reload > /dev/null
+       endscript
+}
+
+# Sentora User Domain logs -
+/var/sentora/logs/domains/*/*access.log /var/sentora/logs/domains/*/*bandwidth.log /var/sentora/logs/domains/*/*error.log
+/var/zpanel/logs/domains/*/*access.log /var/zpanel/logs/domains/*/*bandwidth.log /var/zpanel/logs/domains/*/*error.log
+
+{
+       su root root
+       weekly
+       missingok
+       rotate 2
+       compress
+       delaycompress
+       create 640 root root
+       sharedscripts
+       postrotate
+               /etc/init.d/apache2 reload > /dev/null
        endscript
 }

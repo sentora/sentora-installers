@@ -1,4 +1,5 @@
 /var/log/dovecot*.log {
+       su vmail mail
        weekly
        missingok
        rotate 2

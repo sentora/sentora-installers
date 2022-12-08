@@ -185,7 +185,7 @@ CREATE TABLE `x_dns` (
 /*Data for the table `x_dns` */
 
 /* Table structure for table `x_dns_create` */
-CREATE TABLE IF NOT EXISTS `x_dns_create` (
+CREATE TABLE IF NOT EXISTS `sentora_core`.`x_dns_create` (
   `dc_id_pk` int(6) unsigned NOT NULL AUTO_INCREMENT,
   `dc_acc_fk` int(6) DEFAULT NULL,
   `dc_type_vc` varchar(50) DEFAULT NULL,
@@ -199,25 +199,18 @@ CREATE TABLE IF NOT EXISTS `x_dns_create` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=10 ;
 
 /* Data for the table `x_dns_create` */
-INSERT INTO `x_dns_create` (`dc_id_pk`, `dc_acc_fk`, `dc_type_vc`, `dc_host_vc`, `dc_ttl_in`, `dc_target_vc`, `dc_priority_in`, `dc_weight_in`, `dc_port_in`) VALUES
+INSERT INTO `sentora_core`.`x_dns_create` (`dc_id_pk`, `dc_acc_fk`, `dc_type_vc`, `dc_host_vc`, `dc_ttl_in`, `dc_target_vc`, `dc_priority_in`, `dc_weight_in`, `dc_port_in`) VALUES
 (1, 0, 'A', '@', 3600, ':IP:', NULL, NULL, NULL),
 (2, 0, 'CNAME', 'www', 3600, '@', NULL, NULL, NULL),
 (3, 0, 'CNAME', 'ftp', 3600, '@', NULL, NULL, NULL),
-(4, 0, 'CNAME', 'zpanel', 3600, '@', NULL, NULL, NULL),
-(5, 0, 'CNAME', 'webmail', 3600, '@', NULL, NULL, NULL),
-(6, 0, 'TXT', '_dmarc', 3600, 'v=DMARC1; p=none; sp=none; rua=mailto:spam-reports@:DOMAIN:; ruf=mailto:forensic@:DOMAIN:; rf=afrf; pct=100; ri=86400', NULL, NULL, NULL),
-(7, 0, 'TXT', '_domainkey', 3600, 't=y; o=~;', NULL, NULL, NULL),
-(8, 0, 'SPF', '@', 3600, 'v=spf1 a::IP: include::DOMAIN: mx ptr -all', NULL, NULL, NULL),
-(9, 0, 'PTR', '@', 3600, ':DOMAIN:.in-addr.arpa', NULL, NULL, NULL),
-(10, 0, 'MX', '@', 86400, 'mail.:DOMAIN:', 10, NULL, NULL),
-(11, 0, 'A', 'ns1', 172800, ':IP:', NULL, NULL, NULL),
-(12, 0, 'A', 'ns2', 172800, ':IP:', NULL, NULL, NULL),
-(13, 0, 'A', 'mail', 86400, ':IP:', NULL, NULL, NULL),
-(14, 0, 'A', 'pop3', 86400, ':IP:', NULL, NULL, NULL),
-(15, 0, 'A', 'imap', 86400, ':IP:', NULL, NULL, NULL),
-(16, 0, 'A', 'smtp', 86400, ':IP:', NULL, NULL, NULL),
-(17, 0, 'NS', '@', 172800, 'ns1.:DOMAIN:', NULL, NULL, NULL),
-(18, 0, 'NS', '@', 172800, 'ns2.:DOMAIN:', NULL, NULL, NULL);
+(4, 0, 'A', 'mail', 2419200, ':IP:', NULL, NULL, NULL),
+(5, 0, 'MX', '@', 86400, 'mail.:DOMAIN:', 10, NULL, NULL),
+(6, 0, 'A', 'ns1', 172800, ':IP:', NULL, NULL, NULL),
+(7, 0, 'A', 'ns2', 172800, ':IP:', NULL, NULL, NULL),
+(8, 0, 'NS', '@', 172800, 'ns1.:DOMAIN:', NULL, NULL, NULL),
+(9, 0, 'NS', '@', 172800, 'ns2.:DOMAIN:', NULL, NULL, NULL),
+(10, 0, 'SPF', '@', 2419200, 'v=spf1 a mx ip4::IP:  mx:mail.:DOMAIN: ?all', NULL, NULL, NULL),
+(11, 0, 'TXT', '@', 2419200, 'v=spf1 a mx ip4::IP:  mx:mail.:DOMAIN: ?all', NULL, NULL, NULL);
 
 /*Table structure for table `x_faqs` */
 
@@ -606,7 +599,7 @@ CREATE TABLE `x_settings` (
 /*Data for the table `x_settings` */
 
 insert  into `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx`,`so_defvalues_tx`,`so_desc_tx`,`so_module_vc`,`so_usereditable_en`) values 
-(6,'dbversion','Sentora version','1.0.3',NULL,'Database Version','Sentora Config','false'),
+(6,'dbversion','Sentora version','2.0.0-BETA-build-v.1.0.5',NULL,'Database Version','Sentora Config','false'),
 (7,'sentora_root','Sentora root path','/etc/sentora/panel/',NULL,'Sentora Web Root','Sentora Config','true'),
 (8,'module_icons_pr','Icons per Row','10',NULL,'Set the number of icons to display before beginning a new line.','Sentora Config','false'),
 (10,'Sentora_df','Date Format','H:i jS M Y T',NULL,'Set the date format used by modules.','Sentora Config','true'),
@@ -708,27 +701,16 @@ insert  into `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx
 (112,'mailer_type','Mail method','mail','mail|smtp|sendmail','Method to use when sending emails out. (mail = PHP Mail())','Sentora Config','true'),
 (113,'daemon_run_interval','Number of seconds between each daemon execution','300',NULL,'The total number of seconds between each daemon run (default 300 = 5 mins)','Sentora Config','false'),
 (114,'debug_mode','Sentora Debug Mode','prod','dev|prod','Whether or not to show PHP debug errors,warnings and notices','Sentora Config','true'),
-(115,'password_minlength','Min Password Length','6',NULL,'Minimum length required for new passwords','Sentora Config','true'),
+(115,'password_minlength','Min Password Length','10',NULL,'Minimum length required for new passwords','Sentora Config','true'),
 (116,'cron_reload_command','Cron Reload Command','crontab',NULL,'Crontab binary in Linux Only','Cron Config','true'),
 (117,'cron_reload_path','Cron Reload Path','',NULL,'Cron reload path in Linux Only','Cron Config','true'),
 (118,'cron_reload_flag','Cron Reload Flags','-u',NULL,'Cron reload command flags in Linux Only','Cron Config','true'),
 (119,'cron_reload_user','Cron Reload User','',NULL,'Cron reload apache user in Linux','Cron Config','true'),
 (120,'login_csfr','Remote Login Forms','false','false|true','Disables CSFR protection on the login form to enable remote login forms.','Sentora Config','true'),
-(121,'sentora_port','Sentora Apache Port','80',NULL,'Sentora Apache panel port (change will be pending until next daemon run)','Sentora Config','true');
+(121,'sentora_port','Sentora Apache Port','80',NULL,'Sentora Apache panel port (change will be pending until next daemon run)','Sentora Config','true'),
+(122, 'welcome_message', 'Custom e-mail Welcome Message', 'Hi {{fullname}},\nWe are pleased to inform you that your new hosting account is now active!\nYou can access your web hosting control panel using this link: {{controlpanelurl}}\nYour username and password is as follows:\nUsername: {{username}}\nPassword: {{password}}\nMany thanks,\nThe management', NULL, 'Here you can edit the Welcme Message e-mail', 'Sentora Config', 'true'),
+(123, 'panel_ssl_tx', 'Sentora Panel SSL Config', NULL, NULL, 'Sentora SSL settings and certs', 'Sentora Config', 'true');
 
-insert  into `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx`,`so_defvalues_tx`,`so_desc_tx`,`so_module_vc`,`so_usereditable_en`) values 
-(122,'welcome_message','Custom e-mail Welcome Message','Hi {{fullname}},
-
-We are pleased to inform you that your new hosting account is now active!
-You can access your web hosting control panel using this link: {{controlpanelurl}}
-
-Your username and password is as follows:
-Username: {{username}}
-Password: {{password}}
-
-Many thanks,
-
-The management',NULL,'Here you can edit the Welcme Message e-mail','Sentora Config','true');
 /*Table structure for table `x_translations` */
 
 DROP TABLE IF EXISTS `x_translations`;
@@ -817,7 +799,10 @@ CREATE TABLE `x_vhosts` (
   `vh_active_in` int(1) DEFAULT '0',
   `vh_suhosin_in` int(1) DEFAULT '1',
   `vh_obasedir_in` int(1) DEFAULT '1',
-  `vh_custom_tx` text,
+  `vh_ssl_tx` text DEFAULT NULL, 
+  `vh_ssl_port_in` int(6) DEFAULT NULL,
+  `vh_custom_sp_tx` text DEFAULT NULL,
+  `vh_custom_tx` text DEFAULT NULL,
   `vh_custom_port_in` int(6) DEFAULT NULL,
   `vh_custom_ip_vc` varchar(45) DEFAULT NULL,
   `vh_portforward_in` int(1) DEFAULT NULL,

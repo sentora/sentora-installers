@@ -41,6 +41,12 @@ $config['db_table_cache_messages'] = 'cache_messages';
 // ----------------------------------
 $config['smtp_server'] = 'localhost'; //Default was ''
 
+// SMTP port for server
+$config['smtp_port'] = 25; 
+
+// SMTP AUTH Type
+$config['smtp_auth_type'] = '';
+
 // SMTP username (if required) if you use %u as the username Roundcube
 // will use the current username for login
 $config['smtp_user'] = '%u'; //Default was ''
@@ -105,4 +111,3 @@ $config['draft_autosave'] = 120; //default was 300
 
 // If true, after message delete/move, the next message will be displayed
 $config['display_next'] = false; //Default was true
-
