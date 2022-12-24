@@ -1536,7 +1536,7 @@ if [[ "$VER" = "16.04" || "$VER" = "18.04" || "$VER" = "20.04" || "$VER" = "7" |
 	cd /etc || exit
 	
 	# Clone Snuffleupagus
-	git clone https://github.com/nbs-system/snuffleupagus
+	git clone https://github.com/jvoisin/snuffleupagus
 	
 	cd /etc/snuffleupagus/src || exit
 		
