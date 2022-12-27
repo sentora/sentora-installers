@@ -1522,7 +1522,7 @@ if [[ "$VER" = "16.04" || "$VER" = "18.04" || "$VER" = "20.04" || "$VER" = "7" |
 	fi
 
 # -------------------------------------------------------------------------------
-# Start Snuffleupagus v.0.5.x install Below
+# Start Snuffleupagus install with lastest version Below
 # -------------------------------------------------------------------------------
 	
 	echo -e "\n-- Installing and configuring Snuffleupagus..."
