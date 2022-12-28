@@ -1173,7 +1173,7 @@ fi
 
 # adjustments for apache 2.4
 if [[ ("$OS" = "CentOs" && "$VER" = "7") || 
-      ("$OS" = "Ubuntu" && "$VER" = "14.04" || "$VER" = "16.04" || "$VER" = "18.04" || "$VER" = "20.04") || 
+      ("$OS" = "Ubuntu" && "$VER" = "16.04" || "$VER" = "18.04" || "$VER" = "20.04") || 
       ("$OS" = "debian" && "$VER" = "8") ]] ; then 
     # Order deny,allow / Deny from all   ->  Require all denied
     sed -i 's|Order deny,allow|Require all denied|I'  $PANEL_CONF/apache/httpd.conf
@@ -1903,14 +1903,14 @@ if [[ $(echo "$SENTORA_CORE_VERSION" | sed  's|.*-\(beta\).*$|\1|') = "beta"  ]]
     $PANEL_PATH/panel/bin/setso --set dbversion "$SENTORA_CORE_VERSION"
 fi
 
-# make the daemon to build vhosts file.
+# Make the daemon to run/build vhosts file.
 $PANEL_PATH/panel/bin/setso --set apache_changed "true"
 php -q $PANEL_PATH/panel/bin/daemon.php
 
 
 #--- Firewall ? SHOULD WE???
 
-#--- Fail2ban - This should standard with install. We need a module to help user with settings.
+#--- Fail2ban - This should be standard with install. We need a module to help user with settings. Maybe soon!
 
 
 #--- Logrotate
