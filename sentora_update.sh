@@ -361,12 +361,12 @@ rm -rf sentora_preconfig.zip
 ##
 echo -e "\n-- Updating Sentora Confing files..."
 
-# Update Sentora Apache httpd file.
+## Update Sentora Apache httpd file.
 rm -r $PANEL_CONF/apache/httpd.conf
 cp -R "$SENTORA_PRECONF_UPDATE"/preconf/apache/httpd.conf $PANEL_CONF/apache/
 chmod -R 0644 $PANEL_PATH/configs/apache/httpd.conf
 
-# Updating Sentora Apache Template Configs
+## Updating Sentora Apache Template Configs
 rm -rf PANEL_CONF/apache/templates
 cp -R "$SENTORA_PRECONF_UPDATE"/preconf/apache/templates $PANEL_CONF/apache/
 
@@ -376,9 +376,20 @@ chmod -R 0755 $PANEL_CONF/apache/templates
 # Set templates to 0644 permissions
 chmod -R 0644 $PANEL_CONF/apache/templates/*
 
-# Update Sentora Snuff configs files
+## Updating Logrotate Configs
+rm -rf PANEL_CONF/logrotate
+cp -R "$SENTORA_PRECONF_UPDATE"/preconf/logrotate $PANEL_CONF/logrotate/
+
+# Set logrotate folder to 0755 permissions
+chmod -R 0755 $PANEL_CONF/apache/templates
+
+# Set logrotate files to 0644 permissions
+chmod -R 0644 $PANEL_CONF/apache/templates/*
+
+## Update Sentora Snuff configs files
 rm -rf $PANEL_CONF/php/sp
 cp -R "$SENTORA_PRECONF_UPDATE"/preconf/php/sp $PANEL_CONF/php/
+
 echo -e "--- Done!"
 
 ##
