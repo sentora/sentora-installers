@@ -9,7 +9,7 @@
        rotate 2
        compress
        delaycompress
-       create 640 root root
+       create 664 root root
        sharedscripts
        postrotate
                /etc/init.d/apache2 reload > /dev/null
