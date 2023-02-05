@@ -381,10 +381,10 @@ rm -rf PANEL_CONF/logrotate
 cp -R "$SENTORA_PRECONF_UPDATE"/preconf/logrotate $PANEL_CONF/logrotate/
 
 # Set logrotate folder to 0755 permissions
-chmod -R 0755 $PANEL_CONF/apache/templates
+chmod -R 0755 $PANEL_CONF/logrotate
 
 # Set logrotate files to 0644 permissions
-chmod -R 0644 $PANEL_CONF/apache/templates/*
+chmod -R 0644 $PANEL_CONF/logrotate/*
 
 ## Update Sentora Snuff configs files
 rm -rf $PANEL_CONF/php/sp
