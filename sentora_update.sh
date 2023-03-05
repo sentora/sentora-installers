@@ -378,7 +378,7 @@ chmod -R 0644 $PANEL_CONF/apache/templates/*
 
 ## Updating Logrotate Configs
 rm -rf PANEL_CONF/logrotate
-cp -R "$SENTORA_PRECONF_UPDATE"/preconf/logrotate $PANEL_CONF/logrotate/
+cp -R "$SENTORA_PRECONF_UPDATE"/preconf/logrotate $PANEL_CONF/
 
 # Set logrotate folder to 0755 permissions
 chmod -R 0755 $PANEL_CONF/logrotate
