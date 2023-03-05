@@ -17,15 +17,16 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Supported Operating Systems: 
-# CentOS 6.*/7.* Minimal, 
-# Ubuntu server 12.04/14.04 
-# Debian 7.*/8.* 
+# CentOS 8.* Minimal, 
+# Ubuntu server 18.04/20.04 
+# Debian 9.*/10.* COMING SOON!!!
 # 32bit and 64bit
 #
 # Contributions from:
 #
+#   Anthony DeBeaulieu (anthony.d@sentora.org
 #   Pascal Peyremorte (ppeyremorte@sentora.org)
-#   Mehdi Blagui 
+#   Mehdi Blagui
 #   Kevin Andrews (kevin@zvps.uk)
 #
 #   and all those who participated to this and to previous installers.
@@ -36,17 +37,19 @@
 # master - latest unstable
 # 1.0.3 - example stable tag
 ##
-SENTORA_INSTALLER_VERSION="master"
-SENTORA_CORE_VERSION="1.0.1"
+
+SENTORA_INSTALLER_VERSION="2.0.0"
+SENTORA_CORE_VERSION="2.0.0"
 
 PANEL_PATH="/etc/sentora"
 PANEL_DATA="/var/sentora"
+PANEL_CONF="/etc/sentora/configs"
 PANEL_UPGRADE=false
 
 #--- Display the 'welcome' splash/user warning info..
 echo ""
 echo "############################################################"
-echo "#  Welcome to the Official Sentora Installer $SENTORA_INSTALLER_VERSION  #"
+echo "#  Welcome to the Official Sentora Installer v.$SENTORA_INSTALLER_VERSION  #"
 echo "############################################################"
 
 echo -e "\nChecking that minimal requirements are ok"
@@ -55,7 +58,7 @@ echo -e "\nChecking that minimal requirements are ok"
 if [ -f /etc/centos-release ]; then
     OS="CentOs"
     VERFULL=$(sed 's/^.*release //;s/ (Fin.*$//' /etc/centos-release)
-    VER=${VERFULL:0:1} # return 6 or 7
+    VER=${VERFULL:0:1} # return 8
 elif [ -f /etc/lsb-release ]; then
     OS=$(grep DISTRIB_ID /etc/lsb-release | sed 's/^.*=//')
     VER=$(grep DISTRIB_RELEASE /etc/lsb-release | sed 's/^.*=//')
@@ -70,9 +73,8 @@ ARCH=$(uname -m)
 
 echo "Detected : $OS  $VER  $ARCH"
 
-if [[ "$OS" = "CentOs" && ("$VER" = "6" || "$VER" = "7" ) || 
-      "$OS" = "Ubuntu" && ("$VER" = "12.04" || "$VER" = "14.04" ) || 
-      "$OS" = "debian" && ("$VER" = "7" || "$VER" = "8" ) ]] ; then
+if [[ "$OS" = "CentOs" && ( "$VER" = "8" ) || 
+      "$OS" = "Ubuntu" && ( "$VER" = "18.04" || "$VER" = "20.04" ) ]] ; then
     echo "Ok."
 else
     echo "Sorry, this OS is not supported by Sentora." 
@@ -108,21 +110,26 @@ fi
 
 # Check for some common packages that we know will affect the installation/operating of Sentora.
 if [[ "$OS" = "CentOs" ]] ; then
-    PACKAGE_INSTALLER="yum -y -q install"
-    PACKAGE_REMOVER="yum -y -q remove"
-
-    inst() {
-       rpm -q "$1" &> /dev/null
-    }
-
-    if  [[ "$VER" = "7" ]]; then
-        DB_PCKG="mariadb" &&  echo "DB server will be mariaDB"
-    else 
-        DB_PCKG="mysql" && echo "DB server will be mySQL"
-    fi
-    HTTP_PCKG="httpd"
-    PHP_PCKG="php"
-    BIND_PCKG="bind"
+	if [[ "$VER" = "8" ]] ; then
+		PACKAGE_INSTALLER="dnf -y -q install"
+		PACKAGE_REMOVER="dnf -y -q remove"
+	else
+		PACKAGE_INSTALLER="yum -y -q install"
+		PACKAGE_REMOVER="yum -y -q remove"
+	fi
+		inst() {
+		   rpm -q "$1" &> /dev/null
+		}
+	
+		if  [[ "$VER" = "7" || "$VER" = "8" ]]; then
+			DB_PCKG="mariadb" &&  echo "DB server will be mariaDB"
+		else 
+			DB_PCKG="mysql" && echo "DB server will be mySQL"
+		fi
+		HTTP_PCKG="httpd"
+		PHP_PCKG="php"
+		BIND_PCKG="bind"
+	
 elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     PACKAGE_INSTALLER="apt-get -yqq install"
     PACKAGE_REMOVER="apt-get -yqq remove"
@@ -218,7 +225,6 @@ if [[ ("$PANEL_FQDN" != "" && "$PUBLIC_IP" == "") ||
     exit 2
 fi
 
-
 if [[ "$tz" == "" && "$PANEL_FQDN" == "" ]] ; then
     # Propose selection list for the time zone
     echo "Preparing to select timezone, please wait a few seconds..."
@@ -254,13 +260,13 @@ if [[ "$PANEL_FQDN" == "" ]] ; then
     PUBLIC_IP=$extern_ip
     while true; do
         echo ""
-        read -e -p "Enter the sub-domain you want to access Sentora panel: " -i "$PANEL_FQDN" PANEL_FQDN
+        read -r -e -p "Enter the sub-domain you want to access Sentora panel: " -i "$PANEL_FQDN" PANEL_FQDN
 
         if [[ "$PUBLIC_IP" != "$local_ip" ]]; then
           echo -e "\nThe public IP of the server is $PUBLIC_IP. Its local IP is $local_ip"
           echo "  For a production server, the PUBLIC IP must be used."
         fi  
-        read -e -p "Enter (or confirm) the public IP for this server: " -i "$PUBLIC_IP" PUBLIC_IP
+        read -r -e -p "Enter (or confirm) the public IP for this server: " -i "$PUBLIC_IP" PUBLIC_IP
         echo ""
 
         # Checks if the panel domain is a subdomain
@@ -271,7 +277,11 @@ if [[ "$PANEL_FQDN" == "" ]] ; then
         fi
 
         # Checks if the panel domain is already assigned in DNS
-        dns_panel_ip=$(host "$PANEL_FQDN"|grep address|cut -d" " -f4)
+		
+		# Obsolete now using external source for FQDN to IP. 
+        #dns_panel_ip=$(host "$PANEL_FQDN"|grep address|cut -d" " -f4) // Obsolete for modern VM's due to hostname setup in /etc/hosts
+		dns_panel_ip=$(wget -qO- http://api.sentora.org/hostname.txt?domain="$PANEL_FQDN")
+		
         if [[ "$dns_panel_ip" == "" ]]; then
             echo -e "\e[1;31mWARNING: $PANEL_FQDN is not defined in your DNS!\e[0m"
             echo "  You must add records in your DNS manager (and then wait until propagation is done)."
@@ -302,14 +312,14 @@ if [[ "$PANEL_FQDN" == "" ]] ; then
         if [[ "$confirm" != "" ]] ; then
             echo "There are some warnings..."
             echo "Are you really sure that you want to setup Sentora with these parameters?"
-            read -e -p "(y):Accept and install, (n):Change domain or IP, (q):Quit installer? " yn
+            read -r -e -p "(y):Accept and install, (n):Change domain or IP, (q):Quit installer? " yn
             case $yn in
                 [Yy]* ) break;;
                 [Nn]* ) continue;;
                 [Qq]* ) exit;;
             esac
         else
-            read -e -p "All is ok. Do you want to install Sentora now (y/n)? " yn
+            read -r -e -p "All is ok. Do you want to install Sentora now (y/n)? " yn
             case $yn in
                 [Yy]* ) break;;
                 [Nn]* ) exit;;
@@ -318,8 +328,111 @@ if [[ "$PANEL_FQDN" == "" ]] ; then
     done
 fi
 
+
 # ***************************************
 # Installation really starts here
+
+echo -e "\n# -------------------------------------------------------------------------------"
+
+#--- Setup Sentora Admin contact info
+
+echo -e "\n--- Please Enter vaild contact info for the Sentora system admin or owner below:\n"
+
+# Get Admin contact info 
+# ---- Name
+while true
+do
+    read -r -e -p "Enter Full name: " -i "$ADMIN_NAME" ADMIN_NAME
+    echo
+    if [ -n "$ADMIN_NAME" ]
+    then
+        break
+    else
+        echo "Entry is Blank. Try again."
+    fi
+done
+
+# --- Email
+while true
+do
+    read -r -e -p "Enter admin email: " -i "$ADMIN_EMAIL" ADMIN_EMAIL
+    echo
+    if [[ "$ADMIN_EMAIL" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$ ]]
+    then
+        break
+    else
+        echo "Email address $ADMIN_EMAIL is invalid."
+    fi
+done
+
+# ---- Phone Number
+while true
+do
+    read -r -e -p "Enter Phone Number: " -i "$ADMIN_PHONE" ADMIN_PHONE
+    echo
+    if [ -n "$ADMIN_PHONE" ]
+    then
+        break
+    else
+        echo "Entry is Blank. Try again."
+    fi
+done
+
+# ---- Address
+while true
+do
+    read -r -e -p "Enter Street Address: " -i "$ADMIN_ADDRESS" ADMIN_ADDRESS
+    echo
+    if [ -n "$ADMIN_ADDRESS" ]
+    then
+        break
+    else
+        echo "Entry is Blank. Try again."
+    fi
+done
+
+# ---- Address - City, State or Province
+while true
+do
+    read -r -e -p "Enter City, State or Province: " -i "$ADMIN_PROVINCE" ADMIN_PROVINCE
+    echo
+    if [ -n "$ADMIN_PROVINCE" ]
+    then
+        break
+    else
+        echo "Entry is Blank. Try again."
+    fi
+done
+
+# ---- Address - Postal code
+while true
+do
+    read -r -e -p "Enter Postal code: " -i "$ADMIN_POSTALCODE" ADMIN_POSTALCODE
+    echo
+    if [ -n "$ADMIN_POSTALCODE" ]
+    then
+        break
+    else
+        echo "Entry is Blank. Try again."
+    fi
+done
+
+# ---- Address - Country
+while true
+do
+    read -r -e -p "Enter Country: " -i "$ADMIN_COUNTRY" ADMIN_COUNTRY
+    echo
+    if [ -n "$ADMIN_COUNTRY" ]
+    then
+        break
+    else
+        echo "Entry is Blank. Try again."
+    fi
+done
+
+
+echo -e "\n# -------------------------------------------------------------------------------\n"
+
 
 #--- Set custom logging methods so we create a log file in the current working directory.
 logfile=$(date +%Y-%m-%d_%H.%M.%S_sentora_install.log)
@@ -360,11 +473,15 @@ if [[ "$OS" = "CentOs" ]]; then
   if  [[ "$VER" = "7" ]]; then
      EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL/Packages/e/" | grep -oP '(?<=href=")epel-release.*(?=">)')
      wget "$EPEL_BASE_URL/Packages/e/$EPEL_FILE"
+  elif [[ "$VER" = "8" ]]; then
+     EPEL_BASE_URL="http://dl.fedoraproject.org/pub/epel/$VER/Everything/$ARCH";
+	 EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL/Packages/e/" | grep -oP '(?<=href=")epel-release.*(?=">)')
+     wget "$EPEL_BASE_URL/Packages/e/$EPEL_FILE"
   else
      EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL/" | grep -oP '(?<=href=")epel-release.*(?=">)')
      wget "$EPEL_BASE_URL/$EPEL_FILE"
   fi
-  $PACKAGE_INSTALLER -y install epel-release*.rpm
+  $PACKAGE_INSTALLER epel-release*.rpm 	#  CHECK THIS
   rm "$EPEL_FILE"
     
     #To fix some problems of compatibility use of mirror centos.org to all users
@@ -400,7 +517,7 @@ if [[ "$OS" = "CentOs" ]]; then
     chkconfig sendmail off
 
     # disable firewall
-    if  [[ "$VER" = "7" ]]; then
+    if  [[ "$VER" = "7" || "$VER" = "8" ]]; then
         FIREWALL_SERVICE="firewalld"
     else 
         FIREWALL_SERVICE="iptables"
@@ -426,7 +543,7 @@ elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     rm -rf "/etc/apt/sources.list/*"
     cp "/etc/apt/sources.list" "/etc/apt/sources.list.save"
 
-    if [ "$VER" = "14.04" ]; then
+    if [[ "$VER" = "14.04" || "$VER" = "16.04" || "$VER" = "18.04" || "$VER" = "20.04" ]]; then
         cat > /etc/apt/sources.list <<EOF
 #Depots main restricted
 deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main restricted universe multiverse
@@ -500,7 +617,15 @@ fi
 echo -e "\n-- Downloading and installing required tools..."
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER sudo vim make zip unzip chkconfig bash-completion
-    $PACKAGE_INSTALLER ld-linux.so.2 libbz2.so.1 libdb-4.7.so libgd.so.2 
+	$PACKAGE_INSTALLER ld-linux.so.2 libbz2.so.1 
+
+	if  [[ "$VER" = "7" ]]; then
+    	$PACKAGE_INSTALLER libdb-4.7.so libgd.so.2	#### These packages are missing for CentOs 8
+		
+	elif  [[ "$VER" = "" ]]; then
+		$PACKAGE_INSTALLER gd	#### These packages are missing for CentOs 8 repo - libdb-4.8.so
+	fi	
+	
     $PACKAGE_INSTALLER curl curl-devel perl-libwww-perl libxml2 libxml2-devel zip bzip2-devel gcc gcc-c++ at make
     $PACKAGE_INSTALLER redhat-lsb-core ca-certificates e2fsprogs
 elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
@@ -511,20 +636,22 @@ fi
 echo -e "\n-- Downloading Sentora, Please wait, this may take several minutes, the installer will continue after this is complete!"
 # Get latest sentora
 while true; do
+
+	# Sentora REPO
     wget -nv -O sentora_core.zip https://github.com/sentora/sentora-core/archive/$SENTORA_CORE_VERSION.zip
+		
     if [[ -f sentora_core.zip ]]; then
         break;
     else
         echo "Failed to download sentora core from Github"
         echo "If you quit now, you can run again the installer later."
-        read -e -p "Press r to retry or q to quit the installer? " resp
+        read -r -e -p "Press r to retry or q to quit the installer? " resp
         case $resp in
             [Rr]* ) continue;;
             [Qq]* ) exit 3;;
         esac
     fi 
 done
-
 
 ###
 # Sentora Core Install 
@@ -546,7 +673,7 @@ rm -rf $PANEL_PATH/composer.lock
 ###
 if [ ! -L "/etc/zpanel" ] && [ -d "/etc/zpanel" ]; then
 
-    echo -e "Upgrading ZPanelCP 10.1.0 to Sentora 1.0.1";
+    echo -e "Upgrading ZPanelCP 10.1.0 to Sentora v.$SENTORA_CORE_VERSION";
 
     PANEL_UPGRADE=true
 
@@ -635,15 +762,14 @@ rm sentora_core.zip
 rm "$PANEL_PATH/panel/LICENSE.md" "$PANEL_PATH/panel/README.md" "$PANEL_PATH/panel/.gitignore"
 rm -rf "$PANEL_PATH/_delete_me" "$PANEL_PATH/.gitignore"
 
-
 #--- Set-up Sentora directories and configure permissions
 PANEL_CONF="$PANEL_PATH/configs"
 
 mkdir -p $PANEL_CONF
 mkdir -p $PANEL_PATH/docs
-chmod -R 777 $PANEL_PATH
-
 mkdir -p $PANEL_DATA/backups
+
+chmod -R 777 $PANEL_PATH
 chmod -R 777 $PANEL_DATA/
 
 # Links for compatibility with zpanel access
@@ -662,13 +788,16 @@ ln -s $PANEL_PATH/panel/bin/setzadmin /usr/bin/setzadmin
 
 #--- Install preconfig
 while true; do
+
+	# Sentora REPO
     wget -nv -O sentora_preconfig.zip https://github.com/sentora/sentora-installers/archive/$SENTORA_INSTALLER_VERSION.zip
+		
     if [[ -f sentora_preconfig.zip ]]; then
         break;
     else
         echo "Failed to download sentora preconfig from Github"
         echo "If you quit now, you can run again the installer later."
-        read -e -p "Press r to retry or q to quit the installer? " resp
+        read -r -e -p "Press r to retry or q to quit the installer? " resp
         case $resp in
             [Rr]* ) continue;;
             [Qq]* ) exit 3;;
@@ -679,7 +808,7 @@ done
 unzip -oq sentora_preconfig.zip
 /bin/cp -rf sentora-installers-$SENTORA_INSTALLER_VERSION/preconf/* $PANEL_CONF
 rm sentora_preconfig*
-rm -rf sentora-*
+rm -rf sentora_core*
 
 #--- Prepare zsudo
 cc -o $PANEL_PATH/panel/bin/zsudo $PANEL_CONF/bin/zsudo.c
@@ -687,7 +816,7 @@ sudo chown root $PANEL_PATH/panel/bin/zsudo
 chmod +s $PANEL_PATH/panel/bin/zsudo
 
 #--- Resolv.conf protect
-chattr +i /etc/resolv.conf
+chattr -f +i /etc/resolv.conf
 
 #--- Prepare hostname
 old_hostname=$(cat /etc/hostname)
@@ -732,11 +861,17 @@ fi
 
 #--- MySQL
 echo -e "\n-- Installing MySQL"
-$PACKAGE_INSTALLER "$DB_PCKG"
+
+$PACKAGE_INSTALLER "$DB_PCKG" ######## This isnt right
+
 if [[ "$OS" = "CentOs" ]]; then
-    $PACKAGE_INSTALLER "DB_PCKG-devel" "$DB_PCKG-server" 
+
+	######## This isnt right
+    $PACKAGE_INSTALLER "$DB_PCKG-devel" "$DB_PCKG-server" 
+	
+	
     MY_CNF_PATH="/etc/my.cnf"
-    if  [[ "$VER" = "7" ]]; then
+    if  [[ "$VER" = "7" || "$VER" = "8" ]]; then
         DB_SERVICE="mariadb"
     else 
         DB_SERVICE="mysqld"
@@ -754,7 +889,32 @@ service $DB_SERVICE start
 # setup mysql root password only if mysqlpassword is empty
 if [ -z "$mysqlpassword" ]; then
     mysqlpassword=$(passwordgen);
-    mysqladmin -u root password "$mysqlpassword"
+	if [[ "$OS" = "CentOs" ]]; then
+		if  [[ "$VER" = "8" ]]; then
+			#mysql -u root -e "UPDATE mysql.user SET plugin = 'mysql_native_password', authentication_string = PASSWORD('$mysqlpassword') WHERE User = 'root' AND Host = 'localhost'";
+			
+			# MariaDB 10.0 or >
+			mysql -u root -e "ALTER USER root@localhost IDENTIFIED VIA mysql_native_password";
+			mysql -u root -e "SET PASSWORD = PASSWORD('$mysqlpassword')";
+			
+		else
+			# Mysql 5.6 or below
+			mysqladmin -u root password "$mysqlpassword"
+			
+		fi
+			
+	elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+		# Ubuntu 16.04-20.04 w/Mysql 5.7
+		if [[ "$VER" = "16.04" || "$VER" = "18.04" ]]; then
+			# Mysql 8.0 or <
+			mysql -u root -e "UPDATE mysql.user SET plugin = 'mysql_native_password', authentication_string = PASSWORD('$mysqlpassword') WHERE User = 'root' AND Host = 'localhost'";
+			
+		elif [[ "$VER" = "20.04" ]]; then
+			# Mysql 8.0 
+			mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$mysqlpassword';";
+						
+		fi
+	fi
 fi
 
 # small cleaning of mysql access
@@ -787,13 +947,17 @@ else
 fi
 # Register mysql/mariadb service for autostart
 if [[ "$OS" = "CentOs" ]]; then
-    if [[ "$VER" == "7" ]]; then
+    if [[ "$VER" == "7" || "$VER" == "8" ]]; then
         systemctl enable "$DB_SERVICE".service
     else
         chkconfig "$DB_SERVICE" on
     fi
 fi
 
+# NEED TO FIX UBUNTU 16.04 SETTING MYSQL-BIND option TO SERVER IP (127.0.0.1) NOT LOCALHOST
+if [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+	sed -i "s|bind-address = .*|bind-address = 127.0.0.1|" /etc/mysql/mysql.conf.d/mysqld.cnf
+fi
 
 #--- Postfix
 echo -e "\n-- Installing Postfix"
@@ -810,8 +974,16 @@ if [ $PANEL_UPGRADE == false ]; then
     mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_postfix.sql
 fi
 
+
+# OLD
 ## grant will also create users which don't exist and update existing users with password ##
-mysql -u root -p"$mysqlpassword" -e "GRANT ALL PRIVILEGES ON sentora_postfix .* TO 'postfix'@'localhost' identified by '$postfixpassword';";
+##mysql -u root -p"$mysqlpassword" -e "GRANT ALL ON sentora_postfix .* TO 'postfix'@'localhost' identified by '$postfixpassword';";
+
+# Add User for Postfix DB
+mysql -u root -p"$mysqlpassword" -e "CREATE USER postfix@localhost IDENTIFIED BY '$postfixpassword';";
+# Grant ALL PRIVILEGES to Postfix User
+mysql -u root -p"$mysqlpassword" -e "GRANT ALL PRIVILEGES ON sentora_postfix .* TO 'postfix'@'localhost';";
+
 
 mkdir $PANEL_DATA/vmail
 useradd -r -g mail -d $PANEL_DATA/vmail -s /sbin/nologin -c "Virtual maildir" vmail
@@ -854,7 +1026,7 @@ sed -i '/smtpd_bind_address/d' $PANEL_CONF/postfix/master.cf
 
 # Register postfix service for autostart (it is automatically started)
 if [[ "$OS" = "CentOs" ]]; then
-    if [[ "$VER" == "7" ]]; then
+    if [[ "$VER" == "7" || "$VER" == "8" ]]; then
         systemctl enable postfix.service
         # systemctl start postfix.service
     else
@@ -863,6 +1035,12 @@ if [[ "$OS" = "CentOs" ]]; then
     fi
 fi
 
+# Edit deamon_directory in postfix main.cf to fix startup issue.
+if [[ "$OS" = "Ubuntu" ]]; then
+	if [[ "$VER" = "16.04" || "$VER" = "18.04" || "$VER" = "20.04" ]]; then
+		sed -i "s|daemon_directory = /usr/lib/postfix|daemon_directory = /usr/lib/postfix/sbin|" $PANEL_CONF/postfix/main.cf
+	fi
+fi
 
 #--- Dovecot (includes Sieve)
 echo -e "\n-- Installing Dovecot"
@@ -894,7 +1072,7 @@ chmod 660 /var/log/dovecot*
 
 # Register dovecot service for autostart and start it
 if [[ "$OS" = "CentOs" ]]; then
-    if [[ "$VER" == "7" ]]; then
+    if [[ "$VER" == "7" || "$VER" == "8" ]]; then
         systemctl enable dovecot.service
         systemctl start dovecot.service
     else
@@ -902,6 +1080,9 @@ if [[ "$OS" = "CentOs" ]]; then
         /etc/init.d/dovecot start
     fi
 fi
+
+#--- Spamassassin - IN THE WORKS!!!
+
 
 #--- Apache server
 echo -e "\n-- Installing and configuring Apache"
@@ -973,7 +1154,7 @@ if [[ "$OS" = "CentOs" ]]; then
     sed -i "s|DocumentRoot \"/var/www/html\"|DocumentRoot $PANEL_PATH/panel|" "$HTTP_CONF_PATH"
 elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     # disable completely sites-enabled/000-default.conf
-    if [[ "$VER" = "14.04" || "$VER" = "8" ]]; then 
+    if [[ "$VER" = "14.04" || "$VER" = "16.04" || "$VER" = "18.04" || "$VER" = "20.04" || "$VER" = "8" ]]; then
         sed -i "s|IncludeOptional sites-enabled|#&|" "$HTTP_CONF_PATH"
     else
         sed -i "s|Include sites-enabled|#&|" "$HTTP_CONF_PATH"
@@ -991,7 +1172,7 @@ fi
 
 # adjustments for apache 2.4
 if [[ ("$OS" = "CentOs" && "$VER" = "7") || 
-      ("$OS" = "Ubuntu" && "$VER" = "14.04") || 
+      ("$OS" = "Ubuntu" && "$VER" = "16.04" || "$VER" = "18.04" || "$VER" = "20.04") || 
       ("$OS" = "debian" && "$VER" = "8") ]] ; then 
     # Order deny,allow / Deny from all   ->  Require all denied
     sed -i 's|Order deny,allow|Require all denied|I'  $PANEL_CONF/apache/httpd.conf
@@ -1012,23 +1193,286 @@ if [[ ("$OS" = "CentOs" && "$VER" = "7") ||
     sed -i 's| FollowSymLinks [-]Indexes| +FollowSymLinks -Indexes|' $PANEL_PATH/panel/modules/apache_admin/hooks/OnDaemonRun.hook.php
 fi
 
+#--- Apache+Mod_SSL
+if [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+	if [[ "$VER" = "16.04" || "$VER" = "18.04" || "$VER" = "20.04" || "$VER" = "8" ]]; then
+		# Install Mod_ssl & openssl
+		#$PACKAGE_INSTALLER mod_ssl
+		$PACKAGE_INSTALLER openssl
+		
+		# Activate mod_ssl
+		a2enmod ssl 
+	fi
+	
+elif [[ "$OS" = "CentOs" ]]; then
+	if [[ "$VER" = "7" || "$VER" = "8" ]]; then
+		# Install Mod_ssl & openssl
+		$PACKAGE_INSTALLER mod_ssl
+		$PACKAGE_INSTALLER openssl
+		
+		# Disable/Comment out Listen 443
+		sed -i 's|Listen 443 https|#Listen 443 https|g' /etc/httpd/conf.d/ssl.conf
+	fi
+fi
 
 #--- PHP
 echo -e "\n-- Installing and configuring PHP"
-if [[ "$OS" = "CentOs" ]]; then
-    $PACKAGE_INSTALLER php php-devel php-gd php-mbstring php-intl php-mysql php-xml php-xmlrpc
-    $PACKAGE_INSTALLER php-mcrypt php-imap  #Epel packages
-    PHP_INI_PATH="/etc/php.ini"
-    PHP_EXT_PATH="/etc/php.d"
-elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
-    $PACKAGE_INSTALLER libapache2-mod-php5 php5-common php5-cli php5-mysql php5-gd php5-mcrypt php5-curl php-pear php5-imap php5-xmlrpc php5-xsl php5-intl
-    if [ "$VER" = "14.04" ]; then
-        php5enmod mcrypt  # missing in the package for Ubuntu 14, is this needed for debian 8 as well?
-    else
-        $PACKAGE_INSTALLER php5-suhosin
-    fi
-    PHP_INI_PATH="/etc/php5/apache2/php.ini"
+
+if [[ $1 = PHP* ]]; then
+
+	if [[ $1 = "PHP73" ]]; then
+		echo -e "\n-Installing PHP 7.3..."
+
+		# Install PHP 7.3 version
+        # Start PHP 7.3 & tools install here
+            
+        # Install PHP 7.3 & Repos
+        if [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+            if [[ "$VER" = "14.04" || "$VER" = "8" ]]; then
+            
+                $PACKAGE_INSTALLER libapache2-mod-php5 php5-common php5-cli php5-mysql php5-gd php5-mcrypt php5-curl php-pear php5-imap php5-xmlrpc php5-xsl php5-intl
+        
+            elif [[ "$VER" = "16.04" || "$VER" = "18.04" || "$VER" = "20.04" ]]; then
+                # Install PHP 7.3 Repos & enable
+                $PACKAGE_INSTALLER software-properties-common
+                add-apt-repository -y ppa:ondrej/apache2
+                add-apt-repository -y ppa:ondrej/php
+                apt-get -yqq update
+                #apt-get -yqq upgrade
+				
+				# Remove and purge installed PHP 7.0
+				$PACKAGE_REMOVER php7.*
+				apt-get purge php7.*
+                
+                # Install PHP 7.3 and install modules
+                $PACKAGE_INSTALLER install php7.3 php7.3-common 
+                $PACKAGE_INSTALLER php7.3-mysql php7.3-mbstring
+                $PACKAGE_INSTALLER php7.3-zip php7.3-xml php7.3-gd
+                $PACKAGE_INSTALLER php7.0-dev libapache2-mod-php7.3
+                $PACKAGE_INSTALLER php7.3-dev
+                $PACKAGE_INSTALLER php7.3-curl
+                
+                # PHP Mcrypt 1.0.2 install
+                if [ ! -f /etc/php/7.3/apache2/conf.d/20-mcrypt.ini ]
+                        then
+                    echo -e "\nInstalling php mcrypt 1.0.2"
+                    $PACKAGE_INSTALLER gcc make autoconf libc-dev pkg-config
+                    $PACKAGE_INSTALLER libmcrypt-dev
+                    echo '' | sudo pecl install mcrypt-1.0.2
+                    bash -c "echo extension=mcrypt.so > /etc/php/7.3/mods-available/mcrypt.ini"
+                    ln -s /etc/php/7.3/mods-available/mcrypt.ini /etc/php/7.3/apache2/conf.d/20-mcrypt.ini
+                fi		
+                
+                # Set PHP 7.3 as system default in case upgrade to PHP 7.4+
+                update-alternatives --set php /usr/bin/php7.3
+                
+                # Enable Apache mod_php7.3
+                a2enmod php7.3  
+                      
+            # elif [[ "$VER" = "8" || "$VER" = "9" ]]; then
+                # Adding Support Soon!!!
+                # Enter code here
+            fi 
+            
+            PHP_INI_PATH="/etc/php/7.3/apache2/php.ini"
+            
+        elif [[ "$OS" = "CentOs" ]]; then
+        
+            if [[ "$VER" = "7" ]]; then
+                # Clean & clear cache
+                yum clean all
+                rm -rf /var/cache/yum/*
+                    
+                # Install PHP 7.3 Repos & enable
+                $PACKAGE_INSTALLER yum-utils
+                $PACKAGE_INSTALLER epel-release
+                $PACKAGE_INSTALLER http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+                
+                # Install PHP 7.3 and install modules
+                #yum -y install httpd mod_ssl php php-zip php-fpm php-devel php-gd php-imap php-ldap php-mysql php-odbc php-pear php-xml php-xmlrpc php-pecl-apc php-mbstring php-soap php-tidy curl curl-devel perl-libwww-perl ImageMagick libxml2 libxml2-devel mod_fcgid php-cli httpd-devel php-intl php-imagick php-pspell wget        
+                 
+                yum  -y --enablerepo=remi-php73 install php php-devel php-gd php-mcrypt php-mysql php-xml php-xmlrpc php-zip
+                        
+            elif [[ "$VER" = "8" ]]; then
+            
+                # Install PHP 7.3 Repos & enable
+                rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+                $PACKAGE_INSTALLER https://rpms.remirepo.net/enterprise/remi-release-8.rpm
+                dnf module enable php:remi-7.3 -y
+                
+                # Enable powertools for PHP-DEVEL
+                dnf config-manager --set-enabled PowerTools
+                
+                # Install PHP 7.3
+                $PACKAGE_INSTALLER php php-devel php-cli php-common
+                
+                # Install PHP 7.3 and install modules
+                #dnf install -y php-dom php-simplexml php-ssh2 php-xml php-xmlreader php-curl php-date php-exif php-filter php-ftp php-gd php-hash php-iconv php-json php-libxml php-pecl-imagick php-mbstring php-mysqlnd php-openssl php-pcre php-posix php-sockets php-spl php-tokenizer php-zlib
+                
+                $PACKAGE_INSTALLER php-curl php-date php-gd php-json php-mbstring php-mcrypt php-mysqlnd php-xml php-xmlreader php-zlib php-zip
+                
+                # Disable PHP-FPM
+                systemctl disable php-fpm
+                
+                # Enable Mod_php & Prefork for Apache/PHP 7.3
+                sed -i 's|#LoadModule mpm_prefork_module|LoadModule mpm_prefork_module|g' /etc/httpd/conf.modules.d/00-mpm.conf
+                sed -i 's|LoadModule mpm_event_module|#LoadModule mpm_event_module|g' /etc/httpd/conf.modules.d/00-mpm.conf
+                
+            fi
+            
+            PHP_INI_PATH="/etc/php.ini"       
+        fi 
+
+	elif [[ $1 = PHP7* ]]; then
+		# Display not supported for the rest
+		echo -e "\n$1 is not supported..."
+	fi
+    
+else
+
+	echo -e "\n-Installing OS Default PHP version..."
+
+	# Install OS Default PHP version
+    
+    if [[ "$OS" = "CentOs" ]]; then
+		if [[ "$VER" = "7" ]]; then
+		
+			## Start PHP 7.x install here
+			yum clean all
+			rm -rf /var/cache/yum/*
+			
+			$PACKAGE_INSTALLER yum-utils
+			$PACKAGE_INSTALLER epel-release
+			$PACKAGE_INSTALLER http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+		
+			## Install PHP 7.3 and update modules
+			
+			##yum -y install httpd mod_ssl php php-zip php-fpm php-devel php-gd php-imap php-ldap php-mysql php-odbc php-pear php-xml php-xmlrpc php-pecl-apc php-mbstring php-mcrypt php-soap php-tidy curl curl-devel perl-libwww-perl ImageMagick libxml2 libxml2-devel mod_fcgid php-cli httpd-devel php-intl php-imagick php-pspell wget
+			
+			yum -y --enablerepo=remi-php73 install php php-devel php-gd php-mcrypt php-mysql php-xml php-xmlrpc php-zip
+				
+		elif [[ "$VER" = "8" ]]; then
+			$PACKAGE_INSTALLER php php-devel php-bcmath php-gd php-json php-mbstring php-intl php-mysqlnd php-pear php-xml php-xmlrpc php-zip
+            
+            # Get mcrypt files
+			echo -e "\n--- Getting PHP-mcrypt files..."
+			$PACKAGE_INSTALLER libmcrypt-devel libmcrypt #Epel packages 
+			
+			# Install php-imap 
+			echo -e "\n--- Installing PHP-imap..."
+			wget https://rpms.remirepo.net/temp/epel-8-php-7.2/php-imap-7.2.24-1.epel8.7.2.x86_64.rpm
+			$PACKAGE_INSTALLER php-imap-7.2.24-1.epel8.7.2.x86_64.rpm
+			#rm -r php-imap-7.2.24-1.epel8.7.2.x86_64.rpm
+			
+            # Enable Mod_php & Prefork for Apache/PHP 7.3
+            sed -i 's|#LoadModule mpm_prefork_module|LoadModule mpm_prefork_module|g' /etc/httpd/conf.modules.d/00-mpm.conf
+            sed -i 's|LoadModule mpm_event_module|#LoadModule mpm_event_module|g' /etc/httpd/conf.modules.d/00-mpm.conf
+			
+			# Install php-imagick
+			# NEED TO ADD CODE SOON! Missing from os php repos
+			
+
+		fi
+		
+		PHP_INI_PATH="/etc/php.ini"
+        
+	elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+		
+		if [[ "$VER" = "14.04" || "$VER" = "8" ]]; then # CHECK NEED TO ADD OTHER OS VERSIONS
+	    	$PACKAGE_INSTALLER libapache2-mod-php5 php5-common php5-cli php5-mysql php5-gd php5-mcrypt php5-curl php-pear php5-imap php5-xmlrpc php5-xsl php5-intl
+			
+		elif [[ "$VER" = "16.04" || "$VER" = "18.04" || "$VER" = "20.04" ]]; then	
+		
+			$PACKAGE_INSTALLER libapache2-mod-php php-common php-bcmath php-cli php-mysql php-gd php-curl php-pear php-imagick php-imap php-xmlrpc php-xsl php-intl php-mbstring php-dev php-zip	
+			
+            # Get PHP mcrypt files
+            if [[ "$VER" = "16.04" ]]; then
+            	$PACKAGE_INSTALLER php-mcrypt
+            else
+                # Prepare PHP-mcrypt files
+                $PACKAGE_INSTALLER -y build-essential
+            
+                # Download needed files
+                $PACKAGE_INSTALLER libmcrypt-dev
+            fi          
+		fi
+		
+		# Set PHP.ini path
+		if [[ "$VER" = "16.04" ]]; then
+			PHP_INI_PATH="/etc/php/7.0/apache2/php.ini"					
+		elif [[ "$VER" = "18.04" ]]; then
+			PHP_INI_PATH="/etc/php/7.2/apache2/php.ini"
+		elif [[ "$VER" = "20.04" ]]; then
+			PHP_INI_PATH="/etc/php/7.4/apache2/php.ini"	
+		fi		
+	fi
+	
+	if [[ "$OS" = "CentOs" && ("$VER" = "8" ) || 
+      "$OS" = "Ubuntu" && ("$VER" = "18.04" || "$VER" = "20.04" ) ]] ; then
+	
+		# PHP-mcrypt install code all OS - Check this!!!!!!
+				
+		# Update Pecl Channels
+		echo -e "\n--- Updating PECL Channels..."
+		pecl channel-update pecl.php.net
+		pecl update-channels
+		
+		if [[ "$VER" = "20.04" ]]; then
+			# Make pear cache folder to stop error "Trying to access array offset on value of type bool in PEAR/REST.php on line 187"
+			mkdir -p /tmp/pear/cache
+		fi
+		
+		# Install PHP-Mcrypt
+		echo -e "\n--- Installing PHP-mcrypt..."
+		echo -ne '\n' | sudo pecl install mcrypt 
+
+	fi
+
+	# Setup PHP mcrypt config files by OS
+	if [[ "$OS" = "CentOs" ]]; then
+		if [[ "$VER" = "8" ]]; then
+		
+			# Set mcrypt files		
+			touch /etc/php.d/20-mcrypt.ini
+			echo 'extension=mcrypt.so' >> /etc/php.d/20-mcrypt.ini
+	
+			# Create links to activate PHP-mcrypt
+			#ln -s /etc/php/7.2/mods-available/mcrypt.ini /etc/php/7.2/apache2/conf.d/20-mcrypt.ini
+			#ln -s /etc/php/7.2/mods-available/mcrypt.ini /etc/php/7.2/cli/conf.d/20-mcrypt.ini
+		
+		fi
+	
+	elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+
+		if [[ "$VER" = "18.04" ]]; then
+					
+			# Create php-mcrypt modules file
+			touch /etc/php/7.2/mods-available/mcrypt.ini
+			echo 'extension=mcrypt.so' >> /etc/php/7.2/mods-available/mcrypt.ini
+						
+			# Create links to activate PHP-mcrypt
+			ln -s /etc/php/7.2/mods-available/mcrypt.ini /etc/php/7.2/apache2/conf.d/20-mcrypt.ini
+			ln -s /etc/php/7.2/mods-available/mcrypt.ini /etc/php/7.2/cli/conf.d/20-mcrypt.ini
+					
+		elif [[ "$VER" = "20.04" ]]; then
+					
+			# Create php-mcrypt modules file
+			touch /etc/php/7.4/mods-available/mcrypt.ini
+			echo 'extension=mcrypt.so' >> /etc/php/7.4/mods-available/mcrypt.ini
+						
+			# Create links to activate PHP-mcrypt
+			ln -s /etc/php/7.4/mods-available/mcrypt.ini /etc/php/7.4/apache2/conf.d/20-mcrypt.ini
+			ln -s /etc/php/7.4/mods-available/mcrypt.ini /etc/php/7.4/cli/conf.d/20-mcrypt.ini
+					
+		fi	
+	fi
+	
 fi
+
+# Set PHP Memory limit
+echo -e "\n-- Setting PHP memory limit to 256MB..."
+sed -i "s|memory_limit = .*|memory_limit = 256M|g" $PHP_INI_PATH
+
 # Setup php upload dir
 mkdir -p $PANEL_DATA/temp
 chmod 1777 $PANEL_DATA/temp/
@@ -1042,47 +1486,98 @@ chmod +t "$PANEL_DATA/sessions"
 
 if [[ "$OS" = "CentOs" ]]; then
     # Remove session & php values from apache that cause override
-    sed -i "/php_value/d" /etc/httpd/conf.d/php.conf
+    sed -i '/php_value/d' /etc/httpd/conf.d/php.conf
 elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
-    sed -i "s|;session.save_path = \"/var/lib/php5\"|session.save_path = \"$PANEL_DATA/sessions\"|" $PHP_INI_PATH
+
+    sed -i "s|;session.save_path = .*|session.save_path = \"$PANEL_DATA/sessions\"|g" $PHP_INI_PATH
+	
 fi
+
 sed -i "/php_value/d" $PHP_INI_PATH
-echo "session.save_path = $PANEL_DATA/sessions;">> $PHP_INI_PATH
+echo "session.save_path = $PANEL_DATA/sessions;" >> $PHP_INI_PATH
 
 # setup timezone and upload temp dir
-sed -i "s|;date.timezone =|date.timezone = $tz|" $PHP_INI_PATH
-sed -i "s|;upload_tmp_dir =|upload_tmp_dir = $PANEL_DATA/temp/|" $PHP_INI_PATH
+sed -i "s|;date.timezone =|date.timezone = $tz|g" $PHP_INI_PATH
+sed -i "s|;upload_tmp_dir =|upload_tmp_dir = $PANEL_DATA/temp/|g" $PHP_INI_PATH
 
 # Disable php signature in headers to hide it from hackers
-sed -i "s|expose_php = On|expose_php = Off|" $PHP_INI_PATH
+sed -i 's|expose_php = On|expose_php = Off|g' $PHP_INI_PATH
 
-# Build suhosin for PHP 5.x which is required by Sentora. 
-if [[ "$OS" = "CentOs" || "$OS" = "debian" || ( "$OS" = "Ubuntu" && "$VER" = "14.04") ]] ; then
-    echo -e "\n# Building suhosin"
-    if [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
-        $PACKAGE_INSTALLER php5-dev
-    fi
-    SUHOSIN_VERSION="0.9.37.1"
-    wget -nv -O suhosin.zip https://github.com/stefanesser/suhosin/archive/$SUHOSIN_VERSION.zip
-    unzip -q suhosin.zip
-    rm -f suhosin.zip
-    cd suhosin-$SUHOSIN_VERSION
-    phpize &> /dev/null
-    ./configure &> /dev/null
-    make &> /dev/null
-    make install 
-    cd ..
-    rm -rf suhosin-$SUHOSIN_VERSION
-    if [[ "$OS" = "CentOs" ]]; then 
-        echo 'extension=suhosin.so' > $PHP_EXT_PATH/suhosin.ini
-    elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
-        sed -i 'N;/default extension directory./a\extension=suhosin.so' $PHP_INI_PATH
-    fi	
-fi
+#########################################################################################
+
+if [[ "$VER" = "16.04" || "$VER" = "18.04" || "$VER" = "20.04" || "$VER" = "7" || "$VER" = "8" ]]; then
+
+	##### Check php 7.x was installed or quit installer.
+	PHPVERFULL=$(php -r 'echo phpversion();')
+	PHPVER=${PHPVERFULL:0:3} # return 5.x or 7.x
+	
+	echo -e "\nDetected PHP: $PHPVER "
+
+	if  [[ "$PHPVER" == 7.* ]]; then
+		echo -e "\nPHP $PHPVER installed. Procced installing ..."
+	else
+		echo -e "\nPHP 7.x not installed. $PHPVER installed. Exiting installer. Please contact script admin"
+		exit 1
+	fi
+
+# -------------------------------------------------------------------------------
+# Start Snuffleupagus install with lastest version Below
+# -------------------------------------------------------------------------------
+	
+	echo -e "\n-- Installing and configuring Snuffleupagus..."
+	
+	# Install Snuffleupagus
+	# Install git
+	$PACKAGE_INSTALLER git
+	
+	#setup PHP_PERDIR in Snuffleupagus.c in src
+	mkdir -p /etc/snuffleupagus
+	cd /etc || exit
+	
+	# Clone Snuffleupagus
+	git clone https://github.com/jvoisin/snuffleupagus
+	
+	cd /etc/snuffleupagus/src || exit
+		
+	sed -i 's|PHP_INI_SYSTEM|PHP_INI_PERDIR|g' snuffleupagus.c
+	
+	# Update PCRE for CentOs 8 - Fix issue with building Snuffleupagus
+	if [[ "$OS" = "CentOs" && (  "$VER" = "8" ) ]]; then
+		$PACKAGE_INSTALLER pcre-devel
+	elif [[ "$OS" = "Ubuntu" && (  "$VER" = "20.04" ) ]]; then
+		$PACKAGE_INSTALLER libpcre3 libpcre3-dev
+	fi
+	
+	# Build Snuffleupagus
+	phpize
+	./configure --enable-snuffleupagus
+	make clean
+	make
+	make install
+	
+	cd ~ || exit
+		
+	if [[ "$OS" = "CentOs" && (  "$VER" = "7" || "$VER" = "8" ) ]]; then
+	
+		# Enable snuffleupagus in PHP.ini
+		echo -e "\nUpdating CentOS PHP.ini Enable snuffleupagus..."
+		echo "extension=snuffleupagus.so" >> /etc/php.d/20-snuffleupagus.ini
+		echo "sp.configuration_file=/etc/sentora/configs/php/sp/snuffleupagus.rules" >> /etc/php.d/20-snuffleupagus.ini
+		
+    elif [[ "$OS" = "Ubuntu" && ( "$VER" = "16.04" || "$VER" = "18.04" || "$VER" = "20.04") ]]; then
+	
+		# Enable snuffleupagus in PHP.ini
+		echo -e "\nUpdating Ubuntu PHP.ini Enable snuffleupagus..."
+		echo "extension=snuffleupagus.so" >> /etc/php/"$PHPVER"/mods-available/snuffleupagus.ini
+		echo "sp.configuration_file=/etc/sentora/configs/php/sp/snuffleupagus.rules" >> /etc/php/"$PHPVER"/mods-available/snuffleupagus.ini
+		ln -s /etc/php/"$PHPVER"/mods-available/snuffleupagus.ini /etc/php/"$PHPVER"/apache2/conf.d/20-snuffleupagus.ini
+		
+	fi
+fi	
 
 # Register apache(+php) service for autostart and start it
 if [[ "$OS" = "CentOs" ]]; then
-    if [[ "$VER" == "7" ]]; then
+    if [[ "$VER" == "7" || "$VER" == "8" ]]; then
         systemctl enable "$HTTP_SERVICE.service"
         systemctl start "$HTTP_SERVICE.service"
     else
@@ -1090,7 +1585,6 @@ if [[ "$OS" = "CentOs" ]]; then
         "/etc/init.d/$HTTP_SERVICE" start
     fi
 fi
-
 
 #--- ProFTPd
 echo -e "\n-- Installing ProFTPD"
@@ -1110,7 +1604,16 @@ fi
 # Create and configure mysql password for proftpd
 proftpdpassword=$(passwordgen);
 sed -i "s|!SQL_PASSWORD!|$proftpdpassword|" $PANEL_CONF/proftpd/proftpd-mysql.conf
-mysql -u root -p"$mysqlpassword" -e "GRANT ALL PRIVILEGES ON sentora_proftpd .* TO 'proftpd'@'localhost' identified by '$proftpdpassword';";
+
+
+# OLD
+#mysql -u root -p"$mysqlpassword" -e "GRANT ALL ON sentora_proftpd .* TO 'proftpd'@'localhost' identified by '$proftpdpassword';";
+
+# Add User for Proftpd DB
+mysql -u root -p"$mysqlpassword" -e "CREATE USER proftpd@localhost IDENTIFIED BY '$proftpdpassword';";
+# Grant ALL PRIVILEGES to Proftpd User
+mysql -u root -p"$mysqlpassword" -e "GRANT ALL PRIVILEGES ON sentora_proftpd .* TO 'proftpd'@'localhost';";
+
 
 # Assign httpd user and group to all users that will be created
 HTTP_UID=$(id -u "$HTTP_USER")
@@ -1131,13 +1634,13 @@ chmod -R 644 $PANEL_DATA/logs/proftpd
 
 # Correct bug from package in Ubutu14.04 which screw service proftpd restart
 # see https://bugs.launchpad.net/ubuntu/+source/proftpd-dfsg/+bug/1246245
-if [[ "$OS" = "Ubuntu" && "$VER" = "14.04" ]]; then
-   sed -i 's|\([ \t]*start-stop-daemon --stop --signal $SIGNAL \)\(--quiet --pidfile "$PIDFILE"\)$|\1--retry 1 \2|' /etc/init.d/proftpd
+if [[ "$OS" = "Ubuntu" && ( "$VER" = "14.04" || "$VER" = "16.04" || "$VER" = "20.04" ) ]]; then
+   sed -i "s|\([ \t]*start-stop-daemon --stop --signal $SIGNAL \)\(--quiet --pidfile \"$PIDFILE\"\)$|\1--retry 1 \2|" /etc/init.d/proftpd
 fi
 
 # Register proftpd service for autostart and start it
 if [[ "$OS" = "CentOs" ]]; then
-    if [[ "$VER" == "7" ]]; then
+    if [[ "$VER" == "7" || "$VER" == "8" ]]; then
         systemctl enable proftpd.service
         systemctl start proftpd.service
     else
@@ -1160,7 +1663,7 @@ elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     BIND_FILES="/etc/bind"
     BIND_SERVICE="bind9"
     BIND_USER="bind"
-    mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='' WHERE so_name_vc='bind_log'"
+    mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='/var/sentora/logs/bind/bind.log' WHERE so_name_vc='bind_log'"
 fi
 mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$BIND_PATH' WHERE so_name_vc='bind_dir'"
 mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_settings SET so_value_tx='$BIND_SERVICE' WHERE so_name_vc='bind_service'"
@@ -1195,14 +1698,24 @@ sed -i "s|!SERVER_IP!|$PUBLIC_IP|" $PANEL_CONF/bind/named.conf
 
 # Build key and conf files
 rm -rf $BIND_FILES/named.conf $BIND_FILES/rndc.conf $BIND_FILES/rndc.key
-rndc-confgen -a -r /dev/urandom
+
+if [[ "$OS" = "CentOs" && ("$VER" = "8" ) || 
+      "$OS" = "Ubuntu" && ("$VER" = "16.04" || "$VER" = "18.04" ) ]] ; then
+	# Create rndc-key
+	rndc-confgen -a -r /dev/urandom
+
+elif [[ "$OS" = "Ubuntu" && ("$VER" = "20.04" ) ]] ; then
+	# Create rndc-key
+	rndc-confgen -a -A hmac-sha256
+fi
+
 cat $BIND_FILES/rndc.key $PANEL_CONF/bind/named.conf > $BIND_FILES/named.conf
 cat $BIND_FILES/rndc.key $PANEL_CONF/bind/rndc.conf > $BIND_FILES/rndc.conf
 rm -f $BIND_FILES/rndc.key
 
 # Register Bind service for autostart and start it
 if [[ "$OS" = "CentOs" ]]; then
-    if [[ "$VER" == "7" ]]; then
+    if [[ "$VER" == "7" || "$VER" == "8" ]]; then
         systemctl enable named.service
         systemctl start named.service
     else
@@ -1211,6 +1724,30 @@ if [[ "$OS" = "CentOs" ]]; then
     fi
 fi
 
+# Ubuntu 16.04 - 18.04 Bind9 Fixes 
+if [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+	if [[ "$VER" = "16.04" || "$VER" = "18.04" ]]; then
+		# Disable Bind9(Named) from Apparmor. Apparmor reinstalls with apps(MySQL & Bind9) for some reason.
+		ln -s /etc/apparmor.d/usr.sbin.named /etc/apparmor.d/disable/
+		apparmor_parser -R /etc/apparmor.d/usr.sbin.named
+	fi
+fi
+
+# Fix/Disable Named/bind dnssec-lookaside
+if [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+	# Bind/Named v.9.10 or OLDER
+	if [[ "$VER" = "18.04" || "$VER" = "20.04" ]]; then
+		sed -i "s|dnssec-lookaside no|#dnssec-lookaside no|g" $BIND_FILES/named.conf
+	
+	fi
+elif [[ "$OS" = "CentOs" ]]; then
+
+	# Bind/Named v.9.11 or NEWER
+	if [[ "$VER" = "8" ]]; then
+		sed -i "s|dnssec-lookaside no|#dnssec-lookaside no|g" $BIND_FILES/named.conf
+		
+	fi
+fi
 
 #--- CRON and ATD
 echo -e "\n-- Installing and configuring cron tasks"
@@ -1251,7 +1788,7 @@ chmod 644 "$CRON_FILE"
 
 # Register cron and atd services for autostart and start them
 if [[ "$OS" = "CentOs" ]]; then
-    if [[ "$VER" == "7" ]]; then
+    if [[ "$VER" == "7" || "$VER" == "8" ]]; then
         systemctl enable crond.service
         systemctl start crond.service
         systemctl start atd.service
@@ -1262,28 +1799,44 @@ if [[ "$OS" = "CentOs" ]]; then
     fi
 fi
 
-
 #--- phpMyAdmin
 echo -e "\n-- Configuring phpMyAdmin"
-phpmyadminsecret=$(passwordgen);
+phpmyadminsecret=$(passwordgen 32);
 chmod 644 $PANEL_CONF/phpmyadmin/config.inc.php
 sed -i "s|\$cfg\['blowfish_secret'\] \= 'SENTORA';|\$cfg\['blowfish_secret'\] \= '$phpmyadminsecret';|" $PANEL_CONF/phpmyadmin/config.inc.php
 ln -s $PANEL_CONF/phpmyadmin/config.inc.php $PANEL_PATH/panel/etc/apps/phpmyadmin/config.inc.php
 # Remove phpMyAdmin's setup folder in case it was left behind
 rm -rf $PANEL_PATH/panel/etc/apps/phpmyadmin/setup
 
+#--- PHPsysinfo
+echo -e "\n-- Configuring PHPsysinfo"
+# Setup config file
+mv -f /etc/sentora/panel/etc/apps/phpsysinfo/phpsysinfo.ini.new /etc/sentora/panel/etc/apps/phpsysinfo/phpsysinfo.ini
 
 #--- Roundcube
 echo -e "\n-- Configuring Roundcube"
 
-# Import roundcube default table
+# Import roundcube default MYSQL table
 if [ $PANEL_UPGRADE == false ]; then
     mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-install/sql/sentora_roundcube.sql
 fi
 # Create and configure mysql password for roundcube
 roundcubepassword=$(passwordgen);
 sed -i "s|!ROUNDCUBE_PASSWORD!|$roundcubepassword|" $PANEL_CONF/roundcube/roundcube_config.inc.php
-mysql -u root -p"$mysqlpassword" -e "GRANT ALL PRIVILEGES ON sentora_roundcube .* TO 'roundcube'@'localhost' identified by '$roundcubepassword';";
+
+
+# OLD 
+#mysql -u root -p"$mysqlpassword" -e "GRANT ALL PRIVILEGES ON sentora_roundcube .* TO 'roundcube'@'localhost' identified by '$roundcubepassword';";
+
+# Add User for Roundcube DB
+mysql -u root -p"$mysqlpassword" -e "CREATE USER roundcube@localhost IDENTIFIED BY '$roundcubepassword';";
+# Grant ALL PRIVILEGES to Roundcube User
+mysql -u root -p"$mysqlpassword" -e "GRANT ALL PRIVILEGES ON sentora_roundcube .* TO 'roundcube'@'localhost';";
+
+
+# Delete Roundcube setup files
+rm -r $PANEL_PATH/panel/etc/apps/webmail/SQL
+rm -r $PANEL_PATH/panel/etc/apps/webmail/installer
 
 # Create and configure des key
 roundcube_des_key=$(passwordgen 24);
@@ -1298,16 +1851,44 @@ chown "$HTTP_USER:$HTTP_GROUP" "$PANEL_DATA/logs/roundcube"
 ln -s $PANEL_CONF/roundcube/roundcube_config.inc.php $PANEL_PATH/panel/etc/apps/webmail/config/config.inc.php
 ln -s $PANEL_CONF/roundcube/sieve_config.inc.php $PANEL_PATH/panel/etc/apps/webmail/plugins/managesieve/config.inc.php
 
-
 #--- Webalizer
 echo -e "\n-- Configuring Webalizer"
-$PACKAGE_INSTALLER webalizer
-if [[ "$OS" = "CentOs" ]]; then
-    rm -rf /etc/webalizer.conf
-elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
-    rm -rf /etc/webalizer/webalizer.conf
-fi
 
+if [[ "$OS" = "CentOs" ]]; then
+	if [[ $VER = "7" ]]; then
+		$PACKAGE_INSTALLER webalizer
+	
+	elif [[ $VER = "8" ]]; then
+		# Install required packages
+		#$PACKAGE_INSTALLER gd-devel libpng-devel
+		
+		# Download Webalizer and decompress
+		#wget -c ftp://ftp.mrunix.net/pub/webalizer/webalizer-2.23-08-src.tar.Z -O - | tar -xz
+		
+		# Chnage to webalizer dir
+		#cd webalizer-2.23-08 || exit
+		
+		# Build and configure webalizer
+		#./configure
+		#make
+		#make install
+		
+		# Change to $HOME DIR
+		#cd "$HOME" || exit
+		
+		# Delete/cleanup webalizer source file
+		#rm -rf webalizer-2.23-08	
+		#rm -rf /etc/webalizer.conf
+		
+		$PACKAGE_INSTALLER webalizer.x86_64
+		
+	fi
+	
+elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
+	$PACKAGE_INSTALLER webalizer
+	rm -rf /etc/webalizer/webalizer.conf
+	
+fi
 
 #--- Set some Sentora database entries using. setso and setzadmin (require PHP)
 echo -e "\n-- Configuring Sentora"
@@ -1321,14 +1902,15 @@ if [[ $(echo "$SENTORA_CORE_VERSION" | sed  's|.*-\(beta\).*$|\1|') = "beta"  ]]
     $PANEL_PATH/panel/bin/setso --set dbversion "$SENTORA_CORE_VERSION"
 fi
 
-# make the daemon to build vhosts file.
+# Make the daemon to run/build vhosts file.
 $PANEL_PATH/panel/bin/setso --set apache_changed "true"
 php -q $PANEL_PATH/panel/bin/daemon.php
 
 
-#--- Firewall ?
+#--- Firewall ? SHOULD WE???
 
-#--- Fail2ban
+#--- Fail2ban - This should be standard with install. We need a module to help user with settings. Maybe soon!
+
 
 #--- Logrotate
 #  Download and install logrotate
@@ -1351,12 +1933,27 @@ elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
 
 fi
 
+
+#--- LetsEncrypt - We need a module to help user with SSL Certs/settings. Module coming soon!!!!
+
+# Ubuntu 20.04 LetsEncrypt has issues with their code for 20.04. Will resolve later when when they resolve. Maybe i will fix not sure..
+
+#if [[ "$OS" = "CentOs" && ( "$VER" = "7" || "$VER" = "8" ) || 
+      #"$OS" = "Ubuntu" && ("$VER" = "16.04" || "$VER" = "18.04" ) ||
+      #"$OS" = "debian" && ("$VER" = "9" || "$VER" = "10" ) ]] ; then
+	  
+	#$PACKAGE_INSTALLER git
+	#git clone https://github.com/letsencrypt/letsencrypt
+	#cd letsencrypt || exit
+	#./letsencrypt-auto --help
+	  
+#fi
+
 #--- Resolv.conf deprotect
 chattr -i /etc/resolv.conf
 
-
 #--- Restart all services to capture output messages, if any
-if [[ "$OS" = "CentOs" && "$VER" == "7" ]]; then
+if [[ "$OS" = "CentOs" && "$VER" == "7" || "$VER" == "8" ]]; then
     # CentOs7 does not return anything except redirection to systemctl :-(
     service() {
        echo "Restarting $1"
@@ -1364,14 +1961,40 @@ if [[ "$OS" = "CentOs" && "$VER" == "7" ]]; then
     }
 fi
 
+# Clean up files needed for install/update
+# N/A
+
+echo -e "# -------------------------------------------------------------------------------"
+
+# Set admin contact info to zadmin profile
+
+echo -e "\n--- Updating Admin contact Info..."
+mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_accounts SET ac_email_vc='$ADMIN_EMAIL' WHERE sentora_core.x_accounts.ac_id_pk = 1"
+mysql -u root -p"$mysqlpassword" -e "UPDATE sentora_core.x_profiles SET ud_fullname_vc='$ADMIN_NAME', ud_phone_vc='$ADMIN_PHONE', ud_address_tx='$ADMIN_ADDRESS\r\n$ADMIN_PROVINCE $ADMIN_POSTALCODE\r\n$ADMIN_COUNTRY', ud_postcode_vc='$ADMIN_POSTALCODE' WHERE sentora_core.x_profiles.ud_id_pk = 1"
+
+echo -e "\n--- Done Updating admin contact info.\n"
+
+echo -e "# -------------------------------------------------------------------------------"
+
+echo -e "\n--- Restarting Services"
+echo -e "Restarting $DB_SERVICE..."
 service "$DB_SERVICE" restart
+echo -e "Restarting $HTTP_SERVICE..."
 service "$HTTP_SERVICE" restart
+echo -e "Restarting Postfix..."
 service postfix restart
+echo -e "Restarting Dovecot..."
 service dovecot restart
+echo -e "Restarting CRON..."
 service "$CRON_SERVICE" restart
+echo -e "Restarting Bind9/Named..."
 service "$BIND_SERVICE" restart
+echo -e "Restarting Proftpd..."
 service proftpd restart
+echo -e "Restarting ATD..."
 service atd restart
+
+echo -e "\n--- Finished Restarting Services...\n"
 
 #--- Store the passwords for user reference
 {
@@ -1409,7 +2032,7 @@ echo ""
 # Wait until the user have read before restarts the server...
 if [[ "$INSTALL" != "auto" ]] ; then
     while true; do
-        read -e -p "Restart your server now to complete the install (y/n)? " rsn
+        read -r -e -p "Restart your server now to complete the install (y/n)? " rsn
         case $rsn in
             [Yy]* ) break;;
             [Nn]* ) exit;
@@ -1417,3 +2040,4 @@ if [[ "$INSTALL" != "auto" ]] ; then
     done
     shutdown -r now
 fi
+

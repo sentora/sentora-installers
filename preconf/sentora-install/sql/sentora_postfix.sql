@@ -1,16 +1,25 @@
+-- save current setting of sql_mode
+SET @old_sql_mode := @@sql_mode ;
+
+-- derive a new value by removing NO_ZERO_DATE and NO_ZERO_IN_DATE
+SET @new_sql_mode := @old_sql_mode ;
+SET @new_sql_mode := TRIM(BOTH ',' FROM REPLACE(CONCAT(',',@new_sql_mode,','),',NO_ZERO_DATE,'  ,','));
+SET @new_sql_mode := TRIM(BOTH ',' FROM REPLACE(CONCAT(',',@new_sql_mode,','),',NO_ZERO_IN_DATE,',','));
+SET @@sql_mode := @new_sql_mode ;
+
+
 CREATE DATABASE `sentora_postfix` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 USE `sentora_postfix`;
 
-CREATE USER postfix@localhost IDENTIFIED BY 'postfix';
-
-GRANT ALL PRIVILEGES ON sentora_postfix . * TO postfix@localhost;
+-- CREATE USER postfix@localhost IDENTIFIED BY 'postfix';
+-- GRANT ALL PRIVILEGES ON sentora_postfix . * TO postfix@localhost;
 
 CREATE TABLE `admin` (
   `username` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `modified` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `created` datetime DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Postfix Admin - Virtual Admins';
@@ -19,8 +28,8 @@ CREATE TABLE `alias` (
   `address` varchar(255) NOT NULL,
   `goto` text NOT NULL,
   `domain` varchar(255) NOT NULL,
-  `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `modified` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `created` datetime DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`address`),
   KEY `domain` (`domain`)
@@ -29,8 +38,8 @@ CREATE TABLE `alias` (
 CREATE TABLE `alias_domain` (
   `alias_domain` varchar(255) NOT NULL,
   `target_domain` varchar(255) NOT NULL,
-  `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `modified` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `created` datetime DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`alias_domain`),
   KEY `active` (`active`),
@@ -54,8 +63,8 @@ CREATE TABLE `domain` (
   `quota` bigint(20) NOT NULL DEFAULT '0',
   `transport` varchar(255) NOT NULL,
   `backupmx` tinyint(1) NOT NULL DEFAULT '0',
-  `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `modified` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `created` datetime DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`domain`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Postfix Admin - Virtual Domains';
@@ -69,8 +78,8 @@ CREATE TABLE `mailbox` (
   `quota` bigint(20) NOT NULL DEFAULT '0',
   `local_part` varchar(255) NOT NULL,
   `domain` varchar(255) NOT NULL,
-  `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `modified` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `created` datetime DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`username`),
   KEY `domain` (`domain`)
@@ -89,7 +98,7 @@ CREATE TABLE `vacation` (
   `body` text CHARACTER SET utf8 NOT NULL,
   `cache` text NOT NULL,
   `domain` varchar(255) NOT NULL,
-  `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `created` datetime DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`email`),
   KEY `email` (`email`)
@@ -102,3 +111,5 @@ CREATE TABLE `vacation_notification` (
   PRIMARY KEY (`on_vacation`,`notified`),
   CONSTRAINT `vacation_notification_pkey` FOREIGN KEY (`on_vacation`) REFERENCES `vacation` (`email`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Postfix Admin - Virtual Vacation Notifications';
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

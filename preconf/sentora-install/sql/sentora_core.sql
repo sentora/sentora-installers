@@ -185,7 +185,7 @@ CREATE TABLE `x_dns` (
 /*Data for the table `x_dns` */
 
 /* Table structure for table `x_dns_create` */
-CREATE TABLE IF NOT EXISTS `x_dns_create` (
+CREATE TABLE IF NOT EXISTS `sentora_core`.`x_dns_create` (
   `dc_id_pk` int(6) unsigned NOT NULL AUTO_INCREMENT,
   `dc_acc_fk` int(6) DEFAULT NULL,
   `dc_type_vc` varchar(50) DEFAULT NULL,
@@ -199,25 +199,18 @@ CREATE TABLE IF NOT EXISTS `x_dns_create` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=10 ;
 
 /* Data for the table `x_dns_create` */
-INSERT INTO `x_dns_create` (`dc_id_pk`, `dc_acc_fk`, `dc_type_vc`, `dc_host_vc`, `dc_ttl_in`, `dc_target_vc`, `dc_priority_in`, `dc_weight_in`, `dc_port_in`) VALUES
+INSERT INTO `sentora_core`.`x_dns_create` (`dc_id_pk`, `dc_acc_fk`, `dc_type_vc`, `dc_host_vc`, `dc_ttl_in`, `dc_target_vc`, `dc_priority_in`, `dc_weight_in`, `dc_port_in`) VALUES
 (1, 0, 'A', '@', 3600, ':IP:', NULL, NULL, NULL),
 (2, 0, 'CNAME', 'www', 3600, '@', NULL, NULL, NULL),
 (3, 0, 'CNAME', 'ftp', 3600, '@', NULL, NULL, NULL),
-(4, 0, 'CNAME', 'zpanel', 3600, '@', NULL, NULL, NULL),
-(5, 0, 'CNAME', 'webmail', 3600, '@', NULL, NULL, NULL),
-(6, 0, 'TXT', '_dmarc', 3600, 'v=DMARC1; p=none; sp=none; rua=mailto:spam-reports@:DOMAIN:; ruf=mailto:forensic@:DOMAIN:; rf=afrf; pct=100; ri=86400', NULL, NULL, NULL),
-(7, 0, 'TXT', '_domainkey', 3600, 't=y; o=~;', NULL, NULL, NULL),
-(8, 0, 'SPF', '@', 3600, 'v=spf1 a::IP: include::DOMAIN: mx ptr -all', NULL, NULL, NULL),
-(9, 0, 'PTR', '@', 3600, ':DOMAIN:.in-addr.arpa', NULL, NULL, NULL),
-(10, 0, 'MX', '@', 86400, 'mail.:DOMAIN:', 10, NULL, NULL),
-(11, 0, 'A', 'ns1', 172800, ':IP:', NULL, NULL, NULL),
-(12, 0, 'A', 'ns2', 172800, ':IP:', NULL, NULL, NULL),
-(13, 0, 'A', 'mail', 86400, ':IP:', NULL, NULL, NULL),
-(14, 0, 'A', 'pop3', 86400, ':IP:', NULL, NULL, NULL),
-(15, 0, 'A', 'imap', 86400, ':IP:', NULL, NULL, NULL),
-(16, 0, 'A', 'smtp', 86400, ':IP:', NULL, NULL, NULL),
-(17, 0, 'NS', '@', 172800, 'ns1.:DOMAIN:', NULL, NULL, NULL),
-(18, 0, 'NS', '@', 172800, 'ns2.:DOMAIN:', NULL, NULL, NULL);
+(4, 0, 'A', 'mail', 2419200, ':IP:', NULL, NULL, NULL),
+(5, 0, 'MX', '@', 86400, 'mail.:DOMAIN:', 10, NULL, NULL),
+(6, 0, 'A', 'ns1', 172800, ':IP:', NULL, NULL, NULL),
+(7, 0, 'A', 'ns2', 172800, ':IP:', NULL, NULL, NULL),
+(8, 0, 'NS', '@', 172800, 'ns1.:DOMAIN:', NULL, NULL, NULL),
+(9, 0, 'NS', '@', 172800, 'ns2.:DOMAIN:', NULL, NULL, NULL),
+(10, 0, 'SPF', '@', 2419200, 'v=spf1 a mx ip4::IP:  mx:mail.:DOMAIN: ?all', NULL, NULL, NULL),
+(11, 0, 'TXT', '@', 2419200, 'v=spf1 a mx ip4::IP:  mx:mail.:DOMAIN: ?all', NULL, NULL, NULL);
 
 /*Table structure for table `x_faqs` */
 
@@ -398,44 +391,44 @@ CREATE TABLE `x_modules` (
 /*Data for the table `x_modules` */
 
 insert  into `x_modules`(`mo_id_pk`,`mo_category_fk`,`mo_name_vc`,`mo_version_in`,`mo_folder_vc`,`mo_type_en`,`mo_desc_tx`,`mo_installed_ts`,`mo_enabled_en`,`mo_updatever_vc`,`mo_updateurl_tx`) values 
-(1,2,'PHPInfo',100,'phpinfo','user','PHPInfo provides you with information regarding the version of PHP running on this system as well as installed PHP extensions and configuration details.',0,'true','',''),
-(3,2,'Shadowing',100,'shadowing','user','From here you can shadow any of your client\'s accounts, this enables you to automatically login as the user which enables you to offer remote help by seeing what they see!',0,'true','',''),
-(4,2,'Sentora Config',100,'sentoraconfig','user','Changes made here affect the entire Sentora configuration, please double check everything before saving changes.',0,'true','',''),
-(5,2,'Sentora News',100,'news','user','Find out all the latest news and information from the Sentora project.',0,'true','',''),
-(6,2,'Updates',100,'updates','user','Check to see if there are any available updates to your version of the Sentora software.',0,'true','',''),
-(8,4,'phpMyAdmin',100,'phpmyadmin','user','phpMyAdmin is a web based tool that enables you to manage your Sentora MySQL databases via. the web.',0,'true','',''),
-(9,1,'My Account',100,'my_account','user','Current personal details that you have provided us with, We ask that you keep these upto date in case we require to contact you regarding your hosting package.\r\n',0,'true','',''),
-(10,6,'WebMail',100,'webmail','user','Webmail is a convenient way for you to check your email accounts online without the need to configure an email client.',0,'true','',''),
-(11,1,'Change Password',100,'password_assistant','user','Change your current control panel password.',0,'true','',''),
-(12,3,'Backup',100,'backupmgr','user','The backup manager module enables you to backup your entire hosting account including all your MySQL&reg; databases.',0,'true','',''),
-(14,3,'Service Status',100,'services','user','Here you can check the current status of our services and see what services are up and running and which are down and not.',0,'true','',''),
-(15,5,'Domains',100,'domains','user','This module enables you to add or configure domain web hosting on your account.',0,'true','',''),
-(16,5,'Parked Domains',100,'parked_domains','user','Domain parking refers to the registration of an Internet domain name without that domain being used to provide services such as e-mail or a website. If you have any domains that you are not using, then simply park them!',0,'true','',''),
-(17,5,'Sub Domains',100,'sub_domains','user','This module enables you to add or configure domain web hosting on your account.',0,'true','',''),
-(18,2,'Module Admin',100,'moduleadmin','user','Administer or configure modules registered with module admin',0,'true','',''),
-(19,7,'Manage Clients',100,'manage_clients','user','The account manager enables you to view, update and create client accounts.',0,'true','',''),
-(20,7,'Package Manager',100,'packages','user','Welcome to the Package Manager, using this module enables you to create and manage existing reseller packages on your Sentora hosting account.',0,'true','',''),
-(22,3,'Cron Manager',100,'cron','user','Here you can configure PHP scripts to run automatically at different time intervals.',0,'true','',''),
-(23,2,'phpSysInfo',100,'phpsysinfo','user','phpSysInfo is a web-based server hardware monitoring tool which enables you to see detailed hardware statistics of your server.',0,'true','',''),
-(24,4,'MySQL Database',100,'mysql_databases','user','MySQL&reg; databases are used by many PHP applications such as forums and ecommerce systems, below you can manage and create MySQL&reg; databases.',0,'true','',''),
-(25,1,'Usage Viewer',100,'usage_viewer','user','The account usage screen enables you to see exactly what you are currently using on your hosting package.',0,'true','',''),
-(26,8,'FTP Accounts',100,'ftp_management','user','Using this module you can create FTP accounts which will enable you and any other accounts you create to have the ability to upload and manage files on your hosting space.',0,'true','',''),
-(27,3,'FAQ\'s',100,'faqs','user','Please find a list of the most common questions from users, if you are unable to find a solution to your problem below please then contact your hosting provider. Simply click on the FAQ below to view the solution.',NULL,'true','',''),
-(28,0,'Apache Config',100,'apache_admin','modadmin','This module enables you to configure Apache Vhost settings for your hosting accounts.',0,'true','',''),
-(29,5,'DNS Manager',100,'dns_manager','user',NULL,0,'true','',''),
-(30,0,'DNS Config',100,'dns_admin','modadmin','This module enables you to configure DNS settings for the DNS Manager',NULL,'true','',''),
-(31,7,'Manage Groups',100,'manage_groups','user','Manage user groups to enable greater control over module permission.',0,'true','',''),
-(32,6,'Mailboxes',100,'mailboxes','user','Using this module you have the ability to create IMAP and POP3 Mailboxes.',0,'true','',''),
-(33,6,'Forwards',100,'forwarders','user','Using this module you have the ability to create mail forwarders.',0,'true','',''),
-(34,6,'Distribution Lists',100,'distlists','user','This module enables you to create and manage email distribution groups.',0,'true','',''),
-(35,6,'Aliases',100,'aliases','user','Using this module you have the ability to create alias mailboxes to existing accounts.',0,'true','',''),
-(36,0,'Mail Config',100,'mail_admin','modadmin','This module enables you to configure your mail options',NULL,'true','',''),
-(39,4,'MySQL Users',100,'mysql_users','user','MySQL&reg; Users allows you to add users and permissions to your MySQL&reg; databases.',NULL,'true','',''),
-(40,0,'FTP Config',100,'ftp_admin','modadmin','This module enables you to configure FTP settings for your hosting accounts.',NULL,'true','',''),
-(41,0,'Backup Config',100,'backup_admin','modadmin','This module enables you to configure Backup settings for your hosting accounts.',NULL,'true','',''),
-(42,7,'Client Notice Manager',100,'client_notices','user','Enables resellers to set global notices for their clients.',NULL,'true',NULL,NULL),
-(46,7,'Theme Manager',100,'theme_manager','user','Enables the reseller to set themes configurations for their clients.',0,'true','',NULL),
-(47,3,'Webalizer Stats',100,'webalizer_stats','user','You can view many statistics such as visitor infomation, bandwidth used, referal infomation and most viewed pages etc. Web stats are based on Domains and sub-domains so to view web stats for a particular domain or subdomain use the drop-down menu to select the domain or sub-domain you want to view web stats for.',0,'true','',NULL),
+(1,2,'PHPInfo',200,'phpinfo','user','PHPInfo provides you with information regarding the version of PHP running on this system as well as installed PHP extensions and configuration details.',0,'true','',''),
+(3,2,'Shadowing',200,'shadowing','user','From here you can shadow any of your client\'s accounts, this enables you to automatically login as the user which enables you to offer remote help by seeing what they see!',0,'true','',''),
+(4,2,'Sentora Config',200,'sentoraconfig','user','Changes made here affect the entire Sentora configuration, please double check everything before saving changes.',0,'true','',''),
+(5,2,'Sentora News',200,'news','user','Find out all the latest news and information from the Sentora project.',0,'true','',''),
+(6,2,'Updates',200,'updates','user','Check to see if there are any available updates to your version of the Sentora software.',0,'true','',''),
+(8,4,'phpMyAdmin',200,'phpmyadmin','user','phpMyAdmin is a web based tool that enables you to manage your Sentora MySQL databases via. the web.',0,'true','',''),
+(9,1,'My Account',200,'my_account','user','Current personal details that you have provided us with, We ask that you keep these upto date in case we require to contact you regarding your hosting package.\r\n',0,'true','',''),
+(10,6,'WebMail',200,'webmail','user','Webmail is a convenient way for you to check your email accounts online without the need to configure an email client.',0,'true','',''),
+(11,1,'Change Password',200,'password_assistant','user','Change your current control panel password.',0,'true','',''),
+(12,3,'Backup',200,'backupmgr','user','The backup manager module enables you to backup your entire hosting account including all your MySQL&reg; databases.',0,'true','',''),
+(14,3,'Service Status',200,'services','user','Here you can check the current status of our services and see what services are up and running and which are down and not.',0,'true','',''),
+(15,5,'Domains',200,'domains','user','This module enables you to add or configure domain web hosting on your account.',0,'true','',''),
+(16,5,'Parked Domains',200,'parked_domains','user','Domain parking refers to the registration of an Internet domain name without that domain being used to provide services such as e-mail or a website. If you have any domains that you are not using, then simply park them!',0,'true','',''),
+(17,5,'Sub Domains',200,'sub_domains','user','This module enables you to add or configure domain web hosting on your account.',0,'true','',''),
+(18,2,'Module Admin',200,'moduleadmin','user','Administer or configure modules registered with module admin',0,'true','',''),
+(19,7,'Manage Clients',200,'manage_clients','user','The account manager enables you to view, update and create client accounts.',0,'true','',''),
+(20,7,'Package Manager',200,'packages','user','Welcome to the Package Manager, using this module enables you to create and manage existing reseller packages on your Sentora hosting account.',0,'true','',''),
+(22,3,'Cron Manager',200,'cron','user','Here you can configure PHP scripts to run automatically at different time intervals.',0,'true','',''),
+(23,2,'phpSysInfo',200,'phpsysinfo','user','phpSysInfo is a web-based server hardware monitoring tool which enables you to see detailed hardware statistics of your server.',0,'true','',''),
+(24,4,'MySQL Database',200,'mysql_databases','user','MySQL&reg; databases are used by many PHP applications such as forums and ecommerce systems, below you can manage and create MySQL&reg; databases.',0,'true','',''),
+(25,1,'Usage Viewer',200,'usage_viewer','user','The account usage screen enables you to see exactly what you are currently using on your hosting package.',0,'true','',''),
+(26,8,'FTP Accounts',200,'ftp_management','user','Using this module you can create FTP accounts which will enable you and any other accounts you create to have the ability to upload and manage files on your hosting space.',0,'true','',''),
+(27,3,'FAQ\'s',200,'faqs','user','Please find a list of the most common questions from users, if you are unable to find a solution to your problem below please then contact your hosting provider. Simply click on the FAQ below to view the solution.',NULL,'true','',''),
+(28,0,'Apache Config',200,'apache_admin','modadmin','This module enables you to configure Apache Vhost settings for your hosting accounts.',0,'true','',''),
+(29,5,'DNS Manager',200,'dns_manager','user',NULL,0,'true','',''),
+(30,0,'DNS Config',200,'dns_admin','modadmin','This module enables you to configure DNS settings for the DNS Manager',NULL,'true','',''),
+(31,7,'Manage Groups',200,'manage_groups','user','Manage user groups to enable greater control over module permission.',0,'true','',''),
+(32,6,'Mailboxes',200,'mailboxes','user','Using this module you have the ability to create IMAP and POP3 Mailboxes.',0,'true','',''),
+(33,6,'Forwards',200,'forwarders','user','Using this module you have the ability to create mail forwarders.',0,'true','',''),
+(34,6,'Distribution Lists',200,'distlists','user','This module enables you to create and manage email distribution groups.',0,'true','',''),
+(35,6,'Aliases',200,'aliases','user','Using this module you have the ability to create alias mailboxes to existing accounts.',0,'true','',''),
+(36,0,'Mail Config',200,'mail_admin','modadmin','This module enables you to configure your mail options',NULL,'true','',''),
+(39,4,'MySQL Users',200,'mysql_users','user','MySQL&reg; Users allows you to add users and permissions to your MySQL&reg; databases.',NULL,'true','',''),
+(40,0,'FTP Config',200,'ftp_admin','modadmin','This module enables you to configure FTP settings for your hosting accounts.',NULL,'true','',''),
+(41,0,'Backup Config',200,'backup_admin','modadmin','This module enables you to configure Backup settings for your hosting accounts.',NULL,'true','',''),
+(42,7,'Client Notice Manager',200,'client_notices','user','Enables resellers to set global notices for their clients.',NULL,'true',NULL,NULL),
+(46,7,'Theme Manager',200,'theme_manager','user','Enables the reseller to set themes configurations for their clients.',0,'true','',NULL),
+(47,3,'Webalizer Stats',200,'webalizer_stats','user','You can view many statistics such as visitor infomation, bandwidth used, referal infomation and most viewed pages etc. Web stats are based on Domains and sub-domains so to view web stats for a particular domain or subdomain use the drop-down menu to select the domain or sub-domain you want to view web stats for.',0,'true','',NULL),
 (48,3,'Protected Directories',200,'protected_directories','user','Password protect your web applications and directories.',NULL,'true','','');
 
 /*Table structure for table `x_mysql_databases` */
@@ -606,7 +599,7 @@ CREATE TABLE `x_settings` (
 /*Data for the table `x_settings` */
 
 insert  into `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx`,`so_defvalues_tx`,`so_desc_tx`,`so_module_vc`,`so_usereditable_en`) values 
-(6,'dbversion','Sentora version','1.0.3',NULL,'Database Version','Sentora Config','false'),
+(6,'dbversion','Sentora version','2.0.0',NULL,'Database Version','Sentora Config','false'),
 (7,'sentora_root','Sentora root path','/etc/sentora/panel/',NULL,'Sentora Web Root','Sentora Config','true'),
 (8,'module_icons_pr','Icons per Row','10',NULL,'Set the number of icons to display before beginning a new line.','Sentora Config','false'),
 (10,'Sentora_df','Date Format','H:i jS M Y T',NULL,'Set the date format used by modules.','Sentora Config','true'),
@@ -676,7 +669,7 @@ insert  into `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx
 (79,'upload_temp_dir','Upload Temp Directory','/var/sentora/temp/',NULL,'The path to the Apache Upload directory (with trailing slash)','Apache Config','true'),
 (80,'apache_port','Apache Port','80',NULL,'Apache service port','Apache Config','true'),
 (81,'dir_index','Directory Indexes','DirectoryIndex index.html index.htm index.php index.asp index.aspx index.jsp index.jspa index.shtml index.shtm',NULL,'Directory Index','Apache Config','true'),
-(82,'suhosin_value','Suhosin Value','php_admin_value suhosin.executor.func.blacklist \"passthru, show_source, shell_exec, system, pcntl_exec, popen, pclose, proc_open, proc_nice, proc_terminate, proc_get_status, proc_close, leak, apache_child_terminate, posix_kill, posix_mkfifo, posix_setpgid, posix_setsid, posix_setuid, escapeshellcmd, escapeshellarg, exec\"',NULL,'Suhosin configuration for virtual host  blacklisting commands','Apache Config','true'),
+(82,'suhosin_value','Suhosin Value','php_admin_value suhosin.executor.func.blacklist \"passthru, show_source, shell_exec, system, pcntl_exec, popen, pclose, proc_open, proc_nice, proc_terminate, proc_get_status, proc_close, leak, apache_child_terminate, posix_kill, posix_mkfifo, posix_setpgid, posix_setsid, posix_setuid, escapeshellcmd, escapeshellarg, exec\"',NULL,'Suhosin configuration for virtual host  blacklisting commands','Apache Config','false'),
 (83,'openbase_seperator','Open Base Seperator',':',NULL,'Seperator flag used in open_base_directory setting','Apache Config','false'),
 (84,'openbase_temp','Open Base Temp Directory','/var/sentora/temp/',NULL,'Temp directory used in open_base_directory setting','Apache Config','true'),
 (85,'access_log_format','Access Log Format','combined','combined|common','Log format for the Apache access log','Apache Config','true'),
@@ -708,27 +701,16 @@ insert  into `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx
 (112,'mailer_type','Mail method','mail','mail|smtp|sendmail','Method to use when sending emails out. (mail = PHP Mail())','Sentora Config','true'),
 (113,'daemon_run_interval','Number of seconds between each daemon execution','300',NULL,'The total number of seconds between each daemon run (default 300 = 5 mins)','Sentora Config','false'),
 (114,'debug_mode','Sentora Debug Mode','prod','dev|prod','Whether or not to show PHP debug errors,warnings and notices','Sentora Config','true'),
-(115,'password_minlength','Min Password Length','6',NULL,'Minimum length required for new passwords','Sentora Config','true'),
+(115,'password_minlength','Min Password Length','10',NULL,'Minimum length required for new passwords','Sentora Config','true'),
 (116,'cron_reload_command','Cron Reload Command','crontab',NULL,'Crontab binary in Linux Only','Cron Config','true'),
 (117,'cron_reload_path','Cron Reload Path','',NULL,'Cron reload path in Linux Only','Cron Config','true'),
 (118,'cron_reload_flag','Cron Reload Flags','-u',NULL,'Cron reload command flags in Linux Only','Cron Config','true'),
 (119,'cron_reload_user','Cron Reload User','',NULL,'Cron reload apache user in Linux','Cron Config','true'),
 (120,'login_csfr','Remote Login Forms','false','false|true','Disables CSFR protection on the login form to enable remote login forms.','Sentora Config','true'),
-(121,'sentora_port','Sentora Apache Port','80',NULL,'Sentora Apache panel port (change will be pending until next daemon run)','Sentora Config','true');
+(121,'sentora_port','Sentora Apache Port','80',NULL,'Sentora Apache panel port (change will be pending until next daemon run)','Sentora Config','true'),
+(122, 'welcome_message', 'Custom e-mail Welcome Message', 'Hi {{fullname}},\nWe are pleased to inform you that your new hosting account is now active!\nYou can access your web hosting control panel using this link: {{controlpanelurl}}\nYour username and password is as follows:\nUsername: {{username}}\nPassword: {{password}}\nMany thanks,\nThe management', NULL, 'Here you can edit the Welcme Message e-mail', 'Sentora Config', 'true'),
+(123, 'panel_ssl_tx', 'Sentora Panel SSL Config', NULL, NULL, 'Sentora SSL settings and certs', 'Sentora Config', 'true');
 
-insert  into `x_settings`(`so_id_pk`,`so_name_vc`,`so_cleanname_vc`,`so_value_tx`,`so_defvalues_tx`,`so_desc_tx`,`so_module_vc`,`so_usereditable_en`) values 
-(122,'welcome_message','Custom e-mail Welcome Message','Hi {{fullname}},
-
-We are pleased to inform you that your new hosting account is now active!
-You can access your web hosting control panel using this link: {{controlpanelurl}}
-
-Your username and password is as follows:
-Username: {{username}}
-Password: {{password}}
-
-Many thanks,
-
-The management',NULL,'Here you can edit the Welcme Message e-mail','Sentora Config','true');
 /*Table structure for table `x_translations` */
 
 DROP TABLE IF EXISTS `x_translations`;
@@ -817,7 +799,10 @@ CREATE TABLE `x_vhosts` (
   `vh_active_in` int(1) DEFAULT '0',
   `vh_suhosin_in` int(1) DEFAULT '1',
   `vh_obasedir_in` int(1) DEFAULT '1',
-  `vh_custom_tx` text,
+  `vh_ssl_tx` text DEFAULT NULL, 
+  `vh_ssl_port_in` int(6) DEFAULT NULL,
+  `vh_custom_sp_tx` text DEFAULT NULL,
+  `vh_custom_tx` text DEFAULT NULL,
   `vh_custom_port_in` int(6) DEFAULT NULL,
   `vh_custom_ip_vc` varchar(45) DEFAULT NULL,
   `vh_portforward_in` int(1) DEFAULT NULL,
