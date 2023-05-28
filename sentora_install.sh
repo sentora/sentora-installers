@@ -1337,7 +1337,7 @@ if [[ $1 = PHP* ]]; then
                 # Install PHP 7.4 and install modules
                 #yum -y install httpd mod_ssl php php-zip php-fpm php-devel php-gd php-imap php-ldap php-mysql php-odbc php-pear php-xml php-xmlrpc php-pecl-apc php-mbstring php-soap php-tidy curl curl-devel perl-libwww-perl ImageMagick libxml2 libxml2-devel mod_fcgid php-cli httpd-devel php-intl php-imagick php-pspell wget        
                  
-                yum  -y --enablerepo=remi-php74 install php php-devel php-gd php-pecl-mcrypt php-mysqlnd php-xml php-xmlrpc php-pecl-zip
+                yum  -y --enablerepo=remi-php74 install php php-devel php-gd php-pecl-mcrypt php-mysqlnd php-xml php-xmlrpc php-pecl-zip php-imap
                         
             elif [[ "$VER" = "8" ]]; then
             
@@ -1354,7 +1354,7 @@ if [[ $1 = PHP* ]]; then
                 # Install PHP 7.4 and install modules
                 #dnf install -y php-dom php-simplexml php-ssh2 php-xml php-xmlreader php-curl php-date php-exif php-filter php-ftp php-gd php-hash php-iconv php-json php-libxml php-pecl-imagick php-mbstring php-mysqlnd php-openssl php-pcre php-posix php-sockets php-spl php-tokenizer php-zlib
                 
-                $PACKAGE_INSTALLER php-curl php-date php-gd php-json php-mbstring php-pecl-mcrypt php-mysqlnd php-xml php-xmlreader php-zlib php-pecl-zip
+                $PACKAGE_INSTALLER php-curl php-date php-gd php-json php-mbstring php-pecl-mcrypt php-mysqlnd php-xml php-xmlreader php-zlib php-pecl-zip php-imap
                 
                 # Disable PHP-FPM
                 systemctl disable php-fpm
@@ -1393,7 +1393,7 @@ else
 			
 			##yum -y install httpd mod_ssl php php-zip php-fpm php-devel php-gd php-imap php-ldap php-mysql php-odbc php-pear php-xml php-xmlrpc php-pecl-apc php-mbstring php-mcrypt php-soap php-tidy curl curl-devel perl-libwww-perl ImageMagick libxml2 libxml2-devel mod_fcgid php-cli httpd-devel php-intl php-imagick php-pspell wget
 			
-			yum -y --enablerepo=remi-php74 install php php-devel php-gd php-pecl-mcrypt php-mysqlnd php-xml php-xmlrpc php-pecl-zip
+			yum -y --enablerepo=remi-php74 install php php-devel php-gd php-pecl-mcrypt php-mysqlnd php-xml php-xmlrpc php-pecl-zip php-imap
 				
 		elif [[ "$VER" = "8" ]]; then
 		
@@ -1410,7 +1410,7 @@ else
                 # Install PHP 7.4 and install modules
                 #dnf install -y php-dom php-simplexml php-ssh2 php-xml php-xmlreader php-curl php-date php-exif php-filter php-ftp php-gd php-hash php-iconv php-json php-libxml php-pecl-imagick php-mbstring php-mysqlnd php-openssl php-pcre php-posix php-sockets php-spl php-tokenizer php-zlib
                 
-                $PACKAGE_INSTALLER php-curl php-date php-gd php-json php-mbstring php-pecl-mcrypt php-mysqlnd php-xml php-xmlreader php-zlib php-pecl-zip
+                $PACKAGE_INSTALLER php-curl php-date php-gd php-json php-mbstring php-pecl-mcrypt php-mysqlnd php-xml php-xmlreader php-zlib php-pecl-zip php-imap
                 
                 # Disable PHP-FPM
                 systemctl disable php-fpm
