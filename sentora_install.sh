@@ -553,7 +553,6 @@ if [[ "$OS" = "CentOs" ]]; then
     disablerepo "elrepo"
     disablerepo "epel-testing"
     disablerepo "epel-next-testing"
-    disablerepo "remi"
     disablerepo "rpmforge"
     disablerepo "rpmfusion-free-updates"
     disablerepo "rpmfusion-free-updates-testing"
@@ -1337,12 +1336,14 @@ if [[ $1 = PHP* ]]; then
                 # Install PHP 7.4 and install modules
                 #yum -y install httpd mod_ssl php php-zip php-fpm php-devel php-gd php-imap php-ldap php-mysql php-odbc php-pear php-xml php-xmlrpc php-pecl-apc php-mbstring php-soap php-tidy curl curl-devel perl-libwww-perl ImageMagick libxml2 libxml2-devel mod_fcgid php-cli httpd-devel php-intl php-imagick php-pspell wget        
                  
-                yum  -y --enablerepo=remi-php74 install php php-devel php-gd php-pecl-mcrypt php-mysqlnd php-xml php-xmlrpc php-pecl-zip php-imap
+                yum  -y --enablerepo=remi,remi-safe,remi-php74 install php php-devel php-gd php-pecl-mcrypt php-mysqlnd php-xml php-xmlrpc php-pecl-zip php-imap
                         
             elif [[ "$VER" = "8" ]]; then
             
                 # Install PHP 7.4 Repos & enable
                 $PACKAGE_INSTALLER https://rpms.remirepo.net/enterprise/remi-release-8.rpm
+		dnf module enable php:remi -y
+		dnf module enable php:remi-safe -y
                 dnf module enable php:remi-7.4 -y
                 
                 # Enable powertools for PHP-DEVEL
@@ -1393,12 +1394,14 @@ else
 			
 			##yum -y install httpd mod_ssl php php-zip php-fpm php-devel php-gd php-imap php-ldap php-mysql php-odbc php-pear php-xml php-xmlrpc php-pecl-apc php-mbstring php-mcrypt php-soap php-tidy curl curl-devel perl-libwww-perl ImageMagick libxml2 libxml2-devel mod_fcgid php-cli httpd-devel php-intl php-imagick php-pspell wget
 			
-			yum -y --enablerepo=remi-php74 install php php-devel php-gd php-pecl-mcrypt php-mysqlnd php-xml php-xmlrpc php-pecl-zip php-imap
+			yum -y --enablerepo=remi,remi-safe,remi-php74 install php php-devel php-gd php-pecl-mcrypt php-mysqlnd php-xml php-xmlrpc php-pecl-zip php-imap
 				
 		elif [[ "$VER" = "8" ]]; then
 		
 			# Install PHP 7.4 Repos & enable
                 $PACKAGE_INSTALLER https://rpms.remirepo.net/enterprise/remi-release-8.rpm
+                dnf module enable php:remi -y
+		dnf module enable php:remi-safe -y
                 dnf module enable php:remi-7.4 -y
                 
                 # Enable powertools for PHP-DEVEL
