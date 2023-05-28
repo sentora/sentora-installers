@@ -131,6 +131,7 @@ inst() {
 	find / -name '*.rpmsave' -exec rm -f {} \;
 	echo " ok welcome to Centos Stream 8"
 	fi
+	fi
 
 
 # Centos uses repo directory that depends of architecture. Ensure it is compatible
