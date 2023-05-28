@@ -129,7 +129,7 @@ inst() {
 	# ceanup old rpmconf file create
 	find / -name '*.rpmnew' -exec rm -f {} \;
 	find / -name '*.rpmsave' -exec rm -f {} \;
-	echo " ok welcome to Centos Stream 8"
+	echo "welcome to your new Centos Stream 8"
 	fi
 	fi
 
