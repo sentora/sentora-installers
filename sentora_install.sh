@@ -104,9 +104,9 @@ inst() {
        rpm -q "$1" &> /dev/null
     } 
     if (inst "centos-release-stream"); then
-    echo " ok welcome to Centos Stream 8"
+    echo "ok welcome to Centos Stream 8"
     else
-	echo "Centos 8 obsolete udate to Centos Stream 8"
+	echo "Centos 8 obsolete update to Centos Stream 8"
 	echo "this operation may take some time"
 	sleep 60
 	# change repository to use vault.centos.org CentOS 8 found online to vault.centos.org
