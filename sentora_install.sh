@@ -55,7 +55,23 @@ echo "############################################################"
 echo -e "\nChecking that minimal requirements are ok"
 
 # Ensure the OS is compatible with the launcher
-if [ -f /etc/centos-release ]; then
+if [ -f /etc/almalinux-release ]; then
+    OS="Alma Linux"
+    VERFULL=$(sed 's/^.*release //;s/ (Fin.*$//' /etc/centos-release)
+    VER=${VERFULL:0:1} # return 8
+elif [ -f /etc/fedora-release ]; then
+    OS="Fedora"
+    VERFULL=$(sed 's/^.*release //;s/ (Fin.*$//' /etc/fedora-release)
+    VER=${VERFULL:0:2}
+elif [ -f /etc/gentoo-release ]; then
+    OS="Gentoo"
+    VERFULL=$(sed 's/^.*release //;s/ (Fin.*$//' /etc/fedora-release)
+    VER=${VERFULL:0:2}
+elif [ -f /etc/SuSE-release ]; then
+    OS="OpenSUSE"
+    VERFULL=$(sed 's/^.*release //;s/ (Fin.*$//' /etc/fedora-release)
+    VER=${VERFULL:0:3}
+elif [ -f /etc/centos-release ]; then
     OS="CentOs"
     VERFULL=$(sed 's/^.*release //;s/ (Fin.*$//' /etc/centos-release)
     VER=${VERFULL:0:1} # return 8
@@ -80,6 +96,42 @@ else
     echo "Sorry, this OS is not supported by Sentora." 
     exit 1
 fi
+
+# security centos 8 check centos stream 8 or upgrade
+# centos 8 and of life replace by centos stream 8
+if [[ "$VER" = "8" && "$OS" = "CentOs" ]]; then
+inst() {
+       rpm -q "$1" &> /dev/null
+    } 
+    if (inst "centos-release-stream"); then
+    echo " ok welcome to Centos Stream 8"
+    else
+	echo "Centos 8 obsolete udate to Centos Stream 8"
+	echo "this operation may take some time"
+	sleep 60
+	# change repository to use vault.centos.org CentOS 8 found online to vault.centos.org
+	find /etc/yum.repos.d -name '*.repo' -exec sed -i 's|mirrorlist=http://mirrorlist.centos.org|#mirrorlist=http://mirrorlist.centos.org|' {} \;
+	find /etc/yum.repos.d -name '*.repo' -exec sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|' {} \;
+	#update package list
+	dnf update -y
+	#upgrade all packages to latest CentOS 8
+	dnf upgrade -y
+	#install Centos Stream 8 repository
+	dnf -y install centos-release-stream --allowerasing
+	#install rpmconf
+	dnf -y install rpmconf
+	#set config file with rpmconf
+	rpmconf -a
+	# remove Centos 8 repository and set CentOS Stream 8 repository by default
+	dnf -y swap centos-linux-repos centos-stream-repos
+	# system upgrade
+	dnf -y distro-sync
+	# ceanup old rpmconf file create
+	find / -name '*.rpmnew' -exec rm -f {} \;
+	find / -name '*.rpmsave' -exec rm -f {} \;
+	echo " ok welcome to Centos Stream 8"
+	fi
+
 
 # Centos uses repo directory that depends of architecture. Ensure it is compatible
 if [[ "$OS" = "CentOs" ]] ; then
@@ -468,32 +520,28 @@ fi
 #--- Adapt repositories and packages sources
 echo -e "\n-- Updating repositories and packages sources"
 if [[ "$OS" = "CentOs" ]]; then
-#EPEL Repo Install
-  EPEL_BASE_URL="http://dl.fedoraproject.org/pub/epel/$VER/$ARCH";
-  if  [[ "$VER" = "7" ]]; then
-     EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL/Packages/e/" | grep -oP '(?<=href=")epel-release.*(?=">)')
-     wget "$EPEL_BASE_URL/Packages/e/$EPEL_FILE"
-  elif [[ "$VER" = "8" ]]; then
-     EPEL_BASE_URL="http://dl.fedoraproject.org/pub/epel/$VER/Everything/$ARCH";
-	 EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL/Packages/e/" | grep -oP '(?<=href=")epel-release.*(?=">)')
-     wget "$EPEL_BASE_URL/Packages/e/$EPEL_FILE"
+  # epel-release found on centos base repo
+  # not require manual download
+  # more about centos stream 8
+  # now use epel-next-release
+  # the epel-release packages being obsolete may have been compiled for centos 8 and not centos stream 8
+  # epel-next-release contains the same recompile package for centos stream 8 as well as other updates and new packages still based on epel and managed by fedora
+  if [[ "$VER" = "8" ]]; then
+     $PACKAGE_INSTALLER epel-release
+     dnf -y update
+     $PACKAGE_INSTALLER epel-next-release
+     dnf -y update
   else
-     EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL/" | grep -oP '(?<=href=")epel-release.*(?=">)')
-     wget "$EPEL_BASE_URL/$EPEL_FILE"
+     $PACKAGE_INSTALLER epel-release
+     yum -y update
   fi
-  $PACKAGE_INSTALLER epel-release*.rpm 	#  CHECK THIS
-  rm "$EPEL_FILE"
     
     #To fix some problems of compatibility use of mirror centos.org to all users
-    #Replace all mirrors by base repos to avoid any problems.
-    sed -i 's|mirrorlist=http://mirrorlist.centos.org|#mirrorlist=http://mirrorlist.centos.org|' "/etc/yum.repos.d/CentOS-Base.repo"
-    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://mirror.centos.org|' "/etc/yum.repos.d/CentOS-Base.repo"
+    #Replace all mirrors by all repos to avoid any problems.
+    find /etc/yum.repos.d -name '*.repo' -exec sed -i 's|mirrorlist=|#mirrorlist=|' {} \;
+    find /etc/yum.repos.d -name '*.repo' -exec sed -i 's|metalink=|#metalink=|' {} \;
+    find /etc/yum.repos.d -name '*.repo' -exec sed -i 's|#baseurl=|baseurl=|' {} \;
 
-    #check if the machine and on openvz
-    if [ -f "/etc/yum.repos.d/vz.repo" ]; then
-        sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/centos-$VER|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/$VER/$ARCH/os/|" "/etc/yum.repos.d/vz.repo"
-        sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/updates-released-ce$VER|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/$VER/$ARCH/updates/|" "/etc/yum.repos.d/vz.repo"
-    fi
 
     #disable deposits that could result in installation errors
     disablerepo() {
@@ -503,10 +551,13 @@ if [[ "$OS" = "CentOs" ]]; then
     }
     disablerepo "elrepo"
     disablerepo "epel-testing"
+    disablerepo "epel-next-testing"
     disablerepo "remi"
     disablerepo "rpmforge"
     disablerepo "rpmfusion-free-updates"
     disablerepo "rpmfusion-free-updates-testing"
+    disablerepo "rpmfusion-nonfree-updates"
+    disablerepo "rpmfusion-nonfree-updates-testing"
 
     # We need to disable SELinux...
     sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
@@ -543,12 +594,11 @@ elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     rm -rf "/etc/apt/sources.list/*"
     cp "/etc/apt/sources.list" "/etc/apt/sources.list.save"
 
-    if [[ "$VER" = "14.04" || "$VER" = "16.04" || "$VER" = "18.04" || "$VER" = "20.04" ]]; then
+    if [[ "$VER" = "14.04" || "$VER" = "16.04" || "$VER" = "18.04" ]]; then
         cat > /etc/apt/sources.list <<EOF
-#Depots main restricted
-deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main restricted universe multiverse
-deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc)-security main restricted universe multiverse
-deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc)-updates main restricted universe multiverse
+deb http://old-releases.ubuntu.com/ubuntu $(lsb_release -sc) main restricted universe multiverse
+deb http://old-releases.ubuntu.com/ubuntu $(lsb_release -sc)-security main restricted universe multiverse
+deb http://old-releases.ubuntu.com/ubuntu $(lsb_release -sc)-updates main restricted universe multiverse
 EOF
     elif [ "$VER" = "8"  ]; then
         cat > /etc/apt/sources.list <<EOF
@@ -574,23 +624,9 @@ deb-src http://security.debian.org/ $(lsb_release -sc)/updates main
 EOF
     else
         cat > /etc/apt/sources.list <<EOF
-#Depots main restricted
-deb http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc) main restricted
-deb http://security.ubuntu.com/ubuntu $(lsb_release -sc)-security main restricted
-deb http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc)-updates main restricted
- 
-deb-src http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc) main restricted
-deb-src http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc)-updates main restricted
-deb-src http://security.ubuntu.com/ubuntu $(lsb_release -sc)-security main restricted
-
-#Depots Universe Multiverse 
-deb http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc) universe multiverse
-deb http://security.ubuntu.com/ubuntu $(lsb_release -sc)-security universe multiverse
-deb http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc)-updates universe multiverse
-
-deb-src http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc) universe multiverse
-deb-src http://security.ubuntu.com/ubuntu $(lsb_release -sc)-security universe multiverse
-deb-src http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc)-updates universe multiverse
+deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) main restricted universe multiverse
+deb http://security.ubuntu.com/ubuntu $(lsb_release -sc)-security main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc)-updates main restricted universe multiverse
 EOF
     fi
 fi
@@ -617,13 +653,19 @@ fi
 echo -e "\n-- Downloading and installing required tools..."
 if [[ "$OS" = "CentOs" ]]; then
     $PACKAGE_INSTALLER sudo vim make zip unzip chkconfig bash-completion
-	$PACKAGE_INSTALLER ld-linux.so.2 libbz2.so.1 
-
-	if  [[ "$VER" = "7" ]]; then
-    	$PACKAGE_INSTALLER libdb-4.7.so libgd.so.2	#### These packages are missing for CentOs 8
-		
-	elif  [[ "$VER" = "" ]]; then
-		$PACKAGE_INSTALLER gd	#### These packages are missing for CentOs 8 repo - libdb-4.8.so
+    	# ld-linux.so.2 foudn on glibc for all redhat based system
+	# libbz2.so.1 found on bzip2 or bzip2-libs for all redhat based system
+	# libgd.so.2 found on gd for all redhat based system
+	# we install the devel in order to be sure
+	# because the devel contains the original package but also the libraries
+	# exemple for bzip2 the package bzip2-devel auto install bzip2 and bzip2-libs
+	$PACKAGE_INSTALLER glibc-devel bzip2-devel gd-devel
+	# libdb-4.7.so is obsolete online for el6 found on db4-devel
+	# for el7 fedora and more librairie name libdb.so found on libdb-devel
+	if  [[ "$VER" = "6" ]]; then
+    		$PACKAGE_INSTALLER db4-devel
+	else
+		$PACKAGE_INSTALLER libdb-devel
 	fi	
 	
     $PACKAGE_INSTALLER curl curl-devel perl-libwww-perl libxml2 libxml2-devel zip bzip2-devel gcc gcc-c++ at make
@@ -1222,20 +1264,20 @@ echo -e "\n-- Installing and configuring PHP"
 
 if [[ $1 = PHP* ]]; then
 
-	if [[ $1 = "PHP73" ]]; then
-		echo -e "\n-Installing PHP 7.3..."
+	if [[ $1 = "PHP74" ]]; then
+		echo -e "\n-Installing PHP 7.4..."
 
-		# Install PHP 7.3 version
-        # Start PHP 7.3 & tools install here
+		# Install PHP 7.4 version
+        # Start PHP 7.4 & tools install here
             
-        # Install PHP 7.3 & Repos
+        # Install PHP 7.4 & Repos
         if [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
             if [[ "$VER" = "14.04" || "$VER" = "8" ]]; then
             
                 $PACKAGE_INSTALLER libapache2-mod-php5 php5-common php5-cli php5-mysql php5-gd php5-mcrypt php5-curl php-pear php5-imap php5-xmlrpc php5-xsl php5-intl
         
             elif [[ "$VER" = "16.04" || "$VER" = "18.04" || "$VER" = "20.04" ]]; then
-                # Install PHP 7.3 Repos & enable
+                # Install PHP 7.4 Repos & enable
                 $PACKAGE_INSTALLER software-properties-common
                 add-apt-repository -y ppa:ondrej/apache2
                 add-apt-repository -y ppa:ondrej/php
@@ -1243,33 +1285,35 @@ if [[ $1 = PHP* ]]; then
                 #apt-get -yqq upgrade
 				
 				# Remove and purge installed PHP 7.0
-				$PACKAGE_REMOVER php7.*
-				apt-get purge php7.*
+				$PACKAGE_REMOVER php*
+				apt-get purge php*
                 
-                # Install PHP 7.3 and install modules
-                $PACKAGE_INSTALLER install php7.3 php7.3-common 
-                $PACKAGE_INSTALLER php7.3-mysql php7.3-mbstring
-                $PACKAGE_INSTALLER php7.3-zip php7.3-xml php7.3-gd
-                $PACKAGE_INSTALLER php7.0-dev libapache2-mod-php7.3
-                $PACKAGE_INSTALLER php7.3-dev
-                $PACKAGE_INSTALLER php7.3-curl
+                # Install PHP 7.4 and install modules
+                $PACKAGE_INSTALLER install php7.4 php7.4-common 
+                $PACKAGE_INSTALLER php7.4-mysql php7.4-mbstring
+                $PACKAGE_INSTALLER php7.4-zip php7.4-xml php7.4-gd
+                $PACKAGE_INSTALLER php7.4-dev libapache2-mod-php7.4
+                $PACKAGE_INSTALLER php7.4-curl
+		$PACKAGE_INSTALLER php7.4-mcrypt
                 
                 # PHP Mcrypt 1.0.2 install
-                if [ ! -f /etc/php/7.3/apache2/conf.d/20-mcrypt.ini ]
+                if [ ! -f /etc/php/7.4/apache2/conf.d/20-mcrypt.ini ]
                         then
-                    echo -e "\nInstalling php mcrypt 1.0.2"
+                    echo -e "\nInstalling php mcrypt 1.0.6"
                     $PACKAGE_INSTALLER gcc make autoconf libc-dev pkg-config
                     $PACKAGE_INSTALLER libmcrypt-dev
-                    echo '' | sudo pecl install mcrypt-1.0.2
-                    bash -c "echo extension=mcrypt.so > /etc/php/7.3/mods-available/mcrypt.ini"
-                    ln -s /etc/php/7.3/mods-available/mcrypt.ini /etc/php/7.3/apache2/conf.d/20-mcrypt.ini
+                    pecl install mcrypt-1.0.6
+                    bash -c "echo extension=mcrypt.so > /etc/php/7.4/mods-available/mcrypt.ini"
+                    ln -s /etc/php/7.4/mods-available/mcrypt.ini /etc/php/7.4/apache2/conf.d/20-mcrypt.ini
                 fi		
                 
-                # Set PHP 7.3 as system default in case upgrade to PHP 7.4+
-                update-alternatives --set php /usr/bin/php7.3
+                # Set PHP 7.4 as system default in case upgrade to PHP 7.4+
+                update-alternatives --set php /usr/bin/php7.4
+		update-alternatives --set php-config /usr/bin/php-config7.4
+		update-alternatives --set phpize /usr/bin/phpize7.4
                 
-                # Enable Apache mod_php7.3
-                a2enmod php7.3  
+                # Enable Apache mod_php7.4
+                a2enmod php7.4  
                       
             # elif [[ "$VER" = "8" || "$VER" = "9" ]]; then
                 # Adding Support Soon!!!
@@ -1285,38 +1329,36 @@ if [[ $1 = PHP* ]]; then
                 yum clean all
                 rm -rf /var/cache/yum/*
                     
-                # Install PHP 7.3 Repos & enable
+                # Install PHP 7.4 Repos & enable
                 $PACKAGE_INSTALLER yum-utils
-                $PACKAGE_INSTALLER epel-release
                 $PACKAGE_INSTALLER http://rpms.remirepo.net/enterprise/remi-release-7.rpm
                 
-                # Install PHP 7.3 and install modules
+                # Install PHP 7.4 and install modules
                 #yum -y install httpd mod_ssl php php-zip php-fpm php-devel php-gd php-imap php-ldap php-mysql php-odbc php-pear php-xml php-xmlrpc php-pecl-apc php-mbstring php-soap php-tidy curl curl-devel perl-libwww-perl ImageMagick libxml2 libxml2-devel mod_fcgid php-cli httpd-devel php-intl php-imagick php-pspell wget        
                  
-                yum  -y --enablerepo=remi-php73 install php php-devel php-gd php-mcrypt php-mysql php-xml php-xmlrpc php-zip
+                yum  -y --enablerepo=remi-php74 install php php-devel php-gd php-pecl-mcrypt php-mysqlnd php-xml php-xmlrpc php-pecl-zip
                         
             elif [[ "$VER" = "8" ]]; then
             
-                # Install PHP 7.3 Repos & enable
-                rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+                # Install PHP 7.4 Repos & enable
                 $PACKAGE_INSTALLER https://rpms.remirepo.net/enterprise/remi-release-8.rpm
-                dnf module enable php:remi-7.3 -y
+                dnf module enable php:remi-7.4 -y
                 
                 # Enable powertools for PHP-DEVEL
                 dnf config-manager --set-enabled PowerTools
                 
-                # Install PHP 7.3
+                # Install PHP 7.4
                 $PACKAGE_INSTALLER php php-devel php-cli php-common
                 
-                # Install PHP 7.3 and install modules
+                # Install PHP 7.4 and install modules
                 #dnf install -y php-dom php-simplexml php-ssh2 php-xml php-xmlreader php-curl php-date php-exif php-filter php-ftp php-gd php-hash php-iconv php-json php-libxml php-pecl-imagick php-mbstring php-mysqlnd php-openssl php-pcre php-posix php-sockets php-spl php-tokenizer php-zlib
                 
-                $PACKAGE_INSTALLER php-curl php-date php-gd php-json php-mbstring php-mcrypt php-mysqlnd php-xml php-xmlreader php-zlib php-zip
+                $PACKAGE_INSTALLER php-curl php-date php-gd php-json php-mbstring php-pecl-mcrypt php-mysqlnd php-xml php-xmlreader php-zlib php-pecl-zip
                 
                 # Disable PHP-FPM
                 systemctl disable php-fpm
                 
-                # Enable Mod_php & Prefork for Apache/PHP 7.3
+                # Enable Mod_php & Prefork for Apache/PHP 7.4
                 sed -i 's|#LoadModule mpm_prefork_module|LoadModule mpm_prefork_module|g' /etc/httpd/conf.modules.d/00-mpm.conf
                 sed -i 's|LoadModule mpm_event_module|#LoadModule mpm_event_module|g' /etc/httpd/conf.modules.d/00-mpm.conf
                 
@@ -1344,29 +1386,35 @@ else
 			rm -rf /var/cache/yum/*
 			
 			$PACKAGE_INSTALLER yum-utils
-			$PACKAGE_INSTALLER epel-release
 			$PACKAGE_INSTALLER http://rpms.remirepo.net/enterprise/remi-release-7.rpm
 		
-			## Install PHP 7.3 and update modules
+			## Install PHP 7.4 and update modules
 			
 			##yum -y install httpd mod_ssl php php-zip php-fpm php-devel php-gd php-imap php-ldap php-mysql php-odbc php-pear php-xml php-xmlrpc php-pecl-apc php-mbstring php-mcrypt php-soap php-tidy curl curl-devel perl-libwww-perl ImageMagick libxml2 libxml2-devel mod_fcgid php-cli httpd-devel php-intl php-imagick php-pspell wget
 			
-			yum -y --enablerepo=remi-php73 install php php-devel php-gd php-mcrypt php-mysql php-xml php-xmlrpc php-zip
+			yum -y --enablerepo=remi-php74 install php php-devel php-gd php-pecl-mcrypt php-mysqlnd php-xml php-xmlrpc php-pecl-zip
 				
 		elif [[ "$VER" = "8" ]]; then
-			$PACKAGE_INSTALLER php php-devel php-bcmath php-gd php-json php-mbstring php-intl php-mysqlnd php-pear php-xml php-xmlrpc php-zip
-            
-            # Get mcrypt files
-			echo -e "\n--- Getting PHP-mcrypt files..."
-			$PACKAGE_INSTALLER libmcrypt-devel libmcrypt #Epel packages 
+		
+			# Install PHP 7.4 Repos & enable
+                $PACKAGE_INSTALLER https://rpms.remirepo.net/enterprise/remi-release-8.rpm
+                dnf module enable php:remi-7.4 -y
+                
+                # Enable powertools for PHP-DEVEL
+                dnf config-manager --set-enabled PowerTools
+                
+                # Install PHP 7.4
+                $PACKAGE_INSTALLER php php-devel php-cli php-common
+                
+                # Install PHP 7.4 and install modules
+                #dnf install -y php-dom php-simplexml php-ssh2 php-xml php-xmlreader php-curl php-date php-exif php-filter php-ftp php-gd php-hash php-iconv php-json php-libxml php-pecl-imagick php-mbstring php-mysqlnd php-openssl php-pcre php-posix php-sockets php-spl php-tokenizer php-zlib
+                
+                $PACKAGE_INSTALLER php-curl php-date php-gd php-json php-mbstring php-pecl-mcrypt php-mysqlnd php-xml php-xmlreader php-zlib php-pecl-zip
+                
+                # Disable PHP-FPM
+                systemctl disable php-fpm
 			
-			# Install php-imap 
-			echo -e "\n--- Installing PHP-imap..."
-			wget https://rpms.remirepo.net/temp/epel-8-php-7.2/php-imap-7.2.24-1.epel8.7.2.x86_64.rpm
-			$PACKAGE_INSTALLER php-imap-7.2.24-1.epel8.7.2.x86_64.rpm
-			#rm -r php-imap-7.2.24-1.epel8.7.2.x86_64.rpm
-			
-            # Enable Mod_php & Prefork for Apache/PHP 7.3
+            # Enable Mod_php & Prefork for Apache/PHP 7.4
             sed -i 's|#LoadModule mpm_prefork_module|LoadModule mpm_prefork_module|g' /etc/httpd/conf.modules.d/00-mpm.conf
             sed -i 's|LoadModule mpm_event_module|#LoadModule mpm_event_module|g' /etc/httpd/conf.modules.d/00-mpm.conf
 			
@@ -1385,89 +1433,23 @@ else
 			
 		elif [[ "$VER" = "16.04" || "$VER" = "18.04" || "$VER" = "20.04" ]]; then	
 		
-			$PACKAGE_INSTALLER libapache2-mod-php php-common php-bcmath php-cli php-mysql php-gd php-curl php-pear php-imagick php-imap php-xmlrpc php-xsl php-intl php-mbstring php-dev php-zip	
+			$PACKAGE_INSTALLER libapache2-mod-php7.4 php7.4-common php7.4-bcmath php7.4-cli php7.4-mysql php7.4-gd php7.4-curl php7.4-pear php7.4-imagick php7.4-imap php7.4-xmlrpc php7.4-xsl php7.4-intl php7.4-mbstring php7.4-dev php7.4-zip	
 			
             # Get PHP mcrypt files
-            if [[ "$VER" = "16.04" ]]; then
-            	$PACKAGE_INSTALLER php-mcrypt
-            else
+            	$PACKAGE_INSTALLER php7.4-mcrypt
                 # Prepare PHP-mcrypt files
                 $PACKAGE_INSTALLER -y build-essential
             
                 # Download needed files
-                $PACKAGE_INSTALLER libmcrypt-dev
-            fi          
+                $PACKAGE_INSTALLER libmcrypt-dev        
 		fi
 		
 		# Set PHP.ini path
-		if [[ "$VER" = "16.04" ]]; then
-			PHP_INI_PATH="/etc/php/7.0/apache2/php.ini"					
-		elif [[ "$VER" = "18.04" ]]; then
-			PHP_INI_PATH="/etc/php/7.2/apache2/php.ini"
-		elif [[ "$VER" = "20.04" ]]; then
-			PHP_INI_PATH="/etc/php/7.4/apache2/php.ini"	
-		fi		
+		PHP_INI_PATH="/etc/php/7.4/apache2/php.ini"			
 	fi
 	
-	if [[ "$OS" = "CentOs" && ("$VER" = "8" ) || 
-      "$OS" = "Ubuntu" && ("$VER" = "18.04" || "$VER" = "20.04" ) ]] ; then
-	
-		# PHP-mcrypt install code all OS - Check this!!!!!!
-				
-		# Update Pecl Channels
-		echo -e "\n--- Updating PECL Channels..."
-		pecl channel-update pecl.php.net
-		pecl update-channels
-		
-		if [[ "$VER" = "20.04" ]]; then
-			# Make pear cache folder to stop error "Trying to access array offset on value of type bool in PEAR/REST.php on line 187"
-			mkdir -p /tmp/pear/cache
-		fi
-		
-		# Install PHP-Mcrypt
-		echo -e "\n--- Installing PHP-mcrypt..."
-		echo -ne '\n' | sudo pecl install mcrypt 
 
-	fi
 
-	# Setup PHP mcrypt config files by OS
-	if [[ "$OS" = "CentOs" ]]; then
-		if [[ "$VER" = "8" ]]; then
-		
-			# Set mcrypt files		
-			touch /etc/php.d/20-mcrypt.ini
-			echo 'extension=mcrypt.so' >> /etc/php.d/20-mcrypt.ini
-	
-			# Create links to activate PHP-mcrypt
-			#ln -s /etc/php/7.2/mods-available/mcrypt.ini /etc/php/7.2/apache2/conf.d/20-mcrypt.ini
-			#ln -s /etc/php/7.2/mods-available/mcrypt.ini /etc/php/7.2/cli/conf.d/20-mcrypt.ini
-		
-		fi
-	
-	elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
-
-		if [[ "$VER" = "18.04" ]]; then
-					
-			# Create php-mcrypt modules file
-			touch /etc/php/7.2/mods-available/mcrypt.ini
-			echo 'extension=mcrypt.so' >> /etc/php/7.2/mods-available/mcrypt.ini
-						
-			# Create links to activate PHP-mcrypt
-			ln -s /etc/php/7.2/mods-available/mcrypt.ini /etc/php/7.2/apache2/conf.d/20-mcrypt.ini
-			ln -s /etc/php/7.2/mods-available/mcrypt.ini /etc/php/7.2/cli/conf.d/20-mcrypt.ini
-					
-		elif [[ "$VER" = "20.04" ]]; then
-					
-			# Create php-mcrypt modules file
-			touch /etc/php/7.4/mods-available/mcrypt.ini
-			echo 'extension=mcrypt.so' >> /etc/php/7.4/mods-available/mcrypt.ini
-						
-			# Create links to activate PHP-mcrypt
-			ln -s /etc/php/7.4/mods-available/mcrypt.ini /etc/php/7.4/apache2/conf.d/20-mcrypt.ini
-			ln -s /etc/php/7.4/mods-available/mcrypt.ini /etc/php/7.4/cli/conf.d/20-mcrypt.ini
-					
-		fi	
-	fi
 	
 fi
 
