@@ -1342,9 +1342,9 @@ if [[ $1 = PHP* ]]; then
             
                 # Install PHP 7.4 Repos & enable
                 $PACKAGE_INSTALLER https://rpms.remirepo.net/enterprise/remi-release-8.rpm
-		dnf module enable php:remi -y
-		dnf module enable php:remi-safe -y
-                dnf module enable php:remi-7.4 -y
+		dnf config-manager --set-enabled remi
+		dnf config-manager --set-enabled remi-safe
+		dnf config-manager --set-enabled remi-php74
                 
                 # Enable powertools for PHP-DEVEL
                 dnf config-manager --set-enabled PowerTools
@@ -1400,9 +1400,9 @@ else
 		
 			# Install PHP 7.4 Repos & enable
                 $PACKAGE_INSTALLER https://rpms.remirepo.net/enterprise/remi-release-8.rpm
-                dnf module enable php:remi -y
-		dnf module enable php:remi-safe -y
-                dnf module enable php:remi-7.4 -y
+                dnf config-manager --set-enabled remi
+		dnf config-manager --set-enabled remi-safe
+		dnf config-manager --set-enabled remi-php74
                 
                 # Enable powertools for PHP-DEVEL
                 dnf config-manager --set-enabled PowerTools
