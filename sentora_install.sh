@@ -483,7 +483,7 @@ if [[ "$OS" = "CentOs" ]]; then
   fi
   $PACKAGE_INSTALLER epel-release*.rpm 	#  CHECK THIS
   rm "$EPEL_FILE"
-    
+  
     #To fix some problems of compatibility use of mirror centos.org to all users
     #Replace all mirrors by base repos to avoid any problems.
     sed -i 's|mirrorlist=http://mirrorlist.centos.org|#mirrorlist=http://mirrorlist.centos.org|' "/etc/yum.repos.d/CentOS-Base.repo"
