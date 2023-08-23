@@ -37,9 +37,9 @@
 # 2.0.0 - example stable tag
 ##
 
-SENTORA_UPDATER_VERSION="2.0.0"
-SENTORA_PRECONF_VERSION="2.0.0"
-SENTORA_CORE_VERSION="2.0.0"
+SENTORA_UPDATER_VERSION="master"
+SENTORA_PRECONF_VERSION="master"
+SENTORA_CORE_VERSION="master"
 
 PANEL_PATH="/etc/sentora"
 PANEL_CONF="/etc/sentora/configs"
@@ -405,9 +405,37 @@ cp -R "$SENTORA_CORE_UPDATE"/dryden $PANEL_PATH/panel/
 rm -rf $PANEL_PATH/panel/etc/static
 cp -R "$SENTORA_CORE_UPDATE"/etc/static $PANEL_PATH/panel/etc/
 
-
 # Set Dryden to 0777 permissions
 chmod -R 0777 $PANEL_PATH/panel/dryden
+
+# Added New modules - AutoIP, Sencrypt
+# Add sentora repo
+zppy repo add repo.sentora.org/repo
+zppy update
+
+# Install/Upgrade AutpIP
+if [ ! -d $PANEL_PATH/panel/modules/autoip ] 
+then
+	# Install
+    zppy install autoip 
+    
+else
+	# Upgrade
+	zppy upgrade autoip
+	
+fi
+
+# Install/Upgrade Sencrypt
+if [ ! -d $PANEL_PATH/panel/modules/sencrypt ] 
+then
+	# Install
+    zppy install sencrypt 
+   
+else
+	# Upgrade
+	zppy upgrade sencrypt
+    
+fi
 
 # Delete All Default core modules for updates. Leave Third-party - There might be a better way to do this.
     ## Removing core Modules for upgrade
@@ -421,6 +449,7 @@ chmod -R 0777 $PANEL_PATH/panel/dryden
     # rm -rf $PANEL_PATH/panel/robots.txt
     rm -rf $PANEL_PATH/panel/modules/aliases
     rm -rf $PANEL_PATH/panel/modules/apache_admin
+	rm -rf $PANEL_PATH/panel/modules/autoip
     rm -rf $PANEL_PATH/panel/modules/backup_admin
     rm -rf $PANEL_PATH/panel/modules/backupmgr
     rm -rf $PANEL_PATH/panel/modules/client_notices
@@ -450,14 +479,20 @@ chmod -R 0777 $PANEL_PATH/panel/dryden
     rm -rf $PANEL_PATH/panel/modules/phpsysinfo
     rm -rf $PANEL_PATH/panel/modules/protected_directories
     rm -rf $PANEL_PATH/panel/modules/sentoraconfig
+	rm -rf $PANEL_PATH/panel/modules/sencrypt
     rm -rf $PANEL_PATH/panel/modules/services
     rm -rf $PANEL_PATH/panel/modules/shadowing
     rm -rf $PANEL_PATH/panel/modules/sub_domains
     rm -rf $PANEL_PATH/panel/modules/theme_manager
     rm -rf $PANEL_PATH/panel/modules/updates
     rm -rf $PANEL_PATH/panel/modules/usage_viewer
-    rm -rf $PANEL_PATH/panel/modules/webalizer_stats
-    rm -rf $PANEL_PATH/panel/modules/webmail
+	
+    # Need to backup webalizer data first
+	# Backup Stats data folder and delete module
+	cp -R $PANEL_PATH/panel/modules/webalizer_stats/* $PANEL_PATH/panel/modules/webalizer_stats_backup
+	rm -rf $PANEL_PATH/panel/modules/webalizer_stats
+   
+	rm -rf $PANEL_PATH/panel/modules/webmail
     rm -rf $PANEL_PATH/panel/modules/zpanelconfig
     rm -rf $PANEL_PATH/panel/modules/zpx_core_module
 	
@@ -467,6 +502,10 @@ cp -R "$SENTORA_CORE_UPDATE"/modules/* $PANEL_PATH/panel/modules/
 # Set all modules to 0777 permissions
 chmod -R 0777 $PANEL_PATH/panel/modules/*
 echo -e "--- Done!\n"
+
+# Restore webalizer stats data and delete backup
+cp -R $PANEL_PATH/panel/modules/webalizer_stats_backup/stats/* $PANEL_PATH/panel/modules/webalizer_stats/
+rm -rf $PANEL_PATH/panel/modules/webalizer_stats_backup
 
 # -------------------------------------------------------------------------------
 # Update Sentora APACHE_CHANGED, DBVERSION and run DAEMON
