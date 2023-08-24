@@ -361,14 +361,19 @@ rm -rf sentora_preconfig.zip
 ##
 echo -e "\n-- Updating Sentora Confing files..."
 
+
+## Backup configs folder just incase...
+cp -r $PANEL_CONF $PANEL_PATH/configs_bak_2.0.0
+
+
 ## Update Sentora Apache httpd file.
 rm -r $PANEL_CONF/apache/httpd.conf
-cp -R "$SENTORA_PRECONF_UPDATE"/preconf/apache/httpd.conf $PANEL_CONF/apache/
+cp -r "$SENTORA_PRECONF_UPDATE"/preconf/apache/httpd.conf $PANEL_CONF/apache/
 chmod -R 0644 $PANEL_PATH/configs/apache/httpd.conf
 
 ## Updating Sentora Apache Template Configs
 rm -rf PANEL_CONF/apache/templates
-cp -R "$SENTORA_PRECONF_UPDATE"/preconf/apache/templates $PANEL_CONF/apache/
+cp -r "$SENTORA_PRECONF_UPDATE"/preconf/apache/templates $PANEL_CONF/apache/
 
 # Set templates folder to 0755 permissions
 chmod -R 0755 $PANEL_CONF/apache/templates
@@ -378,7 +383,7 @@ chmod -R 0644 $PANEL_CONF/apache/templates/*
 
 ## Updating Logrotate Configs
 rm -rf PANEL_CONF/logrotate
-cp -R "$SENTORA_PRECONF_UPDATE"/preconf/logrotate $PANEL_CONF/
+cp -r "$SENTORA_PRECONF_UPDATE"/preconf/logrotate $PANEL_CONF/
 
 # Set logrotate folder to 0755 permissions
 chmod -R 0755 $PANEL_CONF/logrotate
@@ -388,7 +393,7 @@ chmod -R 0644 $PANEL_CONF/logrotate/*
 
 ## Update Sentora Snuff configs files
 rm -rf $PANEL_CONF/php/sp
-cp -R "$SENTORA_PRECONF_UPDATE"/preconf/php/sp $PANEL_CONF/php/
+cp -r "$SENTORA_PRECONF_UPDATE"/preconf/php/sp $PANEL_CONF/php/
 
 echo -e "--- Done!"
 
@@ -399,11 +404,11 @@ echo -e "\n-- Updating Sentora Core files..."
 
 # Update Sentora Dryden files
 rm -rf $PANEL_PATH/panel/dryden
-cp -R "$SENTORA_CORE_UPDATE"/dryden $PANEL_PATH/panel/
+cp -r "$SENTORA_CORE_UPDATE"/dryden $PANEL_PATH/panel/
 
 # Update Sentora Static error files
 rm -rf $PANEL_PATH/panel/etc/static
-cp -R "$SENTORA_CORE_UPDATE"/etc/static $PANEL_PATH/panel/etc/
+cp -r "$SENTORA_CORE_UPDATE"/etc/static $PANEL_PATH/panel/etc/
 
 # Set Dryden to 0777 permissions
 chmod -R 0777 $PANEL_PATH/panel/dryden
@@ -489,7 +494,7 @@ fi
 	
     # Need to backup webalizer data first
 	# Backup Stats data folder and delete module
-	cp -R $PANEL_PATH/panel/modules/webalizer_stats/* $PANEL_PATH/panel/modules/webalizer_stats_backup
+	cp -r $PANEL_PATH/panel/modules/webalizer_stats $PANEL_PATH/panel/modules/webalizer_stats_backup
 	rm -rf $PANEL_PATH/panel/modules/webalizer_stats
    
 	rm -rf $PANEL_PATH/panel/modules/webmail
@@ -497,14 +502,14 @@ fi
     rm -rf $PANEL_PATH/panel/modules/zpx_core_module
 	
 # Updating all modules with new files from master core.
-cp -R "$SENTORA_CORE_UPDATE"/modules/* $PANEL_PATH/panel/modules/
+cp -r "$SENTORA_CORE_UPDATE"/modules $PANEL_PATH/panel/modules/
 
 # Set all modules to 0777 permissions
 chmod -R 0777 $PANEL_PATH/panel/modules/*
 echo -e "--- Done!\n"
 
 # Restore webalizer stats data and delete backup
-cp -R $PANEL_PATH/panel/modules/webalizer_stats_backup/stats/* $PANEL_PATH/panel/modules/webalizer_stats/
+cp -r $PANEL_PATH/panel/modules/webalizer_stats_backup/stats $PANEL_PATH/panel/modules/webalizer_stats/
 rm -rf $PANEL_PATH/panel/modules/webalizer_stats_backup
 
 # -------------------------------------------------------------------------------
