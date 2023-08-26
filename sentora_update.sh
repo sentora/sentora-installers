@@ -416,6 +416,7 @@ chmod -R 0777 $PANEL_PATH/panel/dryden
 # Update Zppy code
 rm -rf $PANEL_PATH/panel/bin/zppy
 cp -r "$SENTORA_CORE_UPDATE"/bin/zppy $PANEL_PATH/panel/bin/
+chmod -R 0777 $PANEL_PATH/panel/bin/zppy
 
 # Added New modules - AutoIP, Sencrypt
 # Add sentora repo
