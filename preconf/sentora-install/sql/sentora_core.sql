@@ -93,6 +93,26 @@ CREATE TABLE `x_aliases` (
 
 /*Data for the table `x_aliases` */
 
+/*Table structure for table `x_autoip` */
+
+DROP TABLE IF EXISTS `x_autoip`;
+
+CREATE TABLE IF NOT EXISTS `x_autoip` (
+  `ai_id_pk` int(6) NOT NULL DEFAULT '0',
+  `ai_script_vc` varchar(255) DEFAULT NULL,
+  `ai_email_vc` varchar(255) DEFAULT NULL,
+  `ai_command_vc` varchar(255) DEFAULT NULL,
+  `ai_newip_vc` varchar(50) DEFAULT NULL,
+  `ai_oldip_vc` varchar(50) DEFAULT NULL,
+  `ai_enabled_in` int(1) DEFAULT '1',
+  `ai_lastupdate_ts` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`ai_id_pk`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*Data for the table `x_autoip` */
+INSERT INTO `x_autoip` (`ai_id_pk`, `ai_script_vc`, `ai_email_vc`, `ai_command_vc`, `ai_newip_vc`, `ai_oldip_vc`, `ai_enabled_in`, `ai_lastupdate_ts`) VALUES
+('1', null, null, 'http://myip.dnsomatic.com/', null, null, '1', null);
+
 /*Table structure for table `x_bandwidth` */
 
 DROP TABLE IF EXISTS `x_bandwidth`;
