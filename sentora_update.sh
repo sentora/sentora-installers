@@ -413,6 +413,10 @@ cp -r "$SENTORA_CORE_UPDATE"/etc/static $PANEL_PATH/panel/etc/
 # Set Dryden to 0777 permissions
 chmod -R 0777 $PANEL_PATH/panel/dryden
 
+# Update Zppy code
+rm -rf $PANEL_PATH/panel/bin/zppy
+cp -r "$SENTORA_CORE_UPDATE"/bin/zppy $PANEL_PATH/panel/bin/
+
 # Added New modules - AutoIP, Sencrypt
 # Add sentora repo
 zppy repo add repo.sentora.org/repo
