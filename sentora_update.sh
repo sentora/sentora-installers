@@ -206,10 +206,10 @@ exec 2>&1
 
 extern_ip="$(wget -qO- http://api.sentora.org/ip.txt)"
 
-echo "Sentora Updater v$SENTORA_UPDATER_VERSION"
-echo "Sentora core v$SENTORA_CORE_VERSION"
+echo "Sentora Updater v.$SENTORA_UPDATER_VERSION"
+echo "Sentora core v$.SENTORA_CORE_VERSION"
 echo ""
-echo "Updating Sentora v$SENTORA_CORE_VERSION at http://$HOSTNAME and IP: $extern_ip"
+echo "Updating Sentora v.$SENTORA_CORE_VERSION at http://$HOSTNAME and IP: $extern_ip"
 echo "on server under: $OS  $VER  $ARCH"
 uname -a
 
@@ -361,10 +361,13 @@ rm -rf sentora_preconfig.zip
 ##
 echo -e "\n-- Updating Sentora Confing files..."
 
-
 ## Backup configs folder just incase...
-cp -r $PANEL_CONF $PANEL_PATH/configs_bak_2.0.0
 
+if [ ! -d "$PANEL_PATH/configs_bak_2.0.0" ]
+then
+	echo -e "\nBacking up configs files. Just in case..."
+	cp -r $PANEL_CONF $PANEL_PATH/configs_bak_2.0.0
+fi
 
 ## Update Sentora Apache httpd file.
 rm -r $PANEL_CONF/apache/httpd.conf
@@ -395,7 +398,7 @@ chmod -R 0644 $PANEL_CONF/logrotate/*
 rm -rf $PANEL_CONF/php/sp
 cp -r "$SENTORA_PRECONF_UPDATE"/preconf/php/sp $PANEL_CONF/php/
 
-echo -e "--- Done!"
+echo -e "\n--- Done updating Config files!"
 
 ##
 ### Updating Sentora Core files.
@@ -424,27 +427,27 @@ zppy repo add repo.sentora.org/repo
 zppy update
 
 # Install/Upgrade AutpIP
-if [ ! -d $PANEL_PATH/panel/modules/autoip ] 
+if [ ! -d "$PANEL_PATH/panel/modules/autoip" ] 
 then
 	# Install
-    zppy install autoip 
-    
+	echo -e "\nInstalling AutoIP module"
+    	zppy install autoip 
 else
 	# Upgrade
+	echo -e "\nUpgrading AutoIP module"
 	zppy upgrade autoip
-	
 fi
 
 # Install/Upgrade Sencrypt
-if [ ! -d $PANEL_PATH/panel/modules/sencrypt ] 
+if [ ! -d "$PANEL_PATH/panel/modules/sencrypt" ] 
 then
 	# Install
-    zppy install sencrypt 
-   
+	echo -e "\nInstalling Sencrypt module"
+    	zppy install sencrypt 
 else
 	# Upgrade
+	echo -e "\nUpgrading Sencrypt module"
 	zppy upgrade sencrypt
-    
 fi
 
 # Delete All Default core modules for updates. Leave Third-party - There might be a better way to do this.
@@ -459,7 +462,7 @@ fi
     # rm -rf $PANEL_PATH/panel/robots.txt
     rm -rf $PANEL_PATH/panel/modules/aliases
     rm -rf $PANEL_PATH/panel/modules/apache_admin
-	rm -rf $PANEL_PATH/panel/modules/autoip
+    rm -rf $PANEL_PATH/panel/modules/autoip
     rm -rf $PANEL_PATH/panel/modules/backup_admin
     rm -rf $PANEL_PATH/panel/modules/backupmgr
     rm -rf $PANEL_PATH/panel/modules/client_notices
@@ -489,7 +492,7 @@ fi
     rm -rf $PANEL_PATH/panel/modules/phpsysinfo
     rm -rf $PANEL_PATH/panel/modules/protected_directories
     rm -rf $PANEL_PATH/panel/modules/sentoraconfig
-	rm -rf $PANEL_PATH/panel/modules/sencrypt
+    rm -rf $PANEL_PATH/panel/modules/sencrypt
     rm -rf $PANEL_PATH/panel/modules/services
     rm -rf $PANEL_PATH/panel/modules/shadowing
     rm -rf $PANEL_PATH/panel/modules/sub_domains
@@ -498,20 +501,20 @@ fi
     rm -rf $PANEL_PATH/panel/modules/usage_viewer
 	
     # Need to backup webalizer data first
-	# Backup Stats data folder and delete module
-	cp -r $PANEL_PATH/panel/modules/webalizer_stats $PANEL_PATH/panel/modules/webalizer_stats_backup
-	rm -rf $PANEL_PATH/panel/modules/webalizer_stats
+    # Backup Stats data folder and delete module
+    cp -r $PANEL_PATH/panel/modules/webalizer_stats $PANEL_PATH/panel/modules/webalizer_stats_backup
+    rm -rf $PANEL_PATH/panel/modules/webalizer_stats
    
-	rm -rf $PANEL_PATH/panel/modules/webmail
+    rm -rf $PANEL_PATH/panel/modules/webmail
     rm -rf $PANEL_PATH/panel/modules/zpanelconfig
     rm -rf $PANEL_PATH/panel/modules/zpx_core_module
 	
 # Updating all modules with new files from master core.
-cp -r "$SENTORA_CORE_UPDATE"/modules $PANEL_PATH/panel/modules/
+cp -r "$SENTORA_CORE_UPDATE"/modules/* $PANEL_PATH/panel/modules/
 
 # Set all modules to 0777 permissions
 chmod -R 0777 $PANEL_PATH/panel/modules/*
-echo -e "--- Done!\n"
+echo -e "\n--- Done updating core files!\n"
 
 # Restore webalizer stats data and delete backup
 cp -r $PANEL_PATH/panel/modules/webalizer_stats_backup/stats $PANEL_PATH/panel/modules/webalizer_stats/
@@ -581,7 +584,7 @@ echo -e "-- Finished Restarting Services..."
 
 echo -e "\n# -------------------------------------------------------------------------------"
 
-echo -e "\n-- Done Updating all Sentora core files & services. Enjoy!\n"
+echo -e "\n-- Done Updating all Sentora core files & services to v.$SENTORA_CORE_VERSION. Enjoy!\n"
 
 # Wait until the user have read before restarts the server...
 if [[ "$INSTALL" != "auto" ]] ; then
