@@ -2,7 +2,7 @@
 
 ###############################################
 # PHPMyAdmin Configuration for Sentora        #
-# Last updated: 03/07/2014                    #
+# Last updated: 09/05/2023                    #
 # Author: Bobby Allen (ballen@sentora.io)     #
 ###############################################
 
@@ -18,7 +18,7 @@ $cfg['blowfish_secret'] = 'SENTORA';
 $i = 0;
 $i++;
 /* Authentication type */
-$cfg['Servers'][$i]['auth_type'] = 'http';
+$cfg['Servers'][$i]['auth_type'] = 'cookie';
 /* Server parameters */
 $cfg['Servers'][$i]['host'] = 'localhost';
 $cfg['Servers'][$i]['connect_type'] = 'tcp';
@@ -45,7 +45,7 @@ $cfg['ShowChgPassword'] = false;
 $cfg['AllowUserDropDatabase'] = false;
 $cfg['SuhosinDisableWarning'] = true;
 $cfg['PmaNoRelation_DisableWarning'] = true;
-$cfg['Servers'][$i]['hide_db'] = 'information_schema';
+$cfg['Servers'][$i]['hide_db'] = '^(information_schema|sys|performance_schema)$';
 $cfg['ShowServerInfo'] = false;
 
 /*
