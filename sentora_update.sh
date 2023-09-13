@@ -34,7 +34,7 @@
 ## 
 # SENTORA_CORE/UPDATER_VERSION
 # master - latest unstable
-# 2.0.0 - example stable tag
+# 2.0.1 - example stable tag
 ##
 
 SENTORA_UPDATER_VERSION="master"
@@ -281,6 +281,10 @@ if [[ "$OS" = "CentOs" ]]; then
     fi
 fi
 
+# Disable PHP EOL message for snuff in apache evrvars file
+echo '' >> $PANEL_CONF/apache2/envvars
+echo '## Hide Snuff PHP EOL warning' >> $PANEL_CONF/apache2/envvars
+echo 'export SP_SKIP_OLD_PHP_CHECK=1' >> $PANEL_CONF/apache2/envvars
 
 
 # -------------------------------------------------------------------------------
@@ -397,6 +401,11 @@ chmod -R 0644 $PANEL_CONF/logrotate/*
 ## Update Sentora Snuff configs files
 rm -rf $PANEL_CONF/php/sp
 cp -r "$SENTORA_PRECONF_UPDATE"/preconf/php/sp $PANEL_CONF/php/
+
+## Update PHPmyadmin config HTTP to use Cookie and update [hide_db]
+sed -i 's|'03/07/2014'|'09/07/2023'|g' $PANEL_CONF/phpmyadmin/config.inc.php
+sed -i 's|'http'|'cookie'|g' $PANEL_CONF/phpmyadmin/config.inc.php
+sed -i "s|\['hide_db'\] \= 'information_schema';|\['hide_db'\] \= '\^\(information_schema\|sys\|performance_schema\)\$';|" /etc/sentora/configs/phpmyadmin/config.inc.php
 
 echo -e "\n--- Done updating Config files!"
 
