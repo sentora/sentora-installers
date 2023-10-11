@@ -459,6 +459,18 @@ else
 	zppy upgrade sencrypt
 fi
 
+# Install/Upgrade User Log Veiwer
+if [ ! -d "$PANEL_PATH/panel/modules/user_logviewer" ] 
+then
+	# Install
+	echo -e "\nInstalling User Log Veiwer module"
+    	zppy install user_logviewer 
+else
+	# Upgrade
+	echo -e "\nUpgrading User Log Veiwer module"
+	zppy upgrade user_logviewer
+fi
+
 # Delete All Default core modules for updates. Leave Third-party - There might be a better way to do this.
     ## Removing core Modules for upgrade
     # rm -rf $PANEL_PATH/panel/bin/
@@ -508,6 +520,7 @@ fi
     rm -rf $PANEL_PATH/panel/modules/theme_manager
     rm -rf $PANEL_PATH/panel/modules/updates
     rm -rf $PANEL_PATH/panel/modules/usage_viewer
+	rm -rf $PANEL_PATH/panel/modules/user_logviewer
 	
     # Need to backup webalizer data first
     # Backup Stats data folder and delete module
