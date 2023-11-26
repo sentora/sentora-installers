@@ -450,9 +450,12 @@ insert  into `x_modules`(`mo_id_pk`,`mo_category_fk`,`mo_name_vc`,`mo_version_in
 (46,7,'Theme Manager',200,'theme_manager','user','Enables the reseller to set themes configurations for their clients.',NULL,'true',NULL,''),
 (47,3,'Webalizer Stats',200,'webalizer_stats','user','You can view many statistics such as visitor infomation, bandwidth used, referal infomation and most viewed pages etc. Web stats are based on Domains and sub-domains so to view web stats for a particular domain or subdomain use the drop-down menu to select the domain or sub-domain you want to view web stats for.',NULL,'true',NULL,''),
 (48,3,'Protected Directories',200,'protected_directories','user','Password protect your web applications and directories.',NULL,'true',NULL,''),
-(49,2,'AutoIP Updater',102,'autoip','user','Automatically update your control panel IP address.',NULL,'true',NULL,''),
-(50,3,'View Logs',101,'user_logviewer','user','Allows user to view several logs of their sites',NULL,'true',NULL,'http://zppy-repo.mach-hosting.com/repo/user_logviewer.xml'),
-(51,5,'Sencrypt SSL',201,'sencrypt','user','Add or remove Let\'s Encrypt SSL certificates for your domains and sub domains',NULL,'true',NULL,'http://zppy-repo.mach-hosting.com/testing/sencrypt.zpp');
+
+
+
+(49,2,'AutoIP Updater',102,'autoip','user','Automatically update your control panel IP address.',1701028845,'true',NULL,''),
+(50,3,'View Logs',101,'user_logviewer','user','Allows user to view several logs of their sites',1701028845,'true',NULL,'http://zppy-repo.mach-hosting.com/repo/user_logviewer.xml'),
+(51,5,'Sencrypt SSL',201,'sencrypt','user','Add or remove Let\'s Encrypt SSL certificates for your domains and sub domains',1701028845,'true',NULL,'http://zppy-repo.mach-hosting.com/testing/sencrypt.zpp');
 
 /*Table structure for table `x_mysql_databases` */
 
