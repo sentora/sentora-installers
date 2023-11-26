@@ -275,16 +275,30 @@ if [[ "$OS" = "CentOs" ]]; then
     if [[ "$VER" == "8" ]]; then
         systemctl enable "$HTTP_SERVICE.service"
         systemctl start "$HTTP_SERVICE.service"
-    else
+    elif [[ "$OS" = "Ubuntu" ]];
         chkconfig "$HTTP_SERVICE" on
         "/etc/init.d/$HTTP_SERVICE" start
     fi
 fi
 
 # Disable PHP EOL message for snuff in apache evrvars file
-echo '' >> $PANEL_CONF/apache2/envvars
-echo '## Hide Snuff PHP EOL warning' >> $PANEL_CONF/apache2/envvars
-echo 'export SP_SKIP_OLD_PHP_CHECK=1' >> $PANEL_CONF/apache2/envvars
+if [[ "$OS" = "CentOs" ]]; then
+
+	#
+
+else
+	echo '' >> /etc/apache2/envvars
+	echo '## Hide Snuff PHP EOL warning' >> $PANEL_CONF/apache2/envvars
+	echo 'export SP_SKIP_OLD_PHP_CHECK=1' >> $PANEL_CONF/apache2/envvars
+fi
+
+
+
+
+
+
+
+
 
 
 # -------------------------------------------------------------------------------
@@ -430,7 +444,7 @@ rm -rf $PANEL_PATH/panel/bin/zppy
 cp -r "$SENTORA_CORE_UPDATE"/bin/zppy $PANEL_PATH/panel/bin/
 chmod -R 0777 $PANEL_PATH/panel/bin/zppy
 
-# Added New modules - AutoIP, Sencrypt
+# Added New modules - AutoIP, Sencrypt, User Logviewer
 # Add sentora repo
 zppy repo add repo.sentora.org/repo
 zppy update
