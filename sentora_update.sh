@@ -37,9 +37,9 @@
 # 2.0.1 - example stable tag
 ##
 
-SENTORA_UPDATER_VERSION="master"
-SENTORA_PRECONF_VERSION="master"
-SENTORA_CORE_VERSION="master"
+SENTORA_UPDATER_VERSION="2.0.1"
+SENTORA_PRECONF_VERSION="2.0.1"
+SENTORA_CORE_VERSION="2.0.1"
 
 PANEL_PATH="/etc/sentora"
 PANEL_CONF="/etc/sentora/configs"
