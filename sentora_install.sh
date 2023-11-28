@@ -38,8 +38,8 @@
 # 1.0.3 - example stable tag
 ##
 
-SENTORA_INSTALLER_VERSION="master"
-SENTORA_CORE_VERSION="master"
+SENTORA_INSTALLER_VERSION="2.0.1"
+SENTORA_CORE_VERSION="2.0.1"
 
 PANEL_PATH="/etc/sentora"
 PANEL_DATA="/var/sentora"
