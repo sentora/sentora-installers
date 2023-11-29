@@ -1,7 +1,9 @@
 Sentora Installers
 ==================
 
-Welcome to the Sentora Installation Script Git repository, this provides a central place to store, version and distribute Sentora installer and upgrade scripts from.
+Welcome to the Sentora Installation Script Git repository, this provides a central place to store, version and distribute Sentora installer and upgrade scripts from.<br>
+<br>
+(Updating Sentora: To update Sentora please use the links found on [our update page](https://sentora.org/upgrade/).)
 
 ## How to install Sentora ##
 
