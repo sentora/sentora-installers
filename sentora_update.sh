@@ -193,7 +193,6 @@ elif [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
 	fi
 fi
 
-
 # ***************************************
 # Sentora Installation/Update really starts here
 # ***************************************
@@ -275,7 +274,7 @@ if [[ "$OS" = "CentOs" ]]; then
     if [[ "$VER" == "8" ]]; then
         systemctl enable "$HTTP_SERVICE.service"
         systemctl start "$HTTP_SERVICE.service"
-    elif [[ "$OS" = "Ubuntu" ]];
+    else [[ "$OS" = "Ubuntu" ]];
         chkconfig "$HTTP_SERVICE" on
         "/etc/init.d/$HTTP_SERVICE" start
     fi
@@ -284,21 +283,13 @@ fi
 # Disable PHP EOL message for snuff in apache evrvars file
 if [[ "$OS" = "CentOs" ]]; then
 
-	#
+	echo 'will add later for Centos'
 
 else
 	echo '' >> /etc/apache2/envvars
 	echo '## Hide Snuff PHP EOL warning' >> $PANEL_CONF/apache2/envvars
 	echo 'export SP_SKIP_OLD_PHP_CHECK=1' >> $PANEL_CONF/apache2/envvars
 fi
-
-
-
-
-
-
-
-
 
 
 # -------------------------------------------------------------------------------
