@@ -411,8 +411,8 @@ CREATE TABLE `x_modules` (
 /*Data for the table `x_modules` */
 
 insert  into `x_modules`(`mo_id_pk`,`mo_category_fk`,`mo_name_vc`,`mo_version_in`,`mo_folder_vc`,`mo_type_en`,`mo_desc_tx`,`mo_installed_ts`,`mo_enabled_en`,`mo_updatever_vc`,`mo_updateurl_tx`) values 
-(1,2,'PHPInfo',200,'phpinfo','user','PHPInfo provides you with information regarding the version of PHP running on this system as well as installed PHP extensions and configuration details.',NULL,'true',NULL,''),
-(3,2,'Shadowing',200,'shadowing','user','From here you can shadow any of your client\'s accounts, this enables you to automatically login as the user which enables you to offer remote help by seeing what they see!',NULL,'true',NULL,''),
+(1,3,'PHPInfo',200,'phpinfo','user','PHPInfo provides you with information regarding the version of PHP running on this system as well as installed PHP extensions and configuration details.',NULL,'true',NULL,''),
+(3,7,'Shadowing',200,'shadowing','user','From here you can shadow any of your client\'s accounts, this enables you to automatically login as the user which enables you to offer remote help by seeing what they see!',NULL,'true',NULL,''),
 (4,2,'Sentora Config',200,'sentoraconfig','user','Changes made here affect the entire Sentora configuration, please double check everything before saving changes.',NULL,'true',NULL,''),
 (5,2,'Sentora News',200,'news','user','Find out all the latest news and information from the Sentora project.',NULL,'true',NULL,''),
 (6,2,'Updates',200,'updates','user','Check to see if there are any available updates to your version of the Sentora software.',NULL,'true',NULL,''),
