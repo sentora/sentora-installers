@@ -1011,6 +1011,8 @@ ln -s $PANEL_CONF/postfix/vacation.pl /var/spool/vacation/vacation.pl
 
 sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_CONF/postfix/*.cf
 sed -i "s|!POSTFIX_PASSWORD!|$postfixpassword|" $PANEL_CONF/postfix/vacation.conf
+# tg - Set default vacation 'from' domain
+sed -i "s|!POSTFIX_VACATION!|$PANEL_FQDN|" $PANEL_CONF/postfix/vacation.conf
 sed -i "s|!PANEL_FQDN!|$PANEL_FQDN|" $PANEL_CONF/postfix/main.cf
 
 sed -i "s|!USR_LIB!|$USR_LIB_PATH|" $PANEL_CONF/postfix/master.cf
