@@ -288,8 +288,8 @@ if [[ "$OS" = "CentOs" ]]; then
 
 else
 	echo '' >> /etc/apache2/envvars
-	echo '## Hide Snuff PHP EOL warning' >> $PANEL_CONF/apache2/envvars
-	echo 'export SP_SKIP_OLD_PHP_CHECK=1' >> $PANEL_CONF/apache2/envvars
+	echo '## Hide Snuff PHP EOL warning' >> /etc/apache2/envvars
+	echo 'export SP_SKIP_OLD_PHP_CHECK=1' >> /etc/apache2/envvars
 fi
 
 
