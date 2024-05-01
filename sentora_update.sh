@@ -34,12 +34,12 @@
 ## 
 # SENTORA_CORE/UPDATER_VERSION
 # master - latest unstable
-# 2.0.1 - example stable tag
+# 2.0.2 - example stable tag
 ##
 
-SENTORA_UPDATER_VERSION="master"
-SENTORA_PRECONF_VERSION="master"
-SENTORA_CORE_VERSION="master"
+SENTORA_UPDATER_VERSION="2.0.2"
+SENTORA_PRECONF_VERSION="2.0.2"
+SENTORA_CORE_VERSION="2.0.2"
 
 PANEL_PATH="/etc/sentora"
 PANEL_CONF="/etc/sentora/configs"
