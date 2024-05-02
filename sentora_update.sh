@@ -17,8 +17,9 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Supported Operating Systems: 
-# CentOS 8.*/ Minimal, 
-# Ubuntu server 16.04, 18.04, 20.04*/ Minimal,
+# CentOS 8.*/ Minimal - Discontinuing
+# Ubuntu server 16.04/18.04/20.04
+# Debian 12.* COMING SOON!!!
 # 32bit and 64bit
 #
 # Contributions from:
@@ -56,8 +57,8 @@ echo "#  Welcome to the Official Sentora v.$SENTORA_UPDATER_VERSION Update scrip
 echo "############################################################################################"
 echo ""
 echo "############################################################################################"
-echo "##  !!! WARNING!!! THIS IS NOT A SCRIPT TO UPGRADE FROM V1.0.3 TO SENTORA V2.0.0           #"
-echo "##  !!! This script will UPDATE/RESET v2.0.0 SENTORA CORE SYSTEM FILES                     #"
+echo "##  !!! WARNING!!! THIS IS NOT A SCRIPT TO UPGRADE FROM V1.0.3 TO SENTORA V2.0.X           #"
+echo "##  !!! This script will UPDATE/RESET v2.0.1 SENTORA CORE SYSTEM FILES                     #"
 echo "##  !!! to v.$SENTORA_CORE_VERSION current MASTER DEFAULT.                                                 #"
 echo "##  !!! This will NOT delete any THIRD-PARTY MODULES/APPS.                                 #"
 echo "##  !!! It is RECOMMENDED to BACKUP your Sentora '/ETC/SENTORA/*' DATA BEFORE just in case #"
@@ -67,7 +68,7 @@ echo "##########################################################################
 echo ""
 
 # Check if ready
-read -p "Have you read the warning above? Are you ready to Continue? (y/n)?" choice
+read -r -p "Have you read the warning above? Are you ready to Continue? (y/n)?" choice
 case "$choice" in 
   y|Y ) echo YES;;
   n|N ) exit;;
@@ -118,11 +119,11 @@ else
     exit 1
 fi
 
-### Ensure that sentora v2.0.0 or greater is installed
-if [[ "$SEN_VER" = 2.0.0* ]]; then
+### Ensure that sentora v2.0.1 or greater is installed
+if [[ "$SEN_VER" = 2.0.1* ]]; then
     echo "- Found Sentora v$SEN_VER, processing..."
 else
-    echo "Sentora version v2.0.0 is required to use this update script, you have v$SEN_VER. ABORTING..."
+    echo "Sentora version v2.0.1 is required to use this update script, you have v$SEN_VER. ABORTING..."
     exit 1
 fi
 
@@ -286,9 +287,20 @@ if [[ "$OS" = "CentOs" ]]; then
 	echo 'will add later for Centos'
 
 else
-	echo '' >> /etc/apache2/envvars
-	echo '## Hide Snuff PHP EOL warning' >> $PANEL_CONF/apache2/envvars
-	echo 'export SP_SKIP_OLD_PHP_CHECK=1' >> $PANEL_CONF/apache2/envvars
+
+	# Check if code exists. If not, add it.
+	ENVVARS_FILE="/etc/apache2/envvars"
+	ENVVARS_STRING="export SP_SKIP_OLD_PHP_CHECK=1"
+	
+	if ! grep -q -F "$ENVVARS_STRING" "$ENVVARS_FILE"; then
+		echo 'Apache Snuff Disable PHP EOL Not Found. Adding'
+		
+		echo '' >> /etc/apache2/envvars
+		echo '## Hide Snuff PHP EOL warning' >> /etc/apache2/envvars
+		echo 'export SP_SKIP_OLD_PHP_CHECK=1' >> /etc/apache2/envvars
+		
+	fi
+			
 fi
 
 
@@ -299,6 +311,15 @@ fi
 # Fix Proftpd using datetime stamp DEFAULT with ZEROS use NULL. Fixes MYSQL 5.7.5+ NO_ZERO_IN_DATE
 #mysql -u root -p"$mysqlpassword" < "$SENTORA_PRECONF_UPDATE"/preconf/sentora-update/2-0-0/sql/4-proftpd-datetime-fix.sql
 
+# -------------------------------------------------------------------------------
+# Postfix Below
+# -------------------------------------------------------------------------------
+
+# tg - Set default vacation 'from' domain
+SENTORA_PANEL_FQDN=$($PANEL_PATH/panel/bin/setso --show sentora_domain)
+
+# tg - Fix default vacation 
+sed -i "s|autoreply.test.nforced.co.uk|autoreply.$SENTORA_PANEL_FQDN|" $PANEL_CONF/postfix/vacation.conf
 
 # -------------------------------------------------------------------------------
 # Start Sentora Core Updating Below
@@ -392,6 +413,10 @@ chmod -R 0755 $PANEL_CONF/apache/templates
 
 # Set templates to 0644 permissions
 chmod -R 0644 $PANEL_CONF/apache/templates/*
+
+
+
+
 
 ## Updating Logrotate Configs
 rm -rf PANEL_CONF/logrotate
@@ -546,6 +571,23 @@ echo -e "\n--- Done updating core files!\n"
 # Restore webalizer stats data and delete backup
 cp -r $PANEL_PATH/panel/modules/webalizer_stats_backup/stats $PANEL_PATH/panel/modules/webalizer_stats/
 rm -rf $PANEL_PATH/panel/modules/webalizer_stats_backup
+
+##
+### Updating Sentora Core DB.
+##
+
+# Copy  new Sentora-update code to system configs 
+cp -r "$SENTORA_PRECONF_UPDATE"/preconf/sentora-update/2-0-2 $PANEL_CONF/sentora-update/
+
+# get mysql root password, check it works or ask it
+mysqlpassword=$(cat /etc/sentora/panel/cnf/db.php | grep "pass =" | sed -s "s|.*pass \= '\(.*\)';.*|\1|")
+while ! mysql -u root -p"$mysqlpassword" -e ";" ; do
+read -r -p "Cant connect to mysql, please give root password or press ctrl-C to abort: " mysqlpassword
+done
+echo -e "Connection mysql ok"
+
+# Update core
+mysql -u root -p"$mysqlpassword" < $PANEL_CONF/sentora-update/2-0-2/sql/0-core-update.sql
 
 # -------------------------------------------------------------------------------
 # Update Sentora APACHE_CHANGED, DBVERSION and run DAEMON
