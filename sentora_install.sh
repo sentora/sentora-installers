@@ -17,9 +17,9 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Supported Operating Systems: 
-# CentOS 8.* Minimal, 
+# CentOS 8.* Minimal - Discontinuing
 # Ubuntu server 18.04/20.04 
-# Debian 9.*/10.* COMING SOON!!!
+# Debian 12.* COMING SOON!!!
 # 32bit and 64bit
 #
 # Contributions from:
@@ -1578,6 +1578,28 @@ if [[ "$VER" = "16.04" || "$VER" = "18.04" || "$VER" = "20.04" || "$VER" = "7" |
 		
 	fi
 fi	
+
+# Disable PHP EOL message for snuff in apache evrvars file
+if [[ "$OS" = "CentOs" ]]; then
+
+	echo 'will add later for Centos'
+
+else
+
+	# Check if code exists. If not, add it.
+	ENVVARS_FILE="/etc/apache2/envvars"
+	ENVVARS_STRING="export SP_SKIP_OLD_PHP_CHECK=1"
+	
+	if ! grep -q -F "$ENVVARS_STRING" "$ENVVARS_FILE"; then
+		echo 'Apache Snuff Disable PHP EOL Not Found. Adding'
+		
+		echo '' >> /etc/apache2/envvars
+		echo '## Hide Snuff PHP EOL warning' >> /etc/apache2/envvars
+		echo 'export SP_SKIP_OLD_PHP_CHECK=1' >> /etc/apache2/envvars
+		
+	fi
+			
+fi
 
 # Register apache(+php) service for autostart and start it
 if [[ "$OS" = "CentOs" ]]; then
