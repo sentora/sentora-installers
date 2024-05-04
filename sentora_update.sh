@@ -119,7 +119,7 @@ else
 fi
 
 ### Ensure that sentora v2.0.0 or greater is installed
-if [[ "$SEN_VER" >= 2.0.0* ]]; then
+if [[ "$SEN_VER" = 2.0.0* ]]; then
     echo "- Found Sentora v$SEN_VER, processing..."
 else
     echo "Sentora version v2.0.0 is required to use this update script, you have v$SEN_VER. ABORTING..."
