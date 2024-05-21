@@ -35,7 +35,7 @@
 ## 
 # SENTORA_CORE/UPDATER_VERSION
 # master - latest unstable
-# 2.0.1 - example stable tag
+# 2.0.2 - example stable tag
 ##
 
 SENTORA_UPDATER_VERSION="master"
