@@ -2,7 +2,7 @@
 
 ###############################################
 # PHPMyAdmin Configuration for Sentora        #
-# Last updated: 09/05/2023                    #
+# Last updated: 4/28/2024                    #
 # Author: Bobby Allen (ballen@sentora.io)     #
 ###############################################
 
