@@ -25,9 +25,9 @@ sp.disable_function.function("ini_set").param("varname").value("include_path").d
 # sp.disable_function.function("ini_get").param("varname").value_r("suhosin").drop(); ###### CHECK causes Suhosin check issues with apps
 sp.disable_function.function("function_exists").param("function_name").value("eval").drop();
 sp.disable_function.function("function_exists").param("function_name").value("exec").drop();
-sp.disable_function.function("function_exists").param("function_name").value("system").allow(); ###### CHECK panel needs this
-sp.disable_function.function("function_exists").param("function_name").value("shell_exec").drop();
-sp.disable_function.function("function_exists").param("function_name").value("proc_open").drop();
+sp.disable_function.function("function_exists").param("function_name").value("system").allow(); ###### Panel needs this!
+sp.disable_function.function("function_exists").param("function_name").value("shell_exec").allow(); #### Panel needs this!
+sp.disable_function.function("function_exists").param("function_name").value("proc_open").allow(); #### Penl needs this!
 sp.disable_function.function("function_exists").param("function_name").value("passthru").drop();
 sp.disable_function.function("is_callable").param("var").value("eval").drop();
 sp.disable_function.function("is_callable").param("var").value("exec").drop();
