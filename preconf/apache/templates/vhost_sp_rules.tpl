@@ -61,4 +61,3 @@ sp.disable_function.function("escapeshellarg").drop().alias("Warning: escapeshel
 sp.disable_function.function("exec").drop().alias("Warning: exec() has been disabled for security reasons.");
 
 #### vhost Default snuffleupagus rules - DO NOT EDIT/DELETE ABOVE
-
