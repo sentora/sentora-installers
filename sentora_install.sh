@@ -470,20 +470,20 @@ echo -e "\n-- Updating repositories and packages sources"
 if [[ "$OS" = "CentOs" ]]; then
 
     enablerepo() {
-        if [ -f "/urs/bin/yum-config-manager" ]; then
+        if [ -f "/urs/bin/dnf-3" ]; then
+            dnf-3 config-manager --enable $1 &> /dev/null
+        elif [ -f "/urs/bin/yum-config-manager" ]; then
             yum-config-manager --enable $1 &> /dev/null
-        elif [ -f "/urs/bin/dnf-config-manager" ]; then
-            dnf-config-manager --enable $1 &> /dev/null
         elif [ -f "/etc/yum.repos.d/$1.repo" ]; then
             sed -i 's/enabled=0/enabled=1/g' "/etc/yum.repos.d/$1.repo"
         fi
     }
 
     disablerepo() {
-        if [ -f "/urs/bin/yum-config-manager" ]; then
+        if [ -f "/urs/bin/dnf-3" ]; then
+            dnf-3 config-manager --disable $1 &> /dev/null
+        elif [ -f "/urs/bin/yum-config-manager" ]; then
             yum-config-manager --disable $1 &> /dev/null
-        elif [ -f "/urs/bin/dnf-config-manager" ]; then
-            dnf-config-manager --disable $1 &> /dev/null
         elif [ -f "/etc/yum.repos.d/$1.repo" ]; then
             sed -i 's/enabled=1/enabled=0/g' "/etc/yum.repos.d/$1.repo"
         fi
