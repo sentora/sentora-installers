@@ -468,39 +468,62 @@ fi
 #--- Adapt repositories and packages sources
 echo -e "\n-- Updating repositories and packages sources"
 if [[ "$OS" = "CentOs" ]]; then
-#EPEL Repo Install
-  EPEL_BASE_URL="http://dl.fedoraproject.org/pub/epel/$VER/$ARCH";
-  if  [[ "$VER" = "7" ]]; then
-     EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL/Packages/e/" | grep -oP '(?<=href=")epel-release.*(?=">)')
-     wget "$EPEL_BASE_URL/Packages/e/$EPEL_FILE"
-  elif [[ "$VER" = "8" ]]; then
-     EPEL_BASE_URL="http://dl.fedoraproject.org/pub/epel/$VER/Everything/$ARCH";
-	 EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL/Packages/e/" | grep -oP '(?<=href=")epel-release.*(?=">)')
-     wget "$EPEL_BASE_URL/Packages/e/$EPEL_FILE"
-  else
-     EPEL_FILE=$(wget -q -O- "$EPEL_BASE_URL/" | grep -oP '(?<=href=")epel-release.*(?=">)')
-     wget "$EPEL_BASE_URL/$EPEL_FILE"
-  fi
-  $PACKAGE_INSTALLER epel-release*.rpm 	#  CHECK THIS
-  rm "$EPEL_FILE"
-    
-    #To fix some problems of compatibility use of mirror centos.org to all users
-    #Replace all mirrors by base repos to avoid any problems.
-    sed -i 's|mirrorlist=http://mirrorlist.centos.org|#mirrorlist=http://mirrorlist.centos.org|' "/etc/yum.repos.d/CentOS-Base.repo"
-    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://mirror.centos.org|' "/etc/yum.repos.d/CentOS-Base.repo"
 
-    #check if the machine and on openvz
-    if [ -f "/etc/yum.repos.d/vz.repo" ]; then
-        sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/centos-$VER|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/$VER/$ARCH/os/|" "/etc/yum.repos.d/vz.repo"
-        sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/updates-released-ce$VER|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/$VER/$ARCH/updates/|" "/etc/yum.repos.d/vz.repo"
-    fi
+    enablerepo() {
+        if [ -f "/urs/bin/yum-config-manager" ]; then
+            yum-config-manager --enable $1 &> /dev/null
+        elif [ -f "/urs/bin/dnf-config-manager" ]; then
+            dnf-config-manager --enable $1 &> /dev/null
+        elif [ -f "/etc/yum.repos.d/$1.repo" ]; then
+            sed -i 's/enabled=0/enabled=1/g' "/etc/yum.repos.d/$1.repo"
+        fi
+    }
 
-    #disable deposits that could result in installation errors
     disablerepo() {
-        if [ -f "/etc/yum.repos.d/$1.repo" ]; then
+        if [ -f "/urs/bin/yum-config-manager" ]; then
+            yum-config-manager --disable $1 &> /dev/null
+        elif [ -f "/urs/bin/dnf-config-manager" ]; then
+            dnf-config-manager --disable $1 &> /dev/null
+        elif [ -f "/etc/yum.repos.d/$1.repo" ]; then
             sed -i 's/enabled=1/enabled=0/g' "/etc/yum.repos.d/$1.repo"
         fi
     }
+
+    
+#To fix some problems of compatibility use of mirror centos.org to all users
+#Replace all mirrors by base archive vault repos to avoid any problems.
+find /etc/yum.repos.d/ -name *.repo -exec sed -i 's|mirrorlist=http://mirrorlist.centos.org|#mirrorlist=http://mirrorlist.centos.org|' {} \;
+find /etc/yum.repos.d/ -name *.repo -exec sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|' {} \;
+
+#check if the machine and on openvz
+if [ -f "/etc/yum.repos.d/vz.repo" ]; then
+ sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/centos-$VER|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/$VER/$ARCH/os/|" "/etc/yum.repos.d/vz.repo"
+ sed -i "s|mirrorlist=http://vzdownload.swsoft.com/download/mirrors/updates-released-ce$VER|baseurl=http://vzdownload.swsoft.com/ez/packages/centos/$VER/$ARCH/updates/|" "/etc/yum.repos.d/vz.repo"
+fi
+
+enablerepo "base"
+enablerepo "centos-base"
+enablerepo "centos"
+enablerepo "updates"
+enablerepo "centos-updates"
+enablerepo "extra"
+enablerepo "centos-extra"
+enablerepo "extras"
+enablerepo "centos-extras"
+enablerepo "plus"
+enablerepo "centos-plus"
+enablerepo "contrib"
+enablerepo "centos-contrib"
+enablerepo "contribs"
+enablerepo "centos-contribs"
+
+
+#EPEL Repo Install # epel-release found on extras on RHEL 6,7,8,9,10 and all fork
+$PACKAGE_INSTALLER epel-release
+yum -y update
+  
+  
+  #disable deposits that could result in installation errors
     disablerepo "elrepo"
     disablerepo "epel-testing"
     disablerepo "remi"
