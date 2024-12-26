@@ -605,7 +605,8 @@ CREATE TABLE `x_quotas` (
 /*Data for the table `x_quotas` */
 
 insert  into `x_quotas`(`qt_id_pk`,`qt_package_fk`,`qt_domains_in`,`qt_subdomains_in`,`qt_parkeddomains_in`,`qt_mailboxes_in`,`qt_fowarders_in`,`qt_distlists_in`,`qt_ftpaccounts_in`,`qt_mysql_in`,`qt_diskspace_bi`,`qt_bandwidth_bi`,`qt_bwenabled_in`,`qt_dlenabled_in`,`qt_totalbw_fk`,`qt_minbw_fk`,`qt_maxcon_fk`,`qt_filesize_fk`,`qt_filespeed_fk`,`qt_filetype_vc`,`qt_modified_in`) values
-(1,1,-1,-1,-1,-1,-1,-1,-1,-1,0,0,0,0,NULL,NULL,NULL,NULL,NULL,'*',1);
+(1,1,-1,-1,-1,-1,-1,-1,-1,-1,0,0,0,0,NULL,NULL,NULL,NULL,NULL,'*',1),
+(2,2,0,0,0,0,0,0,0,0,0,0,0,0,NULL,NULL,NULL,NULL,NULL,'*',1);
 
 /*Table structure for table `x_settings` */
 
