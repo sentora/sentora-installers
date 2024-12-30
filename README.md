@@ -9,8 +9,8 @@ Welcome to the Sentora Installation Script Git repository, this provides a centr
 
 Our installation script currently support the following operating systems/distributions:
 
-* CentOS - Discontinued.
-* Ubuntu 22.04/24.04
+* CentOS - DISCONTINUED.
+* Ubuntu 24.04
 * Debian 12
   
 Preliminary install information can be found here: [Sentora Documentation](http://docs.sentora.org/index.php?node=7)
