@@ -1205,10 +1205,24 @@ cd ~ || exit
 	
 if [[ "$OS" = "Ubuntu" || "$OS" = "debian" && ( "$VER" = "24.04" || "$VER" = "12" ) ]]; then
 
-	# Enable snuffleupagus in PHP.ini
-	echo -e "\nUpdating Ubuntu PHP.ini Enable snuffleupagus..."
+	# Write/create snuffleupagus.rules file 
+	echo "# Snuffleupagus needs a blank file to start." >> /etc/php/"$PHPVER"/snuffleupagus.rules
+	echo "# OS needs Snuffleupagus(SP) rules disbled for command line by default. Thats why this file is here." >> /etc/php/"$PHPVER"/snuffleupagus.rules
+	echo "" >> /etc/php/"$PHPVER"/snuffleupagus.rules
+	echo "####" >> /etc/php/"$PHPVER"/snuffleupagus.rules
+	echo "# DO NOT ADD CODE HERE. You have been WARNED!!!!!" >> /etc/php/"$PHPVER"/snuffleupagus.rules
+	echo "# Adding code here will crash system and add vulnerabilities between vhosts." >> /etc/php/"$PHPVER"/snuffleupagus.rules
+	echo "####" >> /etc/php/"$PHPVER"/snuffleupagus.rules
+	
+	# Enable Snuffleupagus in PHP.ini
+	echo -e "\n Updating Ubuntu & Debian PHP.ini Enabling snuffleupagus..."
+	
+	# Write default PHP Snuffleupagus.ini 
+	# default code start
 	echo "extension=snuffleupagus.so" >> /etc/php/"$PHPVER"/mods-available/snuffleupagus.ini
-	echo "sp.configuration_file=/etc/sentora/configs/php/sp/snuffleupagus.rules" >> /etc/php/"$PHPVER"/mods-available/snuffleupagus.ini
+	echo "sp.configuration_file=/etc/php/"$PHPVER"/snuffleupagus.rules" >> /etc/php/"$PHPVER"/mods-available/snuffleupagus.ini
+		
+	# Save/link - mods-available/snuffleupagus.ini to conf.d/20-snuffleupagus.ini
 	ln -s /etc/php/"$PHPVER"/mods-available/snuffleupagus.ini /etc/php/"$PHPVER"/apache2/conf.d/20-snuffleupagus.ini
 	
 fi
@@ -1235,7 +1249,9 @@ if [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
         "/etc/init.d/$HTTP_SERVICE" start
 fi
 
+##
 #--- ProFTPd
+##
 echo -e "\n-- Installing ProFTPD"
 if [[ "$OS" = "Ubuntu" || "$OS" = "debian" ]]; then
     $PACKAGE_INSTALLER proftpd-mod-mysql
