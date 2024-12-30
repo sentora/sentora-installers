@@ -1,0 +1,55 @@
+################################################################
+# DISABLE.rules Default SP configuration file
+# Default SP rules by Sentora 2.x.x
+# Created on: 1st Jan 2025 UTC
+#==== YOU MUST NOT EDIT for **SECURITY REASONS** ====
+################################################################
+
+#### vhost Default snuffleupagus rules - DO NOT EDIT/DELETE BELOW
+
+# Prevent various `mail`-related vulnerabilities
+sp.disable_function.function("mail").param("additional_parameters").value_r("\\-").allow();
+
+# Prevent `system`-related injections
+sp.disable_function.function("system").param("command").value_r("[$|;&`\\n\\(\\)\\\\]").allow();
+sp.disable_function.function("shell_exec").param("command").value_r("[$|;&`\\n\\(\\)\\\\]").allow();
+sp.disable_function.function("exec").param("command").value_r("[$|;&`\\n\\(\\)\\\\]").allow();
+sp.disable_function.function("proc_open").param("command").value_r("[$|;&`\\n\\(\\)\\\\]").allow();
+
+# Prevent runtime modification of interesting things
+sp.disable_function.function("ini_set").value("assert.active").allow();
+sp.disable_function.function("ini_set").value("zend.assertions").allow();
+sp.disable_function.function("ini_set").value("memory_limit").allow().alias("Warning: PHP Default memory limit is 256MB. Your App/Framework is requesting more. Contact your admin for help.");
+sp.disable_function.function("ini_set").value("include_path").allow();
+#sp.disable_function.function("ini_set").value("open_basedir").allow(); ###### Not Needed due to Apache config open_basedir setup
+
+# Detect some backdoors via environnement recon
+# sp.disable_function.function("ini_get").value("allow_url_fopen").allow();
+# sp.disable_function.function("ini_get").value("open_basedir").allow(); ###### Not Needed due to Apache config open_basedir setup
+# sp.disable_function.function("ini_get").value("suhosin").allow(); ###### CHECK causes Suhosin check issues with apps
+
+# Functions - Disabled for system security - WARNING DO NOT CHANGE. USE panel to set vhost override.  :-)
+sp.disable_function.function("passthru").allow();
+sp.disable_function.function("show_source").allow();
+sp.disable_function.function("shell_exec").allow();
+sp.disable_function.function("system").allow();
+#sp.disable_function.function("pcntl_exec").allow();
+sp.disable_function.function("popen").allow();
+sp.disable_function.function("pclose").allow();
+sp.disable_function.function("proc_open").allow();
+sp.disable_function.function("proc_nice").allow();
+sp.disable_function.function("proc_terminate").allow();
+sp.disable_function.function("proc_get_status").allow();
+sp.disable_function.function("proc_close").allow();
+#sp.disable_function.function("leak").allow();
+#sp.disable_function.function("apache_child_terminate").allow();
+sp.disable_function.function("posix_kill").allow();
+sp.disable_function.function("posix_mkfifo").allow();
+sp.disable_function.function("posix_setpgid").allow();
+sp.disable_function.function("posix_setsid").allow();
+sp.disable_function.function("posix_setuid").allow();
+sp.disable_function.function("escapeshellcmd").allow();
+sp.disable_function.function("escapeshellarg").allow();
+sp.disable_function.function("exec").allow();
+
+#### vhost Default snuffleupagus rules - DO NOT EDIT/DELETE ABOVE
