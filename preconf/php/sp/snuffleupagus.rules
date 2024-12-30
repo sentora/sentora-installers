@@ -1,9 +1,0 @@
-# Snuffleupagus needs a blank file to start.
-# OS needs Snuffleupagus(SP) rules disbled for command line by default. Thats why this file is here.
-
-####
-# DO NOT ADD CODE HERE. You have been WARNED!!!!! 
-# Adding code here will crash system and add vulnerabilities between vhosts.
-####
-
-
